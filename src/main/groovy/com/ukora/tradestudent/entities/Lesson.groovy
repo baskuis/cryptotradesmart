@@ -4,5 +4,5 @@ class Lesson {
     Exchange exchange
     String id
     Date date
-    long price
+    Double price
 }
