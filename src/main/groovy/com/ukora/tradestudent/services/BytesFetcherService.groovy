@@ -1,7 +1,11 @@
 package com.ukora.tradestudent.services
 
 import com.mongodb.*
+import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.entities.*
+import com.ukora.tradestudent.tags.BuyTag
+import com.ukora.tradestudent.tags.SellTag
+import org.bson.types.ObjectId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.stereotype.Service
@@ -27,6 +31,7 @@ class BytesFetcherService {
     DBCollection news
     DBCollection twitter
     DBCollection associations
+    DBCollection brain
 
     @PostConstruct
     void postConstruct(){
@@ -35,6 +40,58 @@ class BytesFetcherService {
         news = mongoTemplate.getCollection("news")
         twitter = mongoTemplate.getCollection("twitter")
         associations = mongoTemplate.getCollection("associations")
+        brain = mongoTemplate.getCollection("brain")
+    }
+
+    /**
+     * Flush brain collection
+     *
+     */
+    void wiskyBender(){
+        brain.remove(new BasicDBObject())
+    }
+
+    /**
+     * Return existing or new number association object
+     *
+     * @param reference
+     * @return
+     */
+    NumberAssociation getNumberAssociation(String reference){
+        BasicDBObject query = new BasicDBObject()
+        query.put('reference', reference)
+        DBObject obj = brain.findOne(query)
+        if(obj == null) return new NumberAssociation(
+                id: null,
+                reference: reference,
+                mean: 0 as Double,
+                count: 0 as Integer,
+                standard_deviation: 0 as Double
+        )
+        return new NumberAssociation(
+                id: obj['_id'] as String,
+                reference: obj['reference'] as String,
+                mean: obj['mean'] as Double,
+                count: obj['count'] as Integer,
+                standard_deviation: obj['standard_deviation'] as Double
+        )
+    }
+
+    /**
+     * Save a number association
+     *
+     * @param numberAssociation
+     */
+    void saveNumberAssociation(NumberAssociation numberAssociation){
+        DBObject obj = new BasicDBObject()
+        if(numberAssociation.id){
+            obj['_id'] = new ObjectId(numberAssociation.id)
+        }
+        obj['reference'] = numberAssociation.reference as String
+        obj['mean'] = numberAssociation.mean as String
+        obj['standard_deviation'] = numberAssociation.standard_deviation as String
+        obj['count'] = numberAssociation.count as String
+        brain.save(obj)
     }
 
     /**
@@ -59,17 +116,28 @@ class BytesFetcherService {
         BasicDBObject query = new BasicDBObject()
         query.put("processed", BasicDBObjectBuilder.start(NOT_EQUALS, true).get())
         DBObject obj = lessons.findOne(query)
-        obj["processed"] = true
-        lessons.save(obj)
-        Lesson lesson = new Lesson()
-        lesson.setId(obj["_id"] as String)
-        lesson.setDate(DatatypeConverter.parseDateTime(obj["date"] as String).getTime())
-        lesson.setPrice(obj["price"] as long)
-        Exchange exchange = new Exchange()
-        exchange.setPlatform(obj["exchange"]["platform"] as String)
-        lesson.setExchange(exchange)
-        lesson.setDbObject(obj)
-        return lesson
+        if(obj != null) {
+            obj["processed"] = true
+            lessons.save(obj)
+            Lesson lesson = new Lesson()
+            switch (obj['tag']) {
+                case 'buy':
+                    lesson.tag = new BuyTag()
+                    break
+                case 'sell':
+                    lesson.tag = new SellTag()
+                    break
+            }
+            lesson.setId(obj["_id"] as String)
+            lesson.setDate(DatatypeConverter.parseDateTime(obj["date"] as String).getTime())
+            lesson.setPrice(obj["price"] as long)
+            Exchange exchange = new Exchange()
+            exchange.setPlatform(obj["exchange"]["platform"] as String)
+            lesson.setExchange(exchange)
+            lesson.setDbObject(obj)
+            return lesson
+        }
+        return null
     }
 
     /**
