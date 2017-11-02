@@ -107,6 +107,13 @@ class CaptureAssociationsService {
 
     }
 
+    /**
+     * Brain it up - generate references - and update number associations
+     *
+     * @param memory
+     * @param tagName
+     * @param timeDelta
+     */
     void brainItUp(Memory memory, String tagName, String timeDelta){
         if(!memory) return
         memory.normalized.properties.each { prop, val ->
@@ -121,6 +128,12 @@ class CaptureAssociationsService {
         }
     }
 
+    /**
+     * Capture new value for number association
+     *
+     * @param numberAssociation
+     * @param value
+     */
     void captureNewValue(NumberAssociation numberAssociation, Double value){
         if(!numberAssociation) return
         numberAssociation.standard_deviation = NerdUtils.applyValueGetNewDeviation(
