@@ -141,10 +141,6 @@ class CaptureAssociationsService {
             numberAssociation.mean,
             numberAssociation.count + 1,
             numberAssociation.standard_deviation)
-        println NerdUtils.applyValueGetNewMean(
-                value,
-                numberAssociation.mean,
-                numberAssociation.count)
         numberAssociation.mean = NerdUtils.applyValueGetNewMean(
             value,
             numberAssociation.mean,

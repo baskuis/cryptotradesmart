@@ -225,66 +225,72 @@ class BytesFetcherService {
                 .start(GREATER_THAN, fromDate)
                 .add(LESS_THAN, toDate).get())
         DBObject obj = memory.findOne(query)
-        Ask ask = new Ask()
-        ask.ask_medium_median_delta = obj['ask']['ask_medium_median_delta'] as Double
-        ask.volume_ask_quantity = obj['ask']['volume_ask_quantity'] as Double
-        ask.minimum_ask_price = obj['ask']['minimum_ask_price'] as Double
-        ask.medium_ask_price = obj['ask']['medium_ask_price'] as Double
-        ask.total_ask_value = obj['ask']['total_ask_value'] as Double
-        ask.maximum_ask_price = obj['ask']['maximum_ask_price'] as Double
-        ask.medium_per_unit_ask_price = obj['ask']['medium_per_unit_ask_price'] as Double
-        ask.median_ask_price = obj['ask']['median_ask_price'] as Double
-        Bid bid = new Bid()
-        bid.volume_bid_quantity = obj['bid']['volume_bid_quantity'] as Double
-        bid.bid_medium_median_delta = obj['bid']['bid_medium_median_delta'] as Double
-        bid.minimum_bid_price = obj['bid']['minimum_bid_price'] as Double
-        bid.median_bid_price = obj['bid']['median_bid_price'] as Double
-        bid.maximum_bid_price = obj['bid']['maximum_bid_price'] as Double
-        bid.total_bid_value = obj['bid']['total_bid_value'] as Double
-        bid.medium_bid_price = obj['bid']['medium_bid_price'] as Double
-        bid.medium_per_unit_bid_price = obj['bid']['medium_per_unit_bid_price'] as Double
-        Normalized normalized = new Normalized()
-        normalized.normalized_spread_bid_price = obj['normalized']['normalized_spread_bid_price'] as Double
-        normalized.normalized_medium_per_unit_bid_price = obj['normalized']['normalized_medium_per_unit_bid_price'] as Double
-        normalized.normalized_volume_ask_price = obj['normalized']['normalized_volume_ask_price'] as Double
-        normalized.normalized_maximum_ask_price = obj['normalized']['normalized_maximum_ask_price'] as Double
-        normalized.normalized_bid_medium_median_delta = obj['normalized']['normalized_bid_medium_median_delta'] as Double
-        normalized.normalized_minimum_bid_price = obj['normalized']['normalized_minimum_bid_price'] as Double
-        normalized.normalized_volume_ask_quantity = obj['normalized']['normalized_volume_ask_quantity'] as Double
-        normalized.normalized_medium_bid_price = obj['normalized']['normalized_medium_bid_price'] as Double
-        normalized.normalized_spread = obj['normalized']['normalized_spread'] as Double
-        normalized.normalized_median_bid_price = obj['normalized']['normalized_median_bid_price'] as Double
-        normalized.normalized_spread_ask_price = obj['normalized']['normalized_spread_ask_price'] as Double
-        normalized.normalized_maximum_bid_price = obj['normalized']['normalized_maximum_bid_price'] as Double
-        normalized.normalized_volume_bid_quantity = obj['normalized']['normalized_volume_bid_quantity'] as Double
-        normalized.normalized_ask_medium_median_delta = obj['normalized']['normalized_ask_medium_median_delta'] as Double
-        normalized.normalized_medium_ask_price = obj['normalized']['normalized_medium_ask_price'] as Double
-        normalized.normalized_medium_per_unit_ask_price = obj['normalized']['normalized_medium_per_unit_ask_price'] as Double
-        normalized.normalized_minimum_ask_price = obj['normalized']['normalized_minimum_ask_price'] as Double
-        normalized.normalized_median_ask_price = obj['normalized']['normalized_median_ask_price'] as Double
-        normalized.normalized_total_bid_value = obj['normalized']['normalized_total_bid_value'] as Double
-        normalized.normalized_total_ask_value = obj['normalized']['normalized_total_ask_value'] as Double
-        normalized.normalized_volume_bid_price = obj['normalized']['normalized_volume_bid_price'] as Double
-        Details details = new Details()
-        details.tradecurrency = obj['exchange']['details']['tradecurrency'] as String
-        details.pricecurrency = obj['exchange']['details']['pricecurrency'] as String
-        Exchange exchange = new Exchange()
-        exchange.platform = obj['exchange']['platform'] as String
-        exchange.exchange = obj['exchange']['exchange'] as String
-        exchange.details = details
-        Metadata metadata = new Metadata()
-        metadata.datetime = dateParser.parse(obj["metadata"]["datetime"] as String)
-        metadata.hostname = obj["metadata"]["hostname"] as String
-        Graph graph = new Graph()
-        graph.price = obj['graph']['price'] as Double
-        graph.quantity = obj['graph']['quantity'] as Double
-        the_memory.ask = ask
-        the_memory.bid = bid
-        the_memory.normalized = normalized
-        the_memory.exchange = exchange
-        the_memory.metadata = metadata
-        the_memory.graph = graph
-        return the_memory
+        if(!obj) return null
+        try {
+            Ask ask = new Ask()
+            ask.ask_medium_median_delta = obj['ask']['ask_medium_median_delta'] as Double
+            ask.volume_ask_quantity = obj['ask']['volume_ask_quantity'] as Double
+            ask.minimum_ask_price = obj['ask']['minimum_ask_price'] as Double
+            ask.medium_ask_price = obj['ask']['medium_ask_price'] as Double
+            ask.total_ask_value = obj['ask']['total_ask_value'] as Double
+            ask.maximum_ask_price = obj['ask']['maximum_ask_price'] as Double
+            ask.medium_per_unit_ask_price = obj['ask']['medium_per_unit_ask_price'] as Double
+            ask.median_ask_price = obj['ask']['median_ask_price'] as Double
+            Bid bid = new Bid()
+            bid.volume_bid_quantity = obj['bid']['volume_bid_quantity'] as Double
+            bid.bid_medium_median_delta = obj['bid']['bid_medium_median_delta'] as Double
+            bid.minimum_bid_price = obj['bid']['minimum_bid_price'] as Double
+            bid.median_bid_price = obj['bid']['median_bid_price'] as Double
+            bid.maximum_bid_price = obj['bid']['maximum_bid_price'] as Double
+            bid.total_bid_value = obj['bid']['total_bid_value'] as Double
+            bid.medium_bid_price = obj['bid']['medium_bid_price'] as Double
+            bid.medium_per_unit_bid_price = obj['bid']['medium_per_unit_bid_price'] as Double
+            Normalized normalized = new Normalized()
+            normalized.normalized_spread_bid_price = obj['normalized']['normalized_spread_bid_price'] as Double
+            normalized.normalized_medium_per_unit_bid_price = obj['normalized']['normalized_medium_per_unit_bid_price'] as Double
+            normalized.normalized_volume_ask_price = obj['normalized']['normalized_volume_ask_price'] as Double
+            normalized.normalized_maximum_ask_price = obj['normalized']['normalized_maximum_ask_price'] as Double
+            normalized.normalized_bid_medium_median_delta = obj['normalized']['normalized_bid_medium_median_delta'] as Double
+            normalized.normalized_minimum_bid_price = obj['normalized']['normalized_minimum_bid_price'] as Double
+            normalized.normalized_volume_ask_quantity = obj['normalized']['normalized_volume_ask_quantity'] as Double
+            normalized.normalized_medium_bid_price = obj['normalized']['normalized_medium_bid_price'] as Double
+            normalized.normalized_spread = obj['normalized']['normalized_spread'] as Double
+            normalized.normalized_median_bid_price = obj['normalized']['normalized_median_bid_price'] as Double
+            normalized.normalized_spread_ask_price = obj['normalized']['normalized_spread_ask_price'] as Double
+            normalized.normalized_maximum_bid_price = obj['normalized']['normalized_maximum_bid_price'] as Double
+            normalized.normalized_volume_bid_quantity = obj['normalized']['normalized_volume_bid_quantity'] as Double
+            normalized.normalized_ask_medium_median_delta = obj['normalized']['normalized_ask_medium_median_delta'] as Double
+            normalized.normalized_medium_ask_price = obj['normalized']['normalized_medium_ask_price'] as Double
+            normalized.normalized_medium_per_unit_ask_price = obj['normalized']['normalized_medium_per_unit_ask_price'] as Double
+            normalized.normalized_minimum_ask_price = obj['normalized']['normalized_minimum_ask_price'] as Double
+            normalized.normalized_median_ask_price = obj['normalized']['normalized_median_ask_price'] as Double
+            normalized.normalized_total_bid_value = obj['normalized']['normalized_total_bid_value'] as Double
+            normalized.normalized_total_ask_value = obj['normalized']['normalized_total_ask_value'] as Double
+            normalized.normalized_volume_bid_price = obj['normalized']['normalized_volume_bid_price'] as Double
+            Details details = new Details()
+            details.tradecurrency = obj['exchange']['details']['tradecurrency'] as String
+            details.pricecurrency = obj['exchange']['details']['pricecurrency'] as String
+            Exchange exchange = new Exchange()
+            exchange.platform = obj['exchange']['platform'] as String
+            exchange.exchange = obj['exchange']['exchange'] as String
+            exchange.details = details
+            Metadata metadata = new Metadata()
+            metadata.datetime = dateParser.parse(obj["metadata"]["datetime"] as String)
+            metadata.hostname = obj["metadata"]["hostname"] as String
+            Graph graph = new Graph()
+            graph.price = obj['graph']['price'] as Double
+            graph.quantity = obj['graph']['quantity'] as Double
+            the_memory.ask = ask
+            the_memory.bid = bid
+            the_memory.normalized = normalized
+            the_memory.exchange = exchange
+            the_memory.metadata = metadata
+            the_memory.graph = graph
+            return the_memory
+        } catch(Exception e){
+            //ignore
+        }
+        return null
     }
 
 }
