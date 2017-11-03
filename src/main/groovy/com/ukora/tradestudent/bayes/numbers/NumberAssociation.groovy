@@ -6,8 +6,8 @@ class NumberAssociation {
 
     String id
     String reference
-    Long mean
-    Long standard_deviation
+    Double mean
+    Double standard_deviation
     int count
 
     DBObject obj

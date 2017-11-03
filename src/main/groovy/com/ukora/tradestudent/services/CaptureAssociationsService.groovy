@@ -15,7 +15,7 @@ import javax.annotation.PostConstruct
 @Service
 class CaptureAssociationsService {
 
-    public static final String OBNOXIOUS_REFERENCE_SEPARATOR = "//"
+    public static final String OBNOXIOUS_REFERENCE_SEPARATOR = "/"
     public static final String GENERAL_ASSOCIATION_REFERENCE = "general"
     public static final String INSTANT_TIME_REFERENCE = "instant"
 
@@ -120,10 +120,10 @@ class CaptureAssociationsService {
             if(val instanceof Double) {
                 String tagReference = tagName + OBNOXIOUS_REFERENCE_SEPARATOR + timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop
                 NumberAssociation numberAssociationTagInstant = bytesFetcherService.getNumberAssociation(tagReference)
-                captureNewValue(numberAssociationTagInstant, val as Double)
+                captureNewValue(numberAssociationTagInstant, Double.parseDouble(val as String))
                 String defaultReference = GENERAL_ASSOCIATION_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop
                 NumberAssociation numberAssociationGeneralInstant = bytesFetcherService.getNumberAssociation(defaultReference)
-                captureNewValue(numberAssociationGeneralInstant, val as Double)
+                captureNewValue(numberAssociationGeneralInstant, Double.parseDouble(val as String))
             }
         }
     }
@@ -134,13 +134,17 @@ class CaptureAssociationsService {
      * @param numberAssociation
      * @param value
      */
-    void captureNewValue(NumberAssociation numberAssociation, Double value){
+    void captureNewValue(NumberAssociation numberAssociation, double value){
         if(!numberAssociation) return
         numberAssociation.standard_deviation = NerdUtils.applyValueGetNewDeviation(
             value,
             numberAssociation.mean,
             numberAssociation.count + 1,
             numberAssociation.standard_deviation)
+        println NerdUtils.applyValueGetNewMean(
+                value,
+                numberAssociation.mean,
+                numberAssociation.count)
         numberAssociation.mean = NerdUtils.applyValueGetNewMean(
             value,
             numberAssociation.mean,

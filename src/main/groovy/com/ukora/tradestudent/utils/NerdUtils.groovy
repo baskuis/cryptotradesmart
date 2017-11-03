@@ -29,7 +29,12 @@ class NerdUtils {
      * @return double
      */
     static applyValueGetNewDeviation(double value, double mean, double count, double deviation) {
-        return (double) Math.sqrt(((count * (Math.pow(value, 2) + ((count - 1) * (Math.pow(deviation, 2) + Math.pow(mean, 2))))) - Math.pow(value + ((count - 1) * mean), 2)) / Math.pow(count, 2))
+        return (double) Math.sqrt(
+            (
+                (count * (Math.pow(value, 2) + (
+                    (count - 1.0) * (Math.pow(deviation, 2) + Math.pow(mean, 2))
+                ))) - Math.pow(value + ((count - 1.0) * mean), 2)
+            ) / Math.pow(count, 2))
     }
 
     /**
@@ -41,7 +46,7 @@ class NerdUtils {
      * @return double
      */
     static applyValueGetNewMean(double value, double mean, double count) {
-        return (double) ((mean * count) + value) / (count + 1)
+        return (double) ((mean * count) + value) / (count + 1.0)
     }
 
 }
