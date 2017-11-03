@@ -28,10 +28,12 @@ class CaptureAssociationsService {
         bytesFetcherService.wiskyBender()
     }
 
-    @Scheduled(cron = "* * * * * *")
-    learn(){
+    @Scheduled(cron = "*/5 * * * * *")
+    void learn(){
+        println "learn.."
         Lesson lesson = bytesFetcherService.getNextLesson()
         if(lesson) {
+            println "${lesson.tag} ${lesson.date}"
             try {
                 lesson.memory = bytesFetcherService.getMemory(lesson.date)
                 if(lesson.memory == null) return
@@ -102,9 +104,10 @@ class CaptureAssociationsService {
                     brainItUp(memory, lesson.tag.getTagName(), key)
                 }
             }
-
+            println "done"
+            return
         }
-
+        println "no lesson"
     }
 
     /**
