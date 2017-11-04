@@ -24,8 +24,8 @@ class CaptureAssociationsService {
 
     @PostConstruct
     init(){
-        bytesFetcherService.resetLessons()
-        bytesFetcherService.wiskyBender()
+        //bytesFetcherService.resetLessons()
+        //bytesFetcherService.wiskyBender()
     }
 
     @Scheduled(cron = "*/5 * * * * *")
@@ -36,7 +36,10 @@ class CaptureAssociationsService {
             println "${lesson.tag} ${lesson.date}"
             try {
                 lesson.memory = bytesFetcherService.getMemory(lesson.date)
-                if(lesson.memory == null) return
+                if(lesson.memory == null){
+                    println "empty memory object"
+                    return
+                }
             } catch (Exception e) {
                 e.printStackTrace()
             }

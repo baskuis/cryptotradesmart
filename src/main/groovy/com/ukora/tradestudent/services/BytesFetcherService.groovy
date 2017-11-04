@@ -127,6 +127,8 @@ class BytesFetcherService {
                 case 'sell':
                     lesson.tag = new SellTag()
                     break
+                default:
+                    throw new RuntimeException(String.format('WTF! Tag %s cannot be mapped to a valid tag', obj['tag']))
             }
             lesson.setId(obj["_id"] as String)
             lesson.setDate(DatatypeConverter.parseDateTime(obj["date"] as String).getTime())
@@ -195,6 +197,7 @@ class BytesFetcherService {
                 .start(GREATER_THAN, fromDate)
                 .add(LESS_THAN, toDate).get())
         DBObject obj = twitter.findOne(query)
+        if(!obj) return null
         Statuses statuses = new Statuses()
         statuses.text = obj['statuses']['text'] as String
         Metadata metadata = new Metadata()
@@ -278,17 +281,21 @@ class BytesFetcherService {
             metadata.datetime = dateParser.parse(obj["metadata"]["datetime"] as String)
             metadata.hostname = obj["metadata"]["hostname"] as String
             Graph graph = new Graph()
-            graph.price = obj['graph']['price'] as Double
-            graph.quantity = obj['graph']['quantity'] as Double
+            try {
+                graph.price = obj['graph']['price'] as Double
+                graph.quantity = obj['graph']['quantity'] as Double
+            } catch(Exception e){
+                println 'no graph.price'
+            }
+            the_memory.graph = graph
             the_memory.ask = ask
             the_memory.bid = bid
             the_memory.normalized = normalized
             the_memory.exchange = exchange
             the_memory.metadata = metadata
-            the_memory.graph = graph
             return the_memory
         } catch(Exception e){
-            //ignore
+            e.printStackTrace()
         }
         return null
     }
