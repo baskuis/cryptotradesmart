@@ -108,6 +108,79 @@ class BytesFetcherService {
     }
 
     /**
+     * Hydrate lesson - with all the relevant info
+     *
+     * @param lesson
+     * @return
+     */
+    public <T extends AbstractAssociation> T hydrateAssociation(T someAssociation){
+        if(!someAssociation) return null
+        try {
+            someAssociation.memory = getMemory(someAssociation.date)
+            if(someAssociation.memory == null){
+                println "empty memory object"
+                return
+            }
+        } catch (Exception e) {
+            e.printStackTrace()
+        }
+        try {
+            someAssociation.twitter = getTwitter(someAssociation.date)
+        } catch (Exception e) {
+            e.printStackTrace()
+        }
+        try {
+            someAssociation.news = getNews(someAssociation.date)
+        } catch (Exception e) {
+            e.printStackTrace()
+        }
+        someAssociation.intervals.each { String key ->
+            Calendar calendar = Calendar.instance
+            calendar.setTime(someAssociation.date)
+            switch(key){
+                case '2minute':
+                    calendar.add(Calendar.MINUTE, -2)
+                    break
+                case '5minute':
+                    calendar.add(Calendar.MINUTE, -5)
+                    break
+                case '10minute':
+                    calendar.add(Calendar.MINUTE, -10)
+                    break
+                case '30minute':
+                    calendar.add(Calendar.MINUTE, -30)
+                    break
+                case '1hour':
+                    calendar.add(Calendar.HOUR, -1)
+                    break
+                case '2hour':
+                    calendar.add(Calendar.HOUR, -2)
+                    break
+                case '4hour':
+                    calendar.add(Calendar.HOUR, -4)
+                    break
+                case '8hour':
+                    calendar.add(Calendar.HOUR, -8)
+                    break
+                case '16hour':
+                    calendar.add(Calendar.HOUR, -16)
+                    break
+            }
+            try {
+                someAssociation.previousMemory.put(key, getMemory(calendar.time))
+            } catch(e){
+                e.printStackTrace()
+            }
+            try {
+                someAssociation.previousNews.put(key, getNews(calendar.time))
+            } catch(e){
+                e.printStackTrace()
+            }
+        }
+        return someAssociation
+    }
+
+    /**
      * Get the next un-processed lesson
      *
      * @return
