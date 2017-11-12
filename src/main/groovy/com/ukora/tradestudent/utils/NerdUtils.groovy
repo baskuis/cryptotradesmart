@@ -16,7 +16,19 @@ class NerdUtils {
      * @return double
      */
     static chanceOfCorrelation(double value, double theDeviation, double theMean, double commonDeviation, double commonMean) {
-        return (double) (2 / Math.pow(2 * Math.PI * Math.pow(theDeviation, 2), 0.5) * Math.pow(Math.E, (-Math.pow(value - theMean, 2) / (2 * Math.pow(theDeviation, 2)))) / ((1 / Math.pow(2 * Math.PI * Math.pow(commonDeviation, 2), 0.5) * Math.pow(Math.E, (-Math.pow(value - commonMean, 2) / (2 * Math.pow(commonDeviation, 2))))) + (1 / Math.pow(2 * Math.PI * Math.pow(theDeviation, 2), 0.5) * Math.pow(Math.E, (-Math.pow(value - theMean, 2) / (2 * Math.pow(theDeviation, 2))))))) - 1
+        return (double) (2 /
+            Math.pow(2 * Math.PI * Math.pow(theDeviation, 2), 0.5) *
+            Math.pow(Math.E, (-Math.pow(value - theMean, 2) / (2 * Math.pow(theDeviation, 2)))) /
+            (
+                (1 /
+                    Math.pow(2 * Math.PI * Math.pow(commonDeviation, 2), 0.5) *
+                    Math.pow(Math.E, (-Math.pow(value - commonMean, 2) / (2 * Math.pow(commonDeviation, 2))))
+                ) + (1 /
+                    Math.pow(2 * Math.PI * Math.pow(theDeviation, 2), 0.5) *
+                    Math.pow(Math.E, (-Math.pow(value - theMean, 2) / (2 * Math.pow(theDeviation, 2))))
+                )
+            )
+        ) - 1
     }
 
     /**

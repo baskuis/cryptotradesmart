@@ -28,5 +28,6 @@ abstract class AbstractAssociation {
     Map<String, Memory> previousMemory = [:]
     Map<String, List<News>> previousNews = [:]
 
+    Map<String, Double> associations = [:]
 
 }

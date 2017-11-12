@@ -1,6 +1,7 @@
 package com.ukora.tradestudent.services
 
 import com.ukora.tradestudent.bayes.numbers.NumberAssociation
+import com.ukora.tradestudent.entities.AbstractAssociation
 import com.ukora.tradestudent.entities.Lesson
 import com.ukora.tradestudent.entities.Memory
 import com.ukora.tradestudent.utils.NerdUtils
@@ -37,20 +38,35 @@ class CaptureAssociationsService {
             /** Hydrate lesson */
             bytesFetcherService.hydrateAssociation(lesson)
 
-            /** Capture associations for normalized data for instance */
-            brainItUp(lesson.memory, lesson.tag.getTagName(), INSTANT_TIME_REFERENCE)
+            /** Hydrate assocation tags */
+            hydrateAssociationTags(lesson, lesson.getTag().tagName)
 
-            /** Capture associations for normalized data at other time deltas */
-            lesson.intervals.each { String key ->
-                Memory memory = lesson.previousMemory.get(key)
-                if(memory){
-                    brainItUp(memory, lesson.tag.getTagName(), key)
-                }
-            }
+            /** Remember all that */
+            rememberAllThat(lesson)
+
             println "done"
             return
         }
         println "no lesson"
+    }
+
+    /**
+     * Hydrate the association tags
+     *
+     * @param associations
+     * @param tagName
+     */
+    void hydrateAssociationTags(AbstractAssociation associations, String tagName){
+
+        /** Capture associations for normalized data for instance */
+        brainItUp(associations.memory, associations, INSTANT_TIME_REFERENCE, tagName)
+
+        /** Capture associations for normalized data at other time deltas */
+        associations.intervals.each { String key ->
+            Memory memory = associations.previousMemory.get(key)
+            if(memory){ brainItUp(memory, associations, key, tagName) }
+        }
+
     }
 
     /**
@@ -60,19 +76,34 @@ class CaptureAssociationsService {
      * @param tagName
      * @param timeDelta
      */
-    void brainItUp(Memory memory, String tagName, String timeDelta){
+    void brainItUp(Memory memory, AbstractAssociation lesson, String timeDelta, String tagName){
         if(!memory) return
-        //TODO: Make the generation of tags generic - so it can be used on the ProbabiltyFigurerService
-        //TODO: This service 'captures' assocations - the PFS will calculate P of correlation
+        if(!lesson) return
         memory.normalized.properties.each { prop, val ->
             if(val instanceof Double) {
-                String tagReference = tagName + OBNOXIOUS_REFERENCE_SEPARATOR + timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop
-                NumberAssociation numberAssociationTagInstant = bytesFetcherService.getNumberAssociation(tagReference)
-                captureNewValue(numberAssociationTagInstant, Double.parseDouble(val as String))
-                String defaultReference = GENERAL_ASSOCIATION_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop
-                NumberAssociation numberAssociationGeneralInstant = bytesFetcherService.getNumberAssociation(defaultReference)
-                captureNewValue(numberAssociationGeneralInstant, Double.parseDouble(val as String))
+                lesson.associations.put(
+                    tagName + OBNOXIOUS_REFERENCE_SEPARATOR + timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop,
+                    Double.parseDouble(val as String))
+                lesson.associations.put(
+                    GENERAL_ASSOCIATION_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop,
+                    Double.parseDouble(val as String))
             }
+        }
+    }
+
+    /**
+     * Remember all that shit
+     * Find existing number association - then add the new value
+     * simple as that
+     *
+     * @param associations
+     */
+    void rememberAllThat(Lesson lesson){
+        if(!lesson) return
+        lesson.associations?.each {
+            Map.Entry<String, Double> entry ->
+                NumberAssociation numberAssociationTagInstant = bytesFetcherService.getNumberAssociation(entry.key)
+                captureNewValue(numberAssociationTagInstant, entry.value)
         }
     }
 
