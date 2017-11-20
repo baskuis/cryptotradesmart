@@ -57,12 +57,14 @@ class BytesFetcherService {
      * @param reference
      * @return
      */
-    NumberAssociation getNumberAssociation(String reference){
+    NumberAssociation getNumberAssociation(String reference, String tag){
         BasicDBObject query = new BasicDBObject()
         query.put('reference', reference)
+        query.put('tag', tag)
         DBObject obj = brain.findOne(query)
         if(obj == null) return new NumberAssociation(
                 id: null,
+                tag: tag,
                 reference: reference,
                 mean: 0 as Double,
                 count: 0 as Integer,
@@ -70,6 +72,7 @@ class BytesFetcherService {
         )
         return new NumberAssociation(
                 id: obj['_id'] as String,
+                tag: obj['tag'] as String,
                 reference: obj['reference'] as String,
                 mean: obj['mean'] as Double,
                 count: obj['count'] as Integer,
@@ -87,6 +90,7 @@ class BytesFetcherService {
         if(numberAssociation.id){
             obj['_id'] = new ObjectId(numberAssociation.id)
         }
+        obj['tag'] = numberAssociation.tag as String
         obj['reference'] = numberAssociation.reference as String
         obj['mean'] = numberAssociation.mean as String
         obj['standard_deviation'] = numberAssociation.standard_deviation as String

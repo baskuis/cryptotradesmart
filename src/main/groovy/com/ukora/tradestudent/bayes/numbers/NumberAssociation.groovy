@@ -5,6 +5,7 @@ import com.mongodb.DBObject
 class NumberAssociation {
 
     String id
+    String tag
     String reference
     Double mean
     Double standard_deviation

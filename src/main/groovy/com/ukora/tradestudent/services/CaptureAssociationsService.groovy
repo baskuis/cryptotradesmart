@@ -25,8 +25,8 @@ class CaptureAssociationsService {
 
     @PostConstruct
     init(){
-        //bytesFetcherService.resetLessons()
-        //bytesFetcherService.wiskyBender()
+        bytesFetcherService.resetLessons()
+        bytesFetcherService.wiskyBender()
     }
 
     @Scheduled(cron = "*/5 * * * * *")
@@ -81,12 +81,8 @@ class CaptureAssociationsService {
         if(!lesson) return
         memory.normalized.properties.each { prop, val ->
             if(val instanceof Double) {
-                lesson.associations.put(
-                    tagName + OBNOXIOUS_REFERENCE_SEPARATOR + timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop,
-                    Double.parseDouble(val as String))
-                lesson.associations.put(
-                    GENERAL_ASSOCIATION_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop,
-                    Double.parseDouble(val as String))
+                (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop, [:]) as Map).put(tagName, Double.parseDouble(val as String))
+                (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop, [:]) as Map).put(GENERAL_ASSOCIATION_REFERENCE, Double.parseDouble(val as String))
             }
         }
     }
@@ -101,9 +97,12 @@ class CaptureAssociationsService {
     void rememberAllThat(Lesson lesson){
         if(!lesson) return
         lesson.associations?.each {
-            Map.Entry<String, Double> entry ->
-                NumberAssociation numberAssociationTagInstant = bytesFetcherService.getNumberAssociation(entry.key)
-                captureNewValue(numberAssociationTagInstant, entry.value)
+            Map.Entry<String, Map<String, Double>> entry ->
+            entry.value.each {
+                Map.Entry<String, Double> tagEntry ->
+                NumberAssociation numberAssociationTagInstant = bytesFetcherService.getNumberAssociation(entry.key, tagEntry.key)
+                captureNewValue(numberAssociationTagInstant, tagEntry.value)
+            }
         }
     }
 
