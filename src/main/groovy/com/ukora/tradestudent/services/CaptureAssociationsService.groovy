@@ -31,6 +31,11 @@ class CaptureAssociationsService {
         //bytesFetcherService.wiskyBender()
     }
 
+    /**
+     * Main schedule to digest lessons
+     * and create associations
+     *
+     */
     @Scheduled(cron = "*/2 * * * * *")
     @Async
     void learn(){
