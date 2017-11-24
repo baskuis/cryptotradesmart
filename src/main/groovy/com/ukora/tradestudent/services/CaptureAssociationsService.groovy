@@ -27,8 +27,8 @@ class CaptureAssociationsService {
 
     @PostConstruct
     init(){
-        bytesFetcherService.resetLessons()
-        bytesFetcherService.wiskyBender()
+        //bytesFetcherService.resetLessons()
+        //bytesFetcherService.wiskyBender()
     }
 
     @Scheduled(cron = "*/2 * * * * *")
