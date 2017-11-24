@@ -14,6 +14,7 @@ class ProbabilityFigurerService {
     BytesFetcherService bytesFetcherService
 
     CorrelationAssociation determineProbability(Date eventDate){
+        /*
         CorrelationAssociation correlationAssociation = new CorrelationAssociation()
         correlationAssociation.setDate(eventDate)
         bytesFetcherService.hydrateAssociation(correlationAssociation)
@@ -21,6 +22,7 @@ class ProbabilityFigurerService {
         captureAssociationsService.hydrateAssociationTags(correlationAssociation, "sell") //TODO: get available tags from some sensible place
         //TODO: Capture probablity of correlation on correlationAssocation
         return correlationAssociation
+        */
     }
 
 }

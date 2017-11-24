@@ -171,7 +171,14 @@ class BytesFetcherService {
                     break
             }
             try {
-                someAssociation.previousMemory.put(key, getMemory(calendar.time))
+                Memory thisMemory = getMemory(calendar.time)
+                someAssociation.previousMemory.put(key, thisMemory)
+                try {
+                    Double previousPriceProportion = thisMemory.graph.price / someAssociation.price
+                    someAssociation.previousPrices.put(key, previousPriceProportion)
+                } catch(e){
+                    e.printStackTrace()
+                }
             } catch(e){
                 e.printStackTrace()
             }

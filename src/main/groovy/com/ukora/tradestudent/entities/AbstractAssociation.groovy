@@ -25,6 +25,7 @@ abstract class AbstractAssociation {
     Memory memory
     Twitter twitter
     List<News> news
+    Map<String, Double> previousPrices = [:]
     Map<String, Memory> previousMemory = [:]
     Map<String, List<News>> previousNews = [:]
 

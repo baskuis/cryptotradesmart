@@ -19,6 +19,7 @@ class CaptureAssociationsService {
     public static final String OBNOXIOUS_REFERENCE_SEPARATOR = "/"
     public static final String GENERAL_ASSOCIATION_REFERENCE = "general"
     public static final String INSTANT_TIME_REFERENCE = "instant"
+    public static final String PRICE_DELTA = "priceDelta"
 
     @Autowired
     BytesFetcherService bytesFetcherService
@@ -79,12 +80,17 @@ class CaptureAssociationsService {
     void brainItUp(Memory memory, AbstractAssociation lesson, String timeDelta, String tagName){
         if(!memory) return
         if(!lesson) return
+        /** Normalized properties */
         memory.normalized.properties.each { prop, val ->
             if(val instanceof Double) {
                 (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop, [:]) as Map).put(tagName, Double.parseDouble(val as String))
                 (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop, [:]) as Map).put(GENERAL_ASSOCIATION_REFERENCE, Double.parseDouble(val as String))
             }
         }
+        /** Previous price proportions */
+        Double previousPriceProportion = lesson.previousPrices.get(timeDelta)
+        (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + PRICE_DELTA, [:]) as Map).put(tagName, previousPriceProportion)
+        (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + PRICE_DELTA, [:]) as Map).put(GENERAL_ASSOCIATION_REFERENCE, previousPriceProportion)
     }
 
     /**
