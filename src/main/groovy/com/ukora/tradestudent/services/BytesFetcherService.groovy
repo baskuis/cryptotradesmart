@@ -169,13 +169,20 @@ class BytesFetcherService {
                 case '16hour':
                     calendar.add(Calendar.HOUR, -16)
                     break
+                default:
+                    throw new Exception(String.format("Unknown interval %s", key))
             }
             try {
                 Memory thisMemory = getMemory(calendar.time)
                 someAssociation.previousMemory.put(key, thisMemory)
                 try {
-                    Double previousPriceProportion = thisMemory.graph.price / someAssociation.price
-                    someAssociation.previousPrices.put(key, previousPriceProportion)
+                    if(thisMemory?.graph?.price && someAssociation?.price) {
+                        Double previousPriceProportion = thisMemory.graph.price / someAssociation.price
+                        someAssociation.previousPrices.put(key, previousPriceProportion)
+                        println String.format("setting %s proportion %s", key, previousPriceProportion)
+                    }else{
+                        println "missing price cannot set previous price"
+                    }
                 } catch(e){
                     e.printStackTrace()
                 }

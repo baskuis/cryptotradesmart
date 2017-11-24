@@ -5,6 +5,15 @@ import spock.lang.Unroll
 
 class NerdUtilsSpec extends Specification {
 
+    def "10 times test"() {
+        def s = ""
+        10.times {
+            s += "."
+        }
+        expect:
+        s.length() == 10
+    }
+
     @Unroll
     def "Test chanceOfCorrelation produces correct value #expectedValue"() {
 

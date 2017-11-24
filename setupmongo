@@ -1,0 +1,5 @@
+db.memory.ensureIndex({"metadata.datetime":1})
+db.news.ensureIndex({"metadata.datetime":1})
+db.twitter.ensureIndex({"metadata.datetime":1})
+db.lessons.ensureIndex({"processed":1})
+db.brain.ensureIndex({"reference":1,"tag":1})

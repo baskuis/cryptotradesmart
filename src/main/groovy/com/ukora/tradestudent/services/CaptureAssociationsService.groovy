@@ -7,6 +7,7 @@ import com.ukora.tradestudent.entities.Memory
 import com.ukora.tradestudent.utils.NerdUtils
 import groovy.util.logging.Log4j2
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
@@ -30,25 +31,28 @@ class CaptureAssociationsService {
         bytesFetcherService.wiskyBender()
     }
 
-    @Scheduled(cron = "*/5 * * * * *")
+    @Scheduled(cron = "*/2 * * * * *")
+    @Async
     void learn(){
-        println "learn.."
-        Lesson lesson = bytesFetcherService.getNextLesson()
-        if(lesson) {
+        10.times {
+            println String.format("capturing lesson %s", it)
+            Lesson lesson = bytesFetcherService.getNextLesson()
+            if (lesson) {
 
-            /** Hydrate lesson */
-            bytesFetcherService.hydrateAssociation(lesson)
+                /** Hydrate lesson */
+                bytesFetcherService.hydrateAssociation(lesson)
 
-            /** Hydrate assocation tags */
-            hydrateAssociationTags(lesson, lesson.getTag().tagName)
+                /** Hydrate assocation tags */
+                hydrateAssociationTags(lesson, lesson.getTag().tagName)
 
-            /** Remember all that */
-            rememberAllThat(lesson)
+                /** Remember all that */
+                rememberAllThat(lesson)
 
-            println "done"
-            return
+                println "done"
+            }else {
+                println "no lesson"
+            }
         }
-        println "no lesson"
     }
 
     /**
@@ -89,8 +93,10 @@ class CaptureAssociationsService {
         }
         /** Previous price proportions */
         Double previousPriceProportion = lesson.previousPrices.get(timeDelta)
-        (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + PRICE_DELTA, [:]) as Map).put(tagName, previousPriceProportion)
-        (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + PRICE_DELTA, [:]) as Map).put(GENERAL_ASSOCIATION_REFERENCE, previousPriceProportion)
+        if(previousPriceProportion) {
+            (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + PRICE_DELTA, [:]) as Map).put(tagName, previousPriceProportion)
+            (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + PRICE_DELTA, [:]) as Map).put(GENERAL_ASSOCIATION_REFERENCE, previousPriceProportion)
+        }
     }
 
     /**
@@ -118,7 +124,8 @@ class CaptureAssociationsService {
      * @param numberAssociation
      * @param value
      */
-    void captureNewValue(NumberAssociation numberAssociation, double value){
+    void captureNewValue(NumberAssociation numberAssociation, Double value){
+        if(!value) return
         if(!numberAssociation) return
         numberAssociation.standard_deviation = NerdUtils.applyValueGetNewDeviation(
             value,
