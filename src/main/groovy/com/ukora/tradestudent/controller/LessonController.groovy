@@ -2,6 +2,7 @@ package com.ukora.tradestudent.controller
 
 import com.ukora.tradestudent.entities.BrainNode
 import com.ukora.tradestudent.entities.CorrelationAssociation
+import com.ukora.tradestudent.services.CaptureAssociationsService
 import com.ukora.tradestudent.services.ProbabilityFigurerService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.RequestMapping
@@ -23,6 +24,20 @@ class LessonController {
     @RequestMapping(path = '/braindump', produces = 'application/json')
     Map<String, BrainNode> getBrainNodes(){
         return probabilityFigurerService.getBrainNodes()
+    }
+
+    @RequestMapping(path = '/brainon')
+    String brainOn(@RequestParam(value = 'speed') Integer speed){
+        if(!speed || speed > 100) speed = 1
+        CaptureAssociationsService.leaningEnabled = true
+        CaptureAssociationsService.learningSpeed = speed
+        "ON"
+    }
+
+    @RequestMapping(path = '/brainoff')
+    String brainOn(){
+        CaptureAssociationsService.leaningEnabled = false
+        "OFF"
     }
 
 }

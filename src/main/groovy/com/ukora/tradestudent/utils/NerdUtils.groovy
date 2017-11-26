@@ -33,6 +33,7 @@ class NerdUtils {
 
     /**
      * Apply value to data set
+     * and get new standard deviation
      *
      * @param double value
      * @param double mean
@@ -50,7 +51,7 @@ class NerdUtils {
     }
 
     /**
-     * Apply value get new deviation
+     * Apply value get new mean
      *
      * @param double value
      * @param double mean

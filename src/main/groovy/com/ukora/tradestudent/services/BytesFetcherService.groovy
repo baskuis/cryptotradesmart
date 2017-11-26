@@ -41,7 +41,7 @@ class BytesFetcherService {
         news = mongoTemplate.getCollection("news")
         twitter = mongoTemplate.getCollection("twitter")
         associations = mongoTemplate.getCollection("associations")
-        brain = mongoTemplate.getCollection("brain")
+        this.brain = mongoTemplate.getCollection("brain")
     }
 
     /**
@@ -49,7 +49,7 @@ class BytesFetcherService {
      *
      */
     void wiskyBender(){
-        brain.remove(new BasicDBObject())
+        this.brain.remove(new BasicDBObject())
     }
 
     /**
@@ -58,12 +58,12 @@ class BytesFetcherService {
      * @param reference
      * @return
      */
-    NumberAssociation getNumberAssociation(String reference, String tag){
+    Brain getBrain(String reference, String tag){
         BasicDBObject query = new BasicDBObject()
         query.put('reference', reference)
         query.put('tag', tag)
-        DBObject obj = brain.findOne(query)
-        if(obj == null) return new NumberAssociation(
+        DBObject obj = this.brain.findOne(query)
+        if(obj == null) return new Brain(
                 id: null,
                 tag: tag,
                 reference: reference,
@@ -71,7 +71,7 @@ class BytesFetcherService {
                 count: 0 as Integer,
                 standard_deviation: 0 as Double
         )
-        return new NumberAssociation(
+        return new Brain(
                 id: obj['_id'] as String,
                 tag: obj['tag'] as String,
                 reference: obj['reference'] as String,
@@ -84,19 +84,19 @@ class BytesFetcherService {
     /**
      * Save a number association
      *
-     * @param numberAssociation
+     * @param brain
      */
-    void saveNumberAssociation(NumberAssociation numberAssociation){
+    void saveBrain(Brain brain){
         DBObject obj = new BasicDBObject()
-        if(numberAssociation.id){
-            obj['_id'] = new ObjectId(numberAssociation.id)
+        if(brain.id){
+            obj['_id'] = new ObjectId(brain.id)
         }
-        obj['tag'] = numberAssociation.tag as String
-        obj['reference'] = numberAssociation.reference as String
-        obj['mean'] = numberAssociation.mean as String
-        obj['standard_deviation'] = numberAssociation.standard_deviation as String
-        obj['count'] = numberAssociation.count as String
-        brain.save(obj)
+        obj['tag'] = brain.tag as String
+        obj['reference'] = brain.reference as String
+        obj['mean'] = brain.mean as String
+        obj['standard_deviation'] = brain.standard_deviation as String
+        obj['count'] = brain.count as String
+        this.brain.save(obj)
     }
 
     /**
@@ -119,7 +119,7 @@ class BytesFetcherService {
      */
     Map<String, BrainNode> getAllBrainNodes(){
         Map<String, BrainNode> nodes = [:]
-        DBCursor cursor = brain.find().limit(5000)
+        DBCursor cursor = this.brain.find().limit(5000)
         while(cursor.hasNext()){
             DBObject object = cursor.next()
             nodes.get(object['reference'] as String,

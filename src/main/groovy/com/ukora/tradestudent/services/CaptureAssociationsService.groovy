@@ -1,13 +1,14 @@
 package com.ukora.tradestudent.services
 
-import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.entities.AbstractAssociation
+import com.ukora.tradestudent.entities.Brain
 import com.ukora.tradestudent.entities.Lesson
 import com.ukora.tradestudent.entities.Memory
 import com.ukora.tradestudent.utils.NerdUtils
 import groovy.util.logging.Log4j2
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 import javax.annotation.PostConstruct
@@ -20,6 +21,9 @@ class CaptureAssociationsService {
     public static final String GENERAL_ASSOCIATION_REFERENCE = "general"
     public static final String INSTANT_TIME_REFERENCE = "instant"
     public static final String PRICE_DELTA = "priceDelta"
+
+    public static boolean leaningEnabled = false
+    public static Integer learningSpeed = 1
 
     @Autowired
     BytesFetcherService bytesFetcherService
@@ -35,27 +39,31 @@ class CaptureAssociationsService {
      * and create associations
      *
      */
-    //@Scheduled(cron = "*/2 * * * * *")
+    @Scheduled(cron = "*/10 * * * * *")
     @Async
     void learn(){
-        10.times {
-            println String.format("capturing lesson %s", it)
-            Lesson lesson = bytesFetcherService.getNextLesson()
-            if (lesson) {
+        if(leaningEnabled) {
+            learningSpeed.times {
+                println String.format("capturing lesson %s", it)
+                Lesson lesson = bytesFetcherService.getNextLesson()
+                if (lesson) {
 
-                /** Hydrate lesson */
-                bytesFetcherService.hydrateAssociation(lesson)
+                    /** Hydrate lesson */
+                    bytesFetcherService.hydrateAssociation(lesson)
 
-                /** Hydrate assocation tags */
-                hydrateAssociationTags(lesson, lesson.getTag().getTagName())
+                    /** Hydrate assocation tags */
+                    hydrateAssociationTags(lesson, lesson.getTag().getTagName())
 
-                /** Remember all that */
-                rememberAllThat(lesson)
+                    /** Remember all that */
+                    rememberAllThat(lesson)
 
-                println "done"
-            }else {
-                println "no lesson"
+                    println "done"
+                } else {
+                    println "no lesson"
+                }
             }
+        }else{
+            println "leaning disabled"
         }
     }
 
@@ -116,8 +124,8 @@ class CaptureAssociationsService {
             Map.Entry<String, Map<String, Double>> entry ->
             entry.value.each {
                 Map.Entry<String, Double> tagEntry ->
-                NumberAssociation numberAssociationTagInstant = bytesFetcherService.getNumberAssociation(entry.key, tagEntry.key)
-                captureNewValue(numberAssociationTagInstant, tagEntry.value)
+                Brain brain = bytesFetcherService.getBrain(entry.key, tagEntry.key)
+                captureNewValue(brain, tagEntry.value)
             }
         }
     }
@@ -125,23 +133,23 @@ class CaptureAssociationsService {
     /**
      * Capture new value for number association
      *
-     * @param numberAssociation
+     * @param brain
      * @param value
      */
-    void captureNewValue(NumberAssociation numberAssociation, Double value){
+    void captureNewValue(Brain brain, Double value){
         if(!value) return
-        if(!numberAssociation) return
-        numberAssociation.standard_deviation = NerdUtils.applyValueGetNewDeviation(
+        if(!brain) return
+        brain.standard_deviation = NerdUtils.applyValueGetNewDeviation(
             value,
-            numberAssociation.mean,
-            numberAssociation.count + 1,
-            numberAssociation.standard_deviation)
-        numberAssociation.mean = NerdUtils.applyValueGetNewMean(
+            brain.mean,
+            brain.count + 1,
+            brain.standard_deviation)
+        brain.mean = NerdUtils.applyValueGetNewMean(
             value,
-            numberAssociation.mean,
-            numberAssociation.count)
-        numberAssociation.count++
-        bytesFetcherService.saveNumberAssociation(numberAssociation)
+            brain.mean,
+            brain.count)
+        brain.count++
+        bytesFetcherService.saveBrain(brain)
     }
 
 }
