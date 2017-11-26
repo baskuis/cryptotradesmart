@@ -1,8 +1,10 @@
 package com.ukora.tradestudent.services
 
+import com.ukora.tradestudent.entities.BrainNode
 import com.ukora.tradestudent.entities.CorrelationAssociation
 import com.ukora.tradestudent.tags.AbstractCorrelationTag
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
 
@@ -33,6 +35,16 @@ class ProbabilityFigurerService {
             captureAssociationsService.hydrateAssociationTags(correlationAssociation, it.value.getTagName())
         }
         return correlationAssociation
+    }
+
+    /**
+     * Get brain nodes
+     *
+     * @return
+     */
+    @Cacheable("brainNodes")
+    Map<String, BrainNode> getBrainNodes(){
+        return bytesFetcherService.getAllBrainNodes()
     }
 
 }

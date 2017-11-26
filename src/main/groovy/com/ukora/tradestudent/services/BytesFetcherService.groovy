@@ -7,6 +7,7 @@ import com.ukora.tradestudent.tags.BuyTag
 import com.ukora.tradestudent.tags.SellTag
 import org.bson.types.ObjectId
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.stereotype.Service
 
@@ -109,6 +110,27 @@ class BytesFetcherService {
             obj.removeField('processed')
             lessons.save(obj)
         }
+    }
+
+    /**
+     * Return all brain nodes
+     *
+     * @return
+     */
+    Map<String, BrainNode> getAllBrainNodes(){
+        Map<String, BrainNode> nodes = [:]
+        DBCursor cursor = brain.find().limit(5000)
+        while(cursor.hasNext()){
+            DBObject object = cursor.next()
+            nodes.get(object['reference'] as String,
+                    new BrainNode( id: object['_id'], reference: object['reference'], obj: object)).
+                        tagReference.put(object['tag'] as String, new NumberAssociation(
+                            mean: Double.parseDouble(object['mean'] as String),
+                            count: Integer.parseInt(object['count'] as String),
+                            standard_deviation: Double.parseDouble(object['standard_deviation'] as String)
+            ))
+        }
+        return nodes
     }
 
     /**
@@ -239,6 +261,7 @@ class BytesFetcherService {
      * @param newsDate
      * @return
      */
+    @Cacheable("news")
     List<News> getNews(Date newsDate){
         BasicDBObject query = new BasicDBObject()
         Calendar calendar = Calendar.instance
@@ -275,6 +298,7 @@ class BytesFetcherService {
      * @param twitterDate
      * @return
      */
+    @Cacheable("twitter")
     Twitter getTwitter(Date twitterDate){
         Twitter the_twitter = new Twitter()
         BasicDBObject query = new BasicDBObject()
@@ -306,6 +330,7 @@ class BytesFetcherService {
      * @param memoryDate
      * @return
      */
+    @Cacheable("memory")
     Memory getMemory(Date memoryDate){
         Memory the_memory = new Memory()
         BasicDBObject query = new BasicDBObject()
