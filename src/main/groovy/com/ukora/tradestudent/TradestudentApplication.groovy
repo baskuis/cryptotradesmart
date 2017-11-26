@@ -5,16 +5,19 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration
 import org.springframework.scheduling.annotation.EnableScheduling
 
 @EnableScheduling
-@SpringBootApplication
+@SpringBootApplication(exclude=[
+		SecurityAutoConfiguration.class])
 @EnableAutoConfiguration(exclude=[
 		DataSourceAutoConfiguration.class,
 		HibernateJpaAutoConfiguration.class])
 class TradestudentApplication {
 
 	static void main(String[] args) {
+		println new Date()
 		SpringApplication.run TradestudentApplication, args
 	}
 

@@ -1,7 +1,9 @@
 package com.ukora.tradestudent.services
 
 import com.ukora.tradestudent.entities.CorrelationAssociation
+import com.ukora.tradestudent.tags.AbstractCorrelationTag
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
 
 @Service
@@ -13,16 +15,24 @@ class ProbabilityFigurerService {
     @Autowired
     BytesFetcherService bytesFetcherService
 
-    CorrelationAssociation determineProbability(Date eventDate){
-        /*
+    @Autowired
+    ApplicationContext applicationContext
+
+    /**
+     * Get correlation associations
+     *
+     * @param eventDate
+     * @return
+     */
+    CorrelationAssociation getCorrelationAssociations(Date eventDate){
+        println String.format('attempting to get association for %s', eventDate)
         CorrelationAssociation correlationAssociation = new CorrelationAssociation()
         correlationAssociation.setDate(eventDate)
         bytesFetcherService.hydrateAssociation(correlationAssociation)
-        captureAssociationsService.hydrateAssociationTags(correlationAssociation, "buy") //TODO: get available tags from some sensible place
-        captureAssociationsService.hydrateAssociationTags(correlationAssociation, "sell") //TODO: get available tags from some sensible place
-        //TODO: Capture probablity of correlation on correlationAssocation
+        applicationContext.getBeansOfType(AbstractCorrelationTag).each {
+            captureAssociationsService.hydrateAssociationTags(correlationAssociation, it.value.getTagName())
+        }
         return correlationAssociation
-        */
     }
 
 }

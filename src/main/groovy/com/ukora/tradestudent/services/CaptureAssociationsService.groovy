@@ -8,7 +8,6 @@ import com.ukora.tradestudent.utils.NerdUtils
 import groovy.util.logging.Log4j2
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 import javax.annotation.PostConstruct
@@ -36,7 +35,7 @@ class CaptureAssociationsService {
      * and create associations
      *
      */
-    @Scheduled(cron = "*/2 * * * * *")
+    //@Scheduled(cron = "*/2 * * * * *")
     @Async
     void learn(){
         10.times {
@@ -48,7 +47,7 @@ class CaptureAssociationsService {
                 bytesFetcherService.hydrateAssociation(lesson)
 
                 /** Hydrate assocation tags */
-                hydrateAssociationTags(lesson, lesson.getTag().tagName)
+                hydrateAssociationTags(lesson, lesson.getTag().getTagName())
 
                 /** Remember all that */
                 rememberAllThat(lesson)

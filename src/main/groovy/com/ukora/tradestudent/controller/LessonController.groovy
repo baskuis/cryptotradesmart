@@ -13,9 +13,10 @@ class LessonController {
     @Autowired
     ProbabilityFigurerService probabilityFigurerService
 
-    @RequestMapping(path = '/probablities')
-    CorrelationAssociation getProbabilities(@RequestParam(value = 'date') Date date){
-        return probabilityFigurerService.determineProbability(date)
+    @RequestMapping(path = '/learn/correlations', produces = 'application/json')
+
+    CorrelationAssociation getCorrelationAssociations(@RequestParam(value = 'date') Date date){
+        return probabilityFigurerService.getCorrelationAssociations(date)
     }
 
 }
