@@ -6,5 +6,6 @@ class NumberAssociation {
     Double mean
     Double standard_deviation
     Integer count
+    Double relevance
 
 }

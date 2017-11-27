@@ -5,13 +5,15 @@ import spock.lang.Unroll
 
 class NerdUtilsSpec extends Specification {
 
-    def "10 times test"() {
+    def "simple groovy 10 times will loop 10 times"() {
+
         def s = ""
         10.times {
             s += "."
         }
         expect:
         s.length() == 10
+
     }
 
     @Unroll
@@ -39,7 +41,7 @@ class NerdUtilsSpec extends Specification {
     }
 
     @Unroll
-    def "Applying new value get new deviation #expectedValue"() {
+    def "Applying new value gets correct new standard deviation #expectedValue"() {
 
         when:
         def d = NerdUtils.applyValueGetNewDeviation(

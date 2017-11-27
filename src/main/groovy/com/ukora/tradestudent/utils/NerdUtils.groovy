@@ -15,7 +15,7 @@ class NerdUtils {
      * @param double commonMean
      * @return double
      */
-    static chanceOfCorrelation(double value, double theDeviation, double theMean, double commonDeviation, double commonMean) {
+    static double chanceOfCorrelation(double value, double theDeviation, double theMean, double commonDeviation, double commonMean) {
         return (double) (2 /
             Math.pow(2 * Math.PI * Math.pow(theDeviation, 2), 0.5) *
             Math.pow(Math.E, (-Math.pow(value - theMean, 2) / (2 * Math.pow(theDeviation, 2)))) /
@@ -41,7 +41,7 @@ class NerdUtils {
      * @param double deviation
      * @return double
      */
-    static applyValueGetNewDeviation(double value, double mean, double count, double deviation) {
+    static double applyValueGetNewDeviation(double value, double mean, double count, double deviation) {
         return (double) Math.sqrt(
             (
                 (count * (Math.pow(value, 2) + (
@@ -58,7 +58,7 @@ class NerdUtils {
      * @param double count
      * @return double
      */
-    static applyValueGetNewMean(double value, double mean, double count) {
+    static double applyValueGetNewMean(double value, double mean, double count) {
         return (double) ((mean * count) + value) / (count + 1.0)
     }
 
