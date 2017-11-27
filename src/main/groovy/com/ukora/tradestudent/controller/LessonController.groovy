@@ -2,6 +2,7 @@ package com.ukora.tradestudent.controller
 
 import com.ukora.tradestudent.entities.BrainNode
 import com.ukora.tradestudent.entities.CorrelationAssociation
+import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.CaptureAssociationsService
 import com.ukora.tradestudent.services.ProbabilityFigurerService
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,6 +16,9 @@ class LessonController {
 
     @Autowired
     ProbabilityFigurerService probabilityFigurerService
+
+    @Autowired
+    BytesFetcherService bytesFetcherService
 
     @RequestMapping(path = '/correlations', produces = 'application/json')
     CorrelationAssociation getCorrelationAssociations(@RequestParam(value = 'date') Date date){
@@ -38,6 +42,24 @@ class LessonController {
     String brainOn(){
         CaptureAssociationsService.leaningEnabled = false
         "OFF"
+    }
+
+    @RequestMapping(path = '/wiskeybender')
+    String dropBrain(){
+        bytesFetcherService.wiskyBender()
+        "OK"
+    }
+
+    @RequestMapping(path = '/relearn')
+    String resetLessons(){
+        bytesFetcherService.resetLessons()
+        "OK"
+    }
+
+    @RequestMapping(path = '/flushcache')
+    String flushCache(){
+        bytesFetcherService.flushCache()
+        "OK"
     }
 
 }

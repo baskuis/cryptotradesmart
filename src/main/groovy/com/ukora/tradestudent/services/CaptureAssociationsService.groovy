@@ -1,17 +1,12 @@
 package com.ukora.tradestudent.services
 
-import com.ukora.tradestudent.entities.AbstractAssociation
-import com.ukora.tradestudent.entities.Brain
-import com.ukora.tradestudent.entities.Lesson
-import com.ukora.tradestudent.entities.Memory
+import com.ukora.tradestudent.entities.*
 import com.ukora.tradestudent.utils.NerdUtils
 import groovy.util.logging.Log4j2
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-
-import javax.annotation.PostConstruct
 
 @Log4j2
 @Service
@@ -27,12 +22,6 @@ class CaptureAssociationsService {
 
     @Autowired
     BytesFetcherService bytesFetcherService
-
-    @PostConstruct
-    init(){
-        //bytesFetcherService.resetLessons()
-        //bytesFetcherService.wiskyBender()
-    }
 
     /**
      * Main schedule to digest lessons
@@ -68,6 +57,50 @@ class CaptureAssociationsService {
     }
 
     /**
+     * Hydrate numeric associations for a moment in time
+     *
+     * @param correlationAssociation
+     */
+    void hydrateAssocations(CorrelationAssociation correlationAssociation){
+
+        /** Capture associations for normalized data for instance */
+        brainItUpSimple(correlationAssociation.memory, correlationAssociation, INSTANT_TIME_REFERENCE)
+
+        /** Capture associations for normalized data at other time deltas */
+        correlationAssociation.intervals.each { String timeDelta ->
+            Memory memory = correlationAssociation.previousMemory.get(timeDelta)
+            if(memory){ brainItUpSimple(memory, correlationAssociation, timeDelta) }
+        }
+
+    }
+
+    /**
+     * Hydrate numeric associations for a certain time delta
+     *
+     * @param memory
+     * @param correlationAssociation
+     * @param timeDelta
+     */
+    void brainItUpSimple(Memory memory, CorrelationAssociation correlationAssociation, String timeDelta){
+        if(!memory) return
+        if(!correlationAssociation) return
+
+        /** Normalized properties */
+        memory.normalized.properties.each { prop, val ->
+            if(val instanceof Double) {
+                correlationAssociation.numericAssociations.put(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop, val)
+            }
+        }
+
+        /** Previous price proportions */
+        Double previousPriceProportion = correlationAssociation.previousPrices.get(timeDelta)
+        if(previousPriceProportion) {
+            correlationAssociation.numericAssociations.put(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + PRICE_DELTA, previousPriceProportion)
+        }
+
+    }
+
+    /**
      * Hydrate the association tags
      *
      * @param associations
@@ -96,19 +129,22 @@ class CaptureAssociationsService {
     void brainItUp(Memory memory, AbstractAssociation lesson, String timeDelta, String tagName){
         if(!memory) return
         if(!lesson) return
+
         /** Normalized properties */
         memory.normalized.properties.each { prop, val ->
             if(val instanceof Double) {
-                (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop, [:]) as Map).put(tagName, Double.parseDouble(val as String))
-                (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop, [:]) as Map).put(GENERAL_ASSOCIATION_REFERENCE, Double.parseDouble(val as String))
+                (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop, [:]) as Map).put(tagName, val)
+                (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop, [:]) as Map).put(GENERAL_ASSOCIATION_REFERENCE, val)
             }
         }
+
         /** Previous price proportions */
         Double previousPriceProportion = lesson.previousPrices.get(timeDelta)
         if(previousPriceProportion) {
             (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + PRICE_DELTA, [:]) as Map).put(tagName, previousPriceProportion)
             (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + PRICE_DELTA, [:]) as Map).put(GENERAL_ASSOCIATION_REFERENCE, previousPriceProportion)
         }
+
     }
 
     /**

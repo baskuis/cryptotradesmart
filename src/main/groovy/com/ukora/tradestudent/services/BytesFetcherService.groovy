@@ -7,6 +7,7 @@ import com.ukora.tradestudent.tags.BuyTag
 import com.ukora.tradestudent.tags.SellTag
 import org.bson.types.ObjectId
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.stereotype.Service
@@ -48,9 +49,22 @@ class BytesFetcherService {
      * Flush brain collection
      *
      */
+    @CacheEvict(value = "brainNodes", allEntries = true)
     void wiskyBender(){
         this.brain.remove(new BasicDBObject())
     }
+
+    /**
+     * Evict all entries from cache
+     *
+     */
+    @CacheEvict(value = [
+            "news",
+            "twitter",
+            "memory",
+            "brainNodes"
+    ], allEntries = true)
+    void flushCache(){ }
 
     /**
      * Return existing or new number association object
@@ -86,6 +100,7 @@ class BytesFetcherService {
      *
      * @param brain
      */
+    @CacheEvict(value = "brainNodes", allEntries = true)
     void saveBrain(Brain brain){
         DBObject obj = new BasicDBObject()
         if(brain.id){
@@ -117,18 +132,19 @@ class BytesFetcherService {
      *
      * @return
      */
+    @Cacheable("brainNodes")
     Map<String, BrainNode> getAllBrainNodes(){
         Map<String, BrainNode> nodes = [:]
         DBCursor cursor = this.brain.find().limit(5000)
-        while(cursor.hasNext()){
-            DBObject object = cursor.next()
-            nodes.get(object['reference'] as String,
-                    new BrainNode( id: object['_id'], reference: object['reference'], obj: object)).
-                        tagReference.put(object['tag'] as String, new NumberAssociation(
-                            mean: Double.parseDouble(object['mean'] as String),
-                            count: Integer.parseInt(object['count'] as String),
-                            standard_deviation: Double.parseDouble(object['standard_deviation'] as String)
-            ))
+        while(cursor.hasNext()){ DBObject object = cursor.next()
+            nodes.get(object['reference'] as String, new BrainNode(reference: object['reference'])).
+                tagReference.put(object['tag'] as String, new NumberAssociation(
+                    tag: object['tag'],
+                    mean: Double.parseDouble(object['mean'] as String),
+                    count: Integer.parseInt(object['count'] as String),
+                    standard_deviation: Double.parseDouble(object['standard_deviation'] as String)
+                )
+            )
         }
         return nodes
     }
