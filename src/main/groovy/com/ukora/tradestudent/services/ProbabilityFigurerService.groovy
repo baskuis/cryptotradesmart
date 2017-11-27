@@ -126,6 +126,12 @@ class ProbabilityFigurerService {
         }
     }
 
+    /**
+     * TODO: The meat of the problem - need to find a solid was to combine P values effectively
+     * TODO: Consider Fisher's method? Have 'relevance' values available
+     *
+     * @param correlationAssociation
+     */
     void hydrateTagProbabilities(CorrelationAssociation correlationAssociation){
         primaryTags.each { String tag ->
             correlationAssociation.tagProbabilities.put(tag, null)
