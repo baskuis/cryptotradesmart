@@ -4,6 +4,7 @@ import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.bayes.numbers.NumberAssociationProbability
 import com.ukora.tradestudent.entities.BrainNode
 import com.ukora.tradestudent.entities.CorrelationAssociation
+import com.ukora.tradestudent.strategy.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.tags.AbstractCorrelationTag
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -100,6 +101,7 @@ class ProbabilityFigurerService {
     void hydrateProbabilities(CorrelationAssociation correlationAssociation){
         Map<String, BrainNode> brainNodes = getBrainNodes()
         correlationAssociation.numericAssociations.each {
+            String reference = it.key
             BrainNode brainNode = brainNodes.get(it.key)
             Double normalizedValue = it.value
             NumberAssociation generalAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL_ASSOCIATION_REFERENCE)
@@ -115,7 +117,7 @@ class ProbabilityFigurerService {
                                 generalAssociation.standard_deviation,
                                 tagAssociation.mean
                         )
-                        correlationAssociation.numericAssociationProbabilities.get(it.key, [:]).put(it.key, numberAssociationProbability)
+                        correlationAssociation.numericAssociationProbabilities.get(reference, [:]).put(tag, numberAssociationProbability)
                     } else {
                         println "no tagAssociation"
                     }
@@ -134,23 +136,8 @@ class ProbabilityFigurerService {
      */
     void hydrateTagProbabilities(CorrelationAssociation correlationAssociation){
         primaryTags.each { String tag ->
-            correlationAssociation.tagProbabilities.put(tag, null)
-
-            /**
-             *
-             * Sp (sum of probabilities)
-             * R (relevance of metric)
-             * Rm (max relevance)
-             * P (probability)
-             * Pmx (max probability)
-             * Pmi (min probability)
-             * Pf (final probability)
-             *
-             * Pf = R/Rm * ???
-             *
-             *
-             */
-
+            Map<String, ProbabilityCombinerStrategy> probabilityCombinerStrategyMap = applicationContext.getBeansOfType(ProbabilityCombinerStrategy)
+            probabilityCombinerStrategyMap.each { correlationAssociation.tagProbabilities.get(tag, [:]).put(it.key, it.value.combineProbabilities(tag, correlationAssociation.numericAssociationProbabilities)) }
         }
     }
 
