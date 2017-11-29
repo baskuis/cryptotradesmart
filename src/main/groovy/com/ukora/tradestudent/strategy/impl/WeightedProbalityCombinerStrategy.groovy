@@ -5,12 +5,12 @@ import com.ukora.tradestudent.strategy.ProbabilityCombinerStrategy
 import org.springframework.stereotype.Component
 
 @Component
-class RelevanceWeightedProbabilityCombinerStrategy implements ProbabilityCombinerStrategy {
+class WeightedProbalityCombinerStrategy implements ProbabilityCombinerStrategy {
 
     /**
-     *      R1*P1 + R2+P2
+     *      P1^2 + P2^2
      * P = ---------------
-     *         R1 + R2
+     *        P1 + P2
      *
      * @param tag
      * @param numberAssociationProbabilities
@@ -18,17 +18,16 @@ class RelevanceWeightedProbabilityCombinerStrategy implements ProbabilityCombine
      */
     @Override
     Double combineProbabilities(String tag, Map<String, Map<String, NumberAssociationProbability>> numberAssociationProbabilities) {
-        Double totalRelevance = 0
-        Double toplineRelevanceProbability = 0
+        Double toplineProbability = 0
+        Double totalProbability = 0
         numberAssociationProbabilities.each {
-            Double relevance = it.value.get(tag).relevance
             Double probability = it.value.get(tag).probability
-            if(!relevance || Double.isNaN(relevance)) return
             if(!probability || Double.isNaN(probability)) return
-            toplineRelevanceProbability += Math.abs(relevance) * probability
-            totalRelevance += Math.abs(relevance)
+            int multiplier = (probability < 0) ? -1 : 1
+            toplineProbability += multiplier * Math.pow(probability, 2)
+            totalProbability += probability
         }
-        return toplineRelevanceProbability / totalRelevance
+        return toplineProbability / totalProbability
     }
-    
+
 }

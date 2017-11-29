@@ -9,6 +9,7 @@ class NumberAssociationProbability extends NumberAssociation {
         this.mean = numberAssociation.mean
         this.standard_deviation = numberAssociation.standard_deviation
         this.count = numberAssociation.count
+        this.relevance = numberAssociation.relevance
     }
 
     NumberAssociationProbability(String tag, Double mean, Double standard_deviation, Integer count){
