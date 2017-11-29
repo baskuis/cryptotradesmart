@@ -108,9 +108,9 @@ class BytesFetcherService {
         }
         obj['tag'] = brain.tag as String
         obj['reference'] = brain.reference as String
-        obj['mean'] = brain.mean as String
-        obj['standard_deviation'] = brain.standard_deviation as String
-        obj['count'] = brain.count as String
+        obj['mean'] = String.format("%.16f", brain.mean)
+        obj['standard_deviation'] = String.format("%.16f", brain.standard_deviation)
+        obj['count'] = String.format("%.16f", brain.count)
         this.brain.save(obj)
     }
 

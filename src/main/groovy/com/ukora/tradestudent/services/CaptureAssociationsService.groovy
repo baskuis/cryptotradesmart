@@ -17,6 +17,11 @@ class CaptureAssociationsService {
     public static final String INSTANT_TIME_REFERENCE = "instant"
     public static final String PRICE_DELTA = "priceDelta"
 
+    public static final String TIME_HOUR_IN_DAY = 'hourinday'
+    public static final String TIME_MINUTE_IN_HOUR = 'minuteinhour'
+    public static final String TIME_DAY_IN_WEEK = 'dayinweek'
+    public static final String TIME_DAY_IN_MONTH = 'dayinmonth'
+
     public static boolean leaningEnabled = false
     public static Integer learningSpeed = 1
 
@@ -40,8 +45,11 @@ class CaptureAssociationsService {
                     /** Hydrate lesson */
                     bytesFetcherService.hydrateAssociation(lesson)
 
-                    /** Hydrate assocation tags */
+                    /** Hydrate association tags */
                     hydrateAssociationTags(lesson, lesson.getTag().getTagName())
+
+                    /** Hydrate specialized numeric association tags */
+                    hydrateSpecializedAssociationTags(lesson, lesson.getTag().getTagName())
 
                     /** Remember all that */
                     rememberAllThat(lesson)
@@ -81,7 +89,7 @@ class CaptureAssociationsService {
      * @param correlationAssociation
      * @param timeDelta
      */
-    void brainItUpSimple(Memory memory, CorrelationAssociation correlationAssociation, String timeDelta){
+    static void brainItUpSimple(Memory memory, CorrelationAssociation correlationAssociation, String timeDelta){
         if(!memory) return
         if(!correlationAssociation) return
 
@@ -101,12 +109,43 @@ class CaptureAssociationsService {
     }
 
     /**
+     * Hydrate other specialized numeric associations
+     *
+     * @param associations
+     * @param tagName
+     */
+    static void hydrateSpecializedAssociationTags(AbstractAssociation associations, String tagName){
+
+        if(!associations) return
+        if(!tagName) return
+        if(!associations.date) return
+
+        /**
+         * Store time based associations
+         */
+        Calendar calendar = GregorianCalendar.getInstance()
+        calendar.setTime(associations.date)
+        associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_HOUR_IN_DAY, [:]).put(tagName, calendar.get(Calendar.HOUR_OF_DAY))
+        associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_HOUR_IN_DAY, [:]).put(GENERAL_ASSOCIATION_REFERENCE, calendar.get(Calendar.HOUR_OF_DAY))
+        associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_MINUTE_IN_HOUR, [:]).put(tagName, calendar.get(Calendar.MINUTE))
+        associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_MINUTE_IN_HOUR, [:]).put(GENERAL_ASSOCIATION_REFERENCE, calendar.get(Calendar.MINUTE))
+        associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_DAY_IN_WEEK, [:]).put(tagName, calendar.get(Calendar.DAY_OF_WEEK))
+        associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_DAY_IN_WEEK, [:]).put(GENERAL_ASSOCIATION_REFERENCE, calendar.get(Calendar.DAY_OF_WEEK))
+        associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_DAY_IN_MONTH, [:]).put(tagName, calendar.get(Calendar.DAY_OF_MONTH))
+        associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_DAY_IN_MONTH, [:]).put(GENERAL_ASSOCIATION_REFERENCE, calendar.get(Calendar.DAY_OF_MONTH))
+
+    }
+
+    /**
      * Hydrate the association tags
      *
      * @param associations
      * @param tagName
      */
-    void hydrateAssociationTags(AbstractAssociation associations, String tagName){
+    static void hydrateAssociationTags(AbstractAssociation associations, String tagName){
+
+        if(!associations) return
+        if(!tagName) return
 
         /** Capture associations for normalized data for instance */
         brainItUp(associations.memory, associations, INSTANT_TIME_REFERENCE, tagName)
@@ -126,7 +165,7 @@ class CaptureAssociationsService {
      * @param tagName
      * @param timeDelta
      */
-    void brainItUp(Memory memory, AbstractAssociation lesson, String timeDelta, String tagName){
+    static void brainItUp(Memory memory, AbstractAssociation lesson, String timeDelta, String tagName){
         if(!memory) return
         if(!lesson) return
 

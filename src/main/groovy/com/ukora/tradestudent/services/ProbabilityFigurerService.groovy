@@ -77,15 +77,17 @@ class ProbabilityFigurerService {
         nodes.each {
             BrainNode brainNode = it.value
             NumberAssociation genericAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL_ASSOCIATION_REFERENCE)
-            primaryTags.each { String tag ->
-                NumberAssociation tagAssociation = brainNode.tagReference.get(tag)
-                tagAssociation.relevance = NerdUtils.chanceOfCorrelation(
-                    tagAssociation.mean,
-                    tagAssociation.standard_deviation,
-                    tagAssociation.mean,
-                    genericAssociation.standard_deviation,
-                    genericAssociation.mean
-                )
+            if(genericAssociation) {
+                primaryTags.each { String tag ->
+                    NumberAssociation tagAssociation = brainNode.tagReference.get(tag)
+                    tagAssociation.relevance = NerdUtils.chanceOfCorrelation(
+                            tagAssociation.mean,
+                            tagAssociation.standard_deviation,
+                            tagAssociation.mean,
+                            genericAssociation.standard_deviation,
+                            genericAssociation.mean
+                    )
+                }
             }
         }
         return nodes

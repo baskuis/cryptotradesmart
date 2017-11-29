@@ -25,7 +25,7 @@ class WeightedProbalityCombinerStrategy implements ProbabilityCombinerStrategy {
             if(!probability || Double.isNaN(probability)) return
             int multiplier = (probability < 0) ? -1 : 1
             toplineProbability += multiplier * Math.pow(probability, 2)
-            totalProbability += probability
+            totalProbability += Math.abs(probability)
         }
         return toplineProbability / totalProbability
     }
