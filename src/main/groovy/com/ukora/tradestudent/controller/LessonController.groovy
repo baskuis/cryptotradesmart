@@ -32,7 +32,7 @@ class LessonController {
 
     @RequestMapping(path = '/brainon')
     String brainOn(@RequestParam(value = 'speed') Integer speed){
-        if(!speed || speed > 100) speed = 1
+        if(!speed || speed > 100 || speed < 1) speed = 1
         CaptureAssociationsService.leaningEnabled = true
         CaptureAssociationsService.learningSpeed = speed
         "ON"
