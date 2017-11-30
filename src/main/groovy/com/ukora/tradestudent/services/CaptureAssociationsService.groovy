@@ -102,7 +102,7 @@ class CaptureAssociationsService {
 
         /** Previous price proportions */
         Double previousPriceProportion = correlationAssociation.previousPrices.get(timeDelta)
-        if(previousPriceProportion) {
+        if(previousPriceProportion && !previousPriceProportion.naN) {
             correlationAssociation.numericAssociations.put(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + PRICE_DELTA, previousPriceProportion)
         }
 
@@ -214,15 +214,21 @@ class CaptureAssociationsService {
     void captureNewValue(Brain brain, Double value){
         if(!value) return
         if(!brain) return
-        brain.standard_deviation = NerdUtils.applyValueGetNewDeviation(
-            value,
-            brain.mean,
-            brain.count + 1,
-            brain.standard_deviation)
-        brain.mean = NerdUtils.applyValueGetNewMean(
-            value,
-            brain.mean,
-            brain.count)
+        Double newDeviation = NerdUtils.applyValueGetNewDeviation(
+                value,
+                brain.mean,
+                brain.count + 1,
+                brain.standard_deviation)
+        Double newMean = NerdUtils.applyValueGetNewMean(
+                value,
+                brain.mean,
+                brain.count)
+        if(newDeviation == null || newDeviation.naN || newMean == null || newMean.naN){
+            println String.format("Not capturing new value mean %s deviation %s", newMean, newDeviation)
+            return
+        }
+        brain.standard_deviation = newDeviation
+        brain.mean = newMean
         brain.count++
         bytesFetcherService.saveBrain(brain)
     }

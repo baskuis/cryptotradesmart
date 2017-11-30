@@ -110,7 +110,7 @@ class BytesFetcherService {
         obj['reference'] = brain.reference as String
         obj['mean'] = String.format("%.16f", brain.mean)
         obj['standard_deviation'] = String.format("%.16f", brain.standard_deviation)
-        obj['count'] = String.format("%.16f", brain.count)
+        obj['count'] = brain.count
         this.brain.save(obj)
     }
 
@@ -214,10 +214,11 @@ class BytesFetcherService {
                 Memory thisMemory = getMemory(calendar.time)
                 someAssociation.previousMemory.put(key, thisMemory)
                 try {
-                    if(thisMemory?.graph?.price && someAssociation?.price) {
+                    if(thisMemory?.graph?.price && someAssociation?.price && someAssociation?.price > 0) {
                         Double previousPriceProportion = thisMemory.graph.price / someAssociation.price
-                        someAssociation.previousPrices.put(key, previousPriceProportion)
-                        println String.format("setting %s proportion %s", key, previousPriceProportion)
+                        if(!previousPriceProportion.naN) {
+                            someAssociation.previousPrices.put(key, previousPriceProportion)
+                        }
                     }else{
                         println "missing price cannot set previous price"
                     }
@@ -261,7 +262,7 @@ class BytesFetcherService {
             }
             lesson.setId(obj["_id"] as String)
             lesson.setDate(DatatypeConverter.parseDateTime(obj["date"] as String).getTime())
-            lesson.setPrice(obj["price"] as long)
+            lesson.setPrice(obj["price"] as Double)
             Exchange exchange = new Exchange()
             exchange.setPlatform(obj["exchange"]["platform"] as String)
             lesson.setExchange(exchange)
