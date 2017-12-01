@@ -163,6 +163,9 @@ class BytesFetcherService {
                 println "empty memory object"
                 return
             }
+            someAssociation.exchange = someAssociation.memory.exchange
+            someAssociation.price = someAssociation.memory.graph.price
+            someAssociation.date = someAssociation.memory.metadata.datetime
         } catch (Exception e) {
             e.printStackTrace()
         }
@@ -221,6 +224,8 @@ class BytesFetcherService {
                         }
                     }else{
                         println "missing price cannot set previous price"
+                        println "thisMemory?.graph?.price: " + thisMemory?.graph?.price
+                        println "someAssociation?.price: " + someAssociation?.price
                     }
                 } catch(e){
                     e.printStackTrace()
