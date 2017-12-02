@@ -2,18 +2,15 @@ package com.ukora.tradestudent.strategy.impl
 
 import com.ukora.tradestudent.bayes.numbers.NumberAssociationProbability
 import com.ukora.tradestudent.strategy.ProbabilityCombinerStrategy
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 
-@Component
-class NaiveBayesianProbabilityCobinerStrategy implements ProbabilityCombinerStrategy {
+import static com.ukora.tradestudent.utils.NerdUtils.assertRanges
 
-    @Autowired
-    ApplicationContext applicationContext
+@Component
+class NaiveBayesianProbabilityCombinerStrategy implements ProbabilityCombinerStrategy {
 
     /**
-     * This naive bayesian comparison calculates the buy vs baseline
+     * This naive bayesian comparison calculates the tag vs baseline score (not probability)
      *
      *      Ptag * Ptaga1 * Ptaga2
      * P = ------------------------
@@ -30,7 +27,7 @@ class NaiveBayesianProbabilityCobinerStrategy implements ProbabilityCombinerStra
         numberAssociationProbabilities.each {
             Double tagProbability = it.value.get(tag)?.probability
             Double oppositeTagProbability = -tagProbability
-            if(tagProbability > 0 && !tagProbability.naN && oppositeTagProbability > 0 && !oppositeTagProbability.naN){
+            if(assertRanges(tagProbability, oppositeTagProbability)){
                 tagProbability = (tagProbability + 1) / 2
                 oppositeTagProbability = (oppositeTagProbability + 1) / 2
                 tagAssociationProduct = tagAssociationProduct * tagProbability

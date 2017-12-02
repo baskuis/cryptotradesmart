@@ -1,6 +1,28 @@
 package com.ukora.tradestudent.utils
 
+import java.text.SimpleDateFormat
+
 class NerdUtils {
+
+    /**
+     * Assert multiple p ranges at one
+     *
+     * @param values
+     * @return
+     */
+    static boolean assertRanges(Double... values){
+        return !values.collect{ assertRange(it) }.contains(false)
+    }
+
+    /**
+     * Assert value is within expected range
+     *
+     * @param value
+     * @return
+     */
+    static boolean assertRange(Double value){
+        !(value.naN || value.infinite || value < -1 || value > 1)
+    }
 
     /**
      * Calculate chance of correlation against
@@ -8,15 +30,15 @@ class NerdUtils {
      * the highest value is 1 for perfect correlation with the first set of data
      * or -1 for perfect correlation with the second set of data
      *
-     * @param double value
-     * @param double theDeviation
-     * @param double theMean
-     * @param double commonDeviation
-     * @param double commonMean
-     * @return double
+     * @param Double value
+     * @param Double theDeviation
+     * @param Double theMean
+     * @param Double commonDeviation
+     * @param Double commonMean
+     * @return Double
      */
-    static double chanceOfCorrelation(double value, double theDeviation, double theMean, double commonDeviation, double commonMean) {
-        return (double) (2 /
+    static Double chanceOfCorrelation(Double value, Double theDeviation, Double theMean, Double commonDeviation, Double commonMean) {
+        return (Double) (2 /
             Math.pow(2 * Math.PI * Math.pow(theDeviation, 2), 0.5) *
             Math.pow(Math.E, (-Math.pow(value - theMean, 2) / (2 * Math.pow(theDeviation, 2)))) /
             (
@@ -35,14 +57,14 @@ class NerdUtils {
      * Apply value to data set
      * and get new standard deviation
      *
-     * @param double value
-     * @param double mean
-     * @param double count
-     * @param double deviation
-     * @return double
+     * @param Double value
+     * @param Double mean
+     * @param Double count
+     * @param Double deviation
+     * @return Double
      */
-    static double applyValueGetNewDeviation(double value, double mean, double count, double deviation) {
-        return (double) Math.sqrt(
+    static Double applyValueGetNewDeviation(Double value, Double mean, Double count, Double deviation) {
+        return (Double) Math.sqrt(
             (
                 (count * (Math.pow(value, 2) + (
                     (count - 1.0) * (Math.pow(deviation, 2) + Math.pow(mean, 2))
@@ -53,13 +75,28 @@ class NerdUtils {
     /**
      * Apply value get new mean
      *
-     * @param double value
-     * @param double mean
-     * @param double count
-     * @return double
+     * @param Double value
+     * @param Double mean
+     * @param Double count
+     * @return Double
      */
-    static double applyValueGetNewMean(double value, double mean, double count) {
-        return (double) ((mean * count) + value) / (count + 1.0)
+    static Double applyValueGetNewMean(Double value, Double mean, Double count) {
+        return (Double) ((mean * count) + value) / (count + 1.0)
+    }
+
+    static final String JS_FRIENDLY_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"
+    static final String NORMALIZED_TIMEZONE = "GMT"
+
+    /**
+     * Return correct date format interpreter
+     *
+     * @return
+     */
+    static SimpleDateFormat getGMTDateFormat(){
+        SimpleDateFormat sdf = new SimpleDateFormat(JS_FRIENDLY_DATE_FORMAT)
+        sdf.setLenient(true)
+        sdf.setTimeZone(TimeZone.getTimeZone(NORMALIZED_TIMEZONE))
+        sdf
     }
 
 }

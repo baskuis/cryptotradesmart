@@ -4,6 +4,8 @@ import com.ukora.tradestudent.bayes.numbers.NumberAssociationProbability
 import com.ukora.tradestudent.strategy.ProbabilityCombinerStrategy
 import org.springframework.stereotype.Component
 
+import static com.ukora.tradestudent.utils.NerdUtils.assertRanges
+
 @Component
 class BuySellNaiveBayesianProbabilityCombinerStrategy implements ProbabilityCombinerStrategy {
 
@@ -11,7 +13,7 @@ class BuySellNaiveBayesianProbabilityCombinerStrategy implements ProbabilityComb
     private static final String BUY_TAG_NAME = 'buy'
 
     /**
-     * This naive bayesian comparison calculates the buy vs sell probability
+     * This naive bayesian comparison calculates the buy vs sell score (not probability)
      *
      *
      *      Ptag * Ptaga1 * Ptaga2
@@ -24,12 +26,13 @@ class BuySellNaiveBayesianProbabilityCombinerStrategy implements ProbabilityComb
      */
     @Override
     Double combineProbabilities(String tag, Map<String, Map<String, NumberAssociationProbability>> numberAssociationProbabilities) {
+        if(tag != SELL_TAG_NAME && tag != BUY_TAG_NAME) return null
         Double tagAssociationProduct = 1d
         Double generalAssociationProduct = 1d
         numberAssociationProbabilities.each {
             Double tagProbability = it.value.get(tag)?.probability
             Double oppositeTagProbability = it.value.get(tag == SELL_TAG_NAME ? BUY_TAG_NAME : SELL_TAG_NAME)?.probability
-            if(tagProbability > 0 && !tagProbability.naN && oppositeTagProbability > 0 && !oppositeTagProbability.naN){
+            if(assertRanges(tagProbability, oppositeTagProbability)){
                 tagProbability = (tagProbability + 1) / 2
                 oppositeTagProbability = (oppositeTagProbability + 1) / 2
                 tagAssociationProduct = tagAssociationProduct * tagProbability
