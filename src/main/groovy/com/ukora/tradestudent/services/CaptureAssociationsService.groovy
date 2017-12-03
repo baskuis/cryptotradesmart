@@ -25,6 +25,8 @@ class CaptureAssociationsService {
     public static boolean leaningEnabled = false
     public static Integer learningSpeed = 1
 
+    public static Double PRACTICAL_ZERO = 0.000000001
+
     @Autowired
     BytesFetcherService bytesFetcherService
 
@@ -133,6 +135,17 @@ class CaptureAssociationsService {
         associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_DAY_IN_WEEK, [:]).put(GENERAL_ASSOCIATION_REFERENCE, calendar.get(Calendar.DAY_OF_WEEK))
         associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_DAY_IN_MONTH, [:]).put(tagName, calendar.get(Calendar.DAY_OF_MONTH))
         associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_DAY_IN_MONTH, [:]).put(GENERAL_ASSOCIATION_REFERENCE, calendar.get(Calendar.DAY_OF_MONTH))
+
+        /**
+         * Store emotional boundary associations
+         */
+        if(associations.price) {
+            NerdUtils.extractBoundryDistances(associations.price).each {
+                if(it.value == 0) it.value = PRACTICAL_ZERO
+                associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + it.key, [:]).put(tagName, it.value)
+                associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + it.key, [:]).put(GENERAL_ASSOCIATION_REFERENCE, it.value)
+            }
+        }
 
     }
 

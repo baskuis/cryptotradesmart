@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 class RelevanceWeightedProbabilityCombinerStrategy implements ProbabilityCombinerStrategy {
 
     /**
-     *      R1*P1 + R2+P2
+     *      R1*P1 + R2*P2
      * P = ---------------
      *         R1 + R2
      *

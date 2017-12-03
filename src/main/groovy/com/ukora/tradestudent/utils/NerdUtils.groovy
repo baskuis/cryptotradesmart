@@ -25,6 +25,46 @@ class NerdUtils {
     }
 
     /**
+     * List of emotional boundaries
+     *
+     *
+     */
+    public static Map<String, Integer> resistanceBoundaries = [
+            'ones' : 1,
+            'fives' : 5,
+            'tens' : 10,
+            'twenties' : 20,
+            'twentyfives' : 25,
+            'fifties' : 50,
+            'seventyfives' : 75,
+            'hundreds' : 100,
+            'twohundreds' : 200,
+            'fivehunderds' : 500,
+            'thousands' : 1000,
+            'twothousands' : 2000,
+            'fivethousands' : 5000,
+            'tenthousands' : 10000,
+            'twentythousands' : 20000,
+            'fiftythousands' : 50000,
+            'hundredthousands' : 100000,
+            'twohundredthousands' : 200000,
+            'fivehundredthousands' : 5000000,
+            'millions' : 1000000
+    ]
+
+    /**
+     * Get emotional boundaries map of provided value
+     *
+     * @param value
+     * @return
+     */
+    static Map<String, Double> extractBoundryDistances(Double value){
+        Map response = [:]
+        resistanceBoundaries.each { if(it.value <= value){ response[it.key] = (value % it.value) / it.value } }
+        return response
+    }
+
+    /**
      * Calculate chance of correlation against
      * the first standard deviation and mean passed
      * the highest value is 1 for perfect correlation with the first set of data

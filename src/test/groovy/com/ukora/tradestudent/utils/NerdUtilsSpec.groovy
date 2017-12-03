@@ -135,8 +135,24 @@ class NerdUtilsSpec extends Specification {
         date == expected
 
         where:
-        value | expected
+        value                      | expected
         "2017-12-01T21:43:03.000Z" | new Date('Thu Dec 01 21:43:03 UTC 2017')
+
+    }
+
+    @Unroll
+    def "Test emotional boundaries are correctly extracted - provided #value get #expected"() {
+
+        when:
+        Map boundaries = NerdUtils.extractBoundryDistances(value)
+
+        then:
+        boundaries == expected
+
+        where:
+        value | expected
+        1111  | [ones: 0.0, fives: 0.2, tens: 0.1, twenties: 0.55, twentyfives: 0.44, fifties: 0.22, seventyfives: 0.8133333333333334, hundreds: 0.11, twohundreds: 0.555, fivehunderds: 0.222, thousands: 0.111]
+        1275  | [ones: 0.0, fives: 0.0, tens: 0.5, twenties: 0.75, twentyfives: 0.0, fifties: 0.5, seventyfives: 0.0, hundreds: 0.75, twohundreds: 0.375, fivehunderds: 0.55, thousands: 0.275]
 
     }
 
