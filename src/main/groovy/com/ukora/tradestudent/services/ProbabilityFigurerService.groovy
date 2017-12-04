@@ -16,6 +16,8 @@ import javax.annotation.PostConstruct
 @Service
 class ProbabilityFigurerService {
 
+    public final static Double MIN_RELEVANCE = 0.01
+
     @Autowired
     CaptureAssociationsService captureAssociationsService
 
@@ -57,6 +59,9 @@ class ProbabilityFigurerService {
 
         /** hydrate probability reference for each numeric reference */
         hydrateProbabilities(correlationAssociation)
+
+        /** calculate combined tag correlation scores */
+        hydrateTagScores(correlationAssociation)
 
         /** calculate combined tag correlation probability */
         hydrateTagProbabilities(correlationAssociation)
@@ -120,26 +125,38 @@ class ProbabilityFigurerService {
                                 tagAssociation.mean
                         )
                         correlationAssociation.numericAssociationProbabilities.get(reference, [:]).put(tag, numberAssociationProbability)
-                    } else {
-                        println "no tagAssociation"
                     }
                 }
-            } else {
-                println "no generalAssociation cannot continue"
             }
         }
     }
 
     /**
-     * TODO: The meat of the problem - need to find a solid was to combine P values effectively
-     * TODO: Consider Fisher's method? Have 'relevance' values available
+     * Hydrate tag scores
+     *
+     * @param correlationAssociation
+     */
+    void hydrateTagScores(CorrelationAssociation correlationAssociation){
+        primaryTags.each { String tag ->
+            Map<String, ProbabilityCombinerStrategy> probabilityCombinerStrategyMap = applicationContext.getBeansOfType(ProbabilityCombinerStrategy)
+            probabilityCombinerStrategyMap.each { correlationAssociation.tagScores.get(tag, [:]).put(it.key, it.value.combineProbabilities(tag, correlationAssociation.numericAssociationProbabilities)) }
+        }
+    }
+
+    /**
+     * Hydrate tag probabilities
      *
      * @param correlationAssociation
      */
     void hydrateTagProbabilities(CorrelationAssociation correlationAssociation){
-        primaryTags.each { String tag ->
-            Map<String, ProbabilityCombinerStrategy> probabilityCombinerStrategyMap = applicationContext.getBeansOfType(ProbabilityCombinerStrategy)
-            probabilityCombinerStrategyMap.each { correlationAssociation.tagProbabilities.get(tag, [:]).put(it.key, it.value.combineProbabilities(tag, correlationAssociation.numericAssociationProbabilities)) }
+        correlationAssociation.tagScores.each {
+            String tag = it.key
+            it.value.each {
+                String strategy = it.key
+                Double focusTag = correlationAssociation.tagScores.get(tag).get(strategy)
+                Double proportion = NerdUtils.getProportionOf(focusTag, primaryTags.findAll { it != tag }.collect { correlationAssociation.tagScores.get(it).get(strategy) })
+                correlationAssociation.tagProbabilities.get(strategy, [:]).put(tag, proportion)
+            }
         }
     }
 

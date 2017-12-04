@@ -156,4 +156,21 @@ class NerdUtilsSpec extends Specification {
 
     }
 
+    @Unroll
+    def "get proportion of #value against #others produces #expected"() {
+
+        when:
+        Double v = NerdUtils.getProportionOf(value, others)
+
+        then:
+        v == expected
+
+        where:
+        value | others | expected
+        1     | [1, 1] | 0.3333333333333333d
+        -2    | [1, 1] | 0.5
+        3     | [2]    | 0.6
+
+    }
+
 }

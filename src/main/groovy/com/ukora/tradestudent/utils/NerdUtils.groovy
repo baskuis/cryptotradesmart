@@ -25,7 +25,7 @@ class NerdUtils {
     }
 
     /**
-     * List of emotional boundaries
+     * List of emotional/psychological boundaries
      *
      *
      */
@@ -48,7 +48,7 @@ class NerdUtils {
             'fiftythousands' : 50000,
             'hundredthousands' : 100000,
             'twohundredthousands' : 200000,
-            'fivehundredthousands' : 5000000,
+            'fivehundredthousands' : 500000,
             'millions' : 1000000
     ]
 
@@ -137,6 +137,19 @@ class NerdUtils {
         sdf.setLenient(true)
         sdf.setTimeZone(TimeZone.getTimeZone(NORMALIZED_TIMEZONE))
         sdf
+    }
+
+    /**
+     * Get proportion of value among value and others
+     *
+     * @param value
+     * @param others
+     * @return
+     */
+    static Double getProportionOf(Double value, List<Double> others){
+        Double total = Math.abs(value)
+        others.each { total += Math.abs(it) }
+        return Math.abs(value / total)
     }
 
 }
