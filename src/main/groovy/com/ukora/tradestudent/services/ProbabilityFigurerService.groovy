@@ -6,6 +6,7 @@ import com.ukora.tradestudent.entities.BrainNode
 import com.ukora.tradestudent.entities.CorrelationAssociation
 import com.ukora.tradestudent.strategy.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.tags.AbstractCorrelationTag
+import com.ukora.tradestudent.tags.TagSubset
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
@@ -16,6 +17,7 @@ import javax.annotation.PostConstruct
 @Service
 class ProbabilityFigurerService {
 
+    //TODO: Test if this applies or is useful
     public final static Double MIN_RELEVANCE = 0.01
 
     @Autowired
@@ -139,7 +141,10 @@ class ProbabilityFigurerService {
     void hydrateTagScores(CorrelationAssociation correlationAssociation){
         primaryTags.each { String tag ->
             Map<String, ProbabilityCombinerStrategy> probabilityCombinerStrategyMap = applicationContext.getBeansOfType(ProbabilityCombinerStrategy)
-            probabilityCombinerStrategyMap.each { correlationAssociation.tagScores.get(tag, [:]).put(it.key, it.value.combineProbabilities(tag, correlationAssociation.numericAssociationProbabilities)) }
+            probabilityCombinerStrategyMap.each {
+                if(it.value instanceof TagSubset && !(it.value as TagSubset).applies(tag)) return
+                correlationAssociation.tagScores.get(tag, [:]).put(it.key, it.value.combineProbabilities(tag, correlationAssociation.numericAssociationProbabilities))
+            }
         }
     }
 

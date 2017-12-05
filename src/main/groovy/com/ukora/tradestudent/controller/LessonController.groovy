@@ -5,6 +5,7 @@ import com.ukora.tradestudent.entities.CorrelationAssociation
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.CaptureAssociationsService
 import com.ukora.tradestudent.services.ProbabilityFigurerService
+import com.ukora.tradestudent.services.TradingHistoricalSimulatorService
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.propertyeditors.CustomDateEditor
@@ -22,6 +23,9 @@ class LessonController {
 
     @Autowired
     ProbabilityFigurerService probabilityFigurerService
+
+    @Autowired
+    TradingHistoricalSimulatorService tradingHistoricalSimulatorService
 
     @Autowired
     BytesFetcherService bytesFetcherService
@@ -66,6 +70,11 @@ class LessonController {
     String flushCache(){
         bytesFetcherService.flushCache()
         "OK"
+    }
+
+    @RequestMapping(path = '/simulation')
+    Map simulation(@RequestParam(value = 'date') Date date){
+        return tradingHistoricalSimulatorService.runSimulation(date)
     }
 
     @InitBinder

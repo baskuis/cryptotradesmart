@@ -2,15 +2,22 @@ package com.ukora.tradestudent.strategy.impl
 
 import com.ukora.tradestudent.bayes.numbers.NumberAssociationProbability
 import com.ukora.tradestudent.strategy.ProbabilityCombinerStrategy
+import com.ukora.tradestudent.tags.AbstractCorrelationTag
+import com.ukora.tradestudent.tags.TagSubset
 import org.springframework.stereotype.Component
 
 import static com.ukora.tradestudent.utils.NerdUtils.assertRanges
 
 @Component
-class BuySellNaiveBayesianProbabilityCombinerStrategy implements ProbabilityCombinerStrategy {
+class BuySellNaiveBayesianProbabilityCombinerStrategy implements ProbabilityCombinerStrategy, TagSubset {
 
     private static final String SELL_TAG_NAME = 'sell'
     private static final String BUY_TAG_NAME = 'buy'
+
+    @Override
+    boolean applies(String toTag) {
+        (toTag == SELL_TAG_NAME || toTag == BUY_TAG_NAME)
+    }
 
     /**
      * This naive bayesian comparison calculates the buy vs sell score (not probability)
