@@ -2,7 +2,6 @@ package com.ukora.tradestudent.strategy.impl
 
 import com.ukora.tradestudent.bayes.numbers.NumberAssociationProbability
 import com.ukora.tradestudent.strategy.ProbabilityCombinerStrategy
-import com.ukora.tradestudent.tags.AbstractCorrelationTag
 import com.ukora.tradestudent.tags.TagSubset
 import org.springframework.stereotype.Component
 
