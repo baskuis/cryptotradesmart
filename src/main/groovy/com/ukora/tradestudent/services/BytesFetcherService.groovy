@@ -5,6 +5,7 @@ import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.entities.*
 import com.ukora.tradestudent.tags.BuyTag
 import com.ukora.tradestudent.tags.SellTag
+import com.ukora.tradestudent.utils.Logger
 import org.bson.types.ObjectId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CacheEvict
@@ -160,7 +161,7 @@ class BytesFetcherService {
         try {
             someAssociation.memory = getMemory(someAssociation.date)
             if(someAssociation.memory == null){
-                println "empty memory object"
+                Logger.log("empty memory object")
                 return
             }
             someAssociation.exchange = someAssociation.memory.exchange
@@ -223,9 +224,9 @@ class BytesFetcherService {
                             someAssociation.previousPrices.put(key, previousPriceProportion)
                         }
                     }else{
-                        println "missing price cannot set previous price"
-                        println "thisMemory?.graph?.price: " + thisMemory?.graph?.price
-                        println "someAssociation?.price: " + someAssociation?.price
+                        Logger.debug("missing price cannot set previous price")
+                        Logger.debug("thisMemory?.graph?.price: " + thisMemory?.graph?.price)
+                        Logger.debug("someAssociation?.price: " + someAssociation?.price)
                     }
                 } catch(e){
                     e.printStackTrace()
@@ -423,7 +424,7 @@ class BytesFetcherService {
                 graph.price = obj['graph']['price'] as Double
                 graph.quantity = obj['graph']['quantity'] as Double
             } catch(Exception e){
-                println 'no graph.price'
+                Logger.debug('no graph.price')
             }
             the_memory.graph = graph
             the_memory.ask = ask

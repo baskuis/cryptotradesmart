@@ -1,11 +1,12 @@
 package com.ukora.tradestudent.controller
 
+import com.ukora.tradestudent.TradestudentApplication
 import com.ukora.tradestudent.entities.BrainNode
 import com.ukora.tradestudent.entities.CorrelationAssociation
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.CaptureAssociationsService
 import com.ukora.tradestudent.services.ProbabilityFigurerService
-import com.ukora.tradestudent.services.TradingHistoricalSimulatorService
+import com.ukora.tradestudent.services.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.propertyeditors.CustomDateEditor
@@ -15,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
-import java.text.SimpleDateFormat
-
 @RestController
 @RequestMapping('/learn')
 class LessonController {
@@ -25,7 +24,7 @@ class LessonController {
     ProbabilityFigurerService probabilityFigurerService
 
     @Autowired
-    TradingHistoricalSimulatorService tradingHistoricalSimulatorService
+    BuySellTradingHistoricalSimulatorService tradingHistoricalSimulatorService
 
     @Autowired
     BytesFetcherService bytesFetcherService
@@ -72,9 +71,22 @@ class LessonController {
         "OK"
     }
 
+    @RequestMapping(path = '/debugon')
+    String debugOn(){
+        TradestudentApplication.DEBUG_LOGGING_ENABLED = true
+        "OK"
+    }
+
+    @RequestMapping(path = '/debugoff')
+    String debugOff(){
+        TradestudentApplication.DEBUG_LOGGING_ENABLED = false
+        "OK"
+    }
+
     @RequestMapping(path = '/simulation')
-    Map simulation(@RequestParam(value = 'date') Date date){
-        return tradingHistoricalSimulatorService.runSimulation(date)
+    String simulation(@RequestParam(value = 'date') Date date){
+        tradingHistoricalSimulatorService.runSimulation(date)
+        "STARTED"
     }
 
     @InitBinder

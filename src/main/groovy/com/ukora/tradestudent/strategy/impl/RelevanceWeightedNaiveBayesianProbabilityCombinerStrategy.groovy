@@ -35,7 +35,7 @@ class RelevanceWeightedNaiveBayesianProbabilityCombinerStrategy implements Proba
                 generalAssociationProduct = generalAssociationProduct * oppositeTagProbability
             }
         }
-        return ((1 / 2) * tagAssociationProduct) / generalAssociationProduct
+        return (0.5 * tagAssociationProduct) / generalAssociationProduct
     }
 
 }

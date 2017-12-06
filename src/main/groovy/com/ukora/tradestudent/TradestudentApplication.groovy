@@ -7,9 +7,11 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
 import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration
 import org.springframework.cache.annotation.EnableCaching
+import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.scheduling.annotation.EnableScheduling
 
 @EnableCaching
+@EnableAsync
 @EnableScheduling
 @SpringBootApplication(exclude=[
 		SecurityAutoConfiguration.class])
@@ -17,6 +19,8 @@ import org.springframework.scheduling.annotation.EnableScheduling
 		DataSourceAutoConfiguration.class,
 		HibernateJpaAutoConfiguration.class])
 class TradestudentApplication {
+
+	public static boolean DEBUG_LOGGING_ENABLED = false
 
 	static void main(String[] args) {
 		println new Date()

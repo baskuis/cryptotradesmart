@@ -7,6 +7,7 @@ import com.ukora.tradestudent.entities.CorrelationAssociation
 import com.ukora.tradestudent.strategy.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.tags.AbstractCorrelationTag
 import com.ukora.tradestudent.tags.TagSubset
+import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
@@ -142,7 +143,11 @@ class ProbabilityFigurerService {
         primaryTags.each { String tag ->
             Map<String, ProbabilityCombinerStrategy> probabilityCombinerStrategyMap = applicationContext.getBeansOfType(ProbabilityCombinerStrategy)
             probabilityCombinerStrategyMap.each {
-                if(it.value instanceof TagSubset && !(it.value as TagSubset).applies(tag)) return
+                if(it.value instanceof TagSubset && !(it.value as TagSubset).applies(tag)){
+                    Logger.debug(String.format("Skipping p combiner strategy: %s for tag: %s", it.key, tag))
+                    return
+                }
+                Logger.debug(String.format("Running p combiner strategy: %s", it.key))
                 correlationAssociation.tagScores.get(tag, [:]).put(it.key, it.value.combineProbabilities(tag, correlationAssociation.numericAssociationProbabilities))
             }
         }
