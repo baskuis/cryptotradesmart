@@ -1,4 +1,4 @@
-package com.ukora.tradestudent.strategy
+package com.ukora.tradestudent.strategy.probability
 
 import com.ukora.tradestudent.bayes.numbers.NumberAssociationProbability
 

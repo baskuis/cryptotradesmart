@@ -4,7 +4,7 @@ import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.bayes.numbers.NumberAssociationProbability
 import com.ukora.tradestudent.entities.BrainNode
 import com.ukora.tradestudent.entities.CorrelationAssociation
-import com.ukora.tradestudent.strategy.ProbabilityCombinerStrategy
+import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.tags.AbstractCorrelationTag
 import com.ukora.tradestudent.tags.TagSubset
 import com.ukora.tradestudent.utils.Logger

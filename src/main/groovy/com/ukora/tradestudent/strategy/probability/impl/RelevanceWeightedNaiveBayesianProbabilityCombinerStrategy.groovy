@@ -1,7 +1,7 @@
-package com.ukora.tradestudent.strategy.impl
+package com.ukora.tradestudent.strategy.probability.impl
 
 import com.ukora.tradestudent.bayes.numbers.NumberAssociationProbability
-import com.ukora.tradestudent.strategy.ProbabilityCombinerStrategy
+import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import org.springframework.stereotype.Component
 
 import static com.ukora.tradestudent.utils.NerdUtils.assertRanges

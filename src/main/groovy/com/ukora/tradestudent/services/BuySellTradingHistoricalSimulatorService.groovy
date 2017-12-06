@@ -1,7 +1,7 @@
 package com.ukora.tradestudent.services
 
 import com.ukora.tradestudent.entities.CorrelationAssociation
-import com.ukora.tradestudent.strategy.ProbabilityCombinerStrategy
+import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.utils.Logger
 import groovy.util.logging.Log4j2
 import org.springframework.beans.factory.annotation.Autowired

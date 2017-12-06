@@ -1,14 +1,14 @@
-package com.ukora.tradestudent.strategy.impl
+package com.ukora.tradestudent.strategy.probability.impl
 
 import com.ukora.tradestudent.bayes.numbers.NumberAssociationProbability
-import com.ukora.tradestudent.strategy.ProbabilityCombinerStrategy
+import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.stereotype.Component
 
 import static com.ukora.tradestudent.utils.NerdUtils.assertRanges
 
 @Component
-class AvoidOutliersRelevanceWeightedNaiveBayesianProbablityCombinerStrategy implements ProbabilityCombinerStrategy {
+class AvoidOutlierNaiveBayesianProbablityCombinerStrategy implements ProbabilityCombinerStrategy {
 
     public final static long MAX_RELEVANCE_MULTIPLE = 2
 
@@ -27,8 +27,10 @@ class AvoidOutliersRelevanceWeightedNaiveBayesianProbablityCombinerStrategy impl
             if(!assertRanges(tagProbability, oppositeTagProbability, relevance)) {
                 return
             }
-            tagAssociationProduct = tagAssociationProduct * (((relevance * tagProbability) + 1) / 2)
-            generalAssociationProduct = generalAssociationProduct * (((relevance * oppositeTagProbability) + 1) / 2)
+            tagProbability = (tagProbability + 1) / 2
+            oppositeTagProbability = (oppositeTagProbability + 1) / 2
+            tagAssociationProduct = tagAssociationProduct * tagProbability
+            generalAssociationProduct = generalAssociationProduct * oppositeTagProbability
         }
         return (0.5 * tagAssociationProduct) / generalAssociationProduct
     }
