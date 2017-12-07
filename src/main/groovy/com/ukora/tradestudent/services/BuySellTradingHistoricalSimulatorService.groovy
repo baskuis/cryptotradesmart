@@ -35,25 +35,47 @@ class BuySellTradingHistoricalSimulatorService {
 
     public final static long INTERVAL_SECONDS = 60
 
-    @PostConstruct
-    void init(){
-        probabilityCombinerStrategyMap = applicationContext.getBeansOfType(ProbabilityCombinerStrategy)
-    }
+    Map<String, Map<String, Object>> simulations = [:]
 
     private final static Double STARTING_BALANCE = 10
     private final static Double TRADE_INCREMENT = 0.5
     private final static Double TRADE_TRANSACTION_COST = 0.0025
-    private final static Double BUY_THRESHOLD = 0.80
-    private final static Double SELL_THRESHOLD = 0.90
+    private final static Double LOWEST_THRESHOLD = 0.70
+    private final static Double HIGHEST_THRESHOLD = 1.00
+
+    @PostConstruct
+    void init(){
+
+        /**
+         * Get probability combiner strategies
+         */
+        probabilityCombinerStrategyMap = applicationContext.getBeansOfType(ProbabilityCombinerStrategy)
+
+        /**
+         * Build simulations
+         */
+        for(Double thresholdBuy = LOWEST_THRESHOLD; thresholdBuy <= HIGHEST_THRESHOLD; thresholdBuy += 0.01) {
+            for(Double thresholdSell = LOWEST_THRESHOLD; thresholdSell <= HIGHEST_THRESHOLD; thresholdSell += 0.01) {
+                simulations.put(String.format("buy:%s,sell:%s", thresholdBuy, thresholdSell), [
+                        'buyThreshold' : thresholdBuy,
+                        'sellThreshold' : thresholdSell,
+                        'startingBalance': STARTING_BALANCE,
+                        'tradeIncrement' : TRADE_INCREMENT,
+                        'transactionCost' : TRADE_TRANSACTION_COST,
+                        'balancesA' : [:],
+                        'balancesB' : [:]
+                ])
+            }
+        }
+
+    }
 
     @Async
     Map runSimulation(Date fromDate){
-        Map<String, Double> balancesA = [:]
-        Map<String, Double> balancesB = [:]
         if(!fromDate) return null
         Instant end = Instant.now()
         Instant start = Instant.ofEpochMilli(fromDate.time)
-        Duration gap = Duration.ofSeconds(INTERVAL_SECONDS);
+        Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
         Instant current = start
         Double finalPrice
         while (current.isBefore(end)) {
@@ -67,41 +89,52 @@ class BuySellTradingHistoricalSimulatorService {
                     finalPrice = correlationAssociation.price
                     String tag = it.key
                     Double probability = it.value
-                    Double balanceB = balancesB.get(strategy, 0)
-                    Double balanceA = balancesA.get(strategy, STARTING_BALANCE)
-                    Double costsA = TRADE_INCREMENT * correlationAssociation.price * (1 + TRADE_TRANSACTION_COST)
-                    Double proceedsA = TRADE_INCREMENT * correlationAssociation.price * (1 - TRADE_TRANSACTION_COST)
-                    if(tag == 'buy' && probability > BUY_THRESHOLD){
-                        Logger.log("Buying A for B, p: " + probability)
-                        if(balanceB < costsA){
-                            Logger.log("Not enough balanceB left: " + balanceB)
-                        }else{
-                            balancesA.put(strategy, balanceA + (TRADE_INCREMENT * (1 + TRADE_TRANSACTION_COST)))
-                            balancesB.put(strategy, balanceB - (TRADE_INCREMENT * correlationAssociation.price))
+                    simulations.each {
+                        Map simulation = it.value
+                        Double costsA = (simulation.get('tradeIncrement') as Double) * correlationAssociation.price * (1 + (simulation.get('transactionCost') as Double))
+                        Double proceedsA = (simulation.get('tradeIncrement') as Double) * correlationAssociation.price * (1 - (simulation.get('transactionCost') as Double))
+                        Double balanceB = (simulation.get('balancesB') as Map).get(strategy, 0) as Double
+                        Double balanceA = (simulation.get('balancesA') as Map).get(strategy, STARTING_BALANCE) as Double
+                        if(tag == 'buy' && probability > (simulation.get('buyThreshold') as Double)){
+                            Logger.log("Buying A for B, p: " + probability)
+                            if(balanceB < costsA){
+                                Logger.log("Not enough balanceB left: " + balanceB)
+                            }else{
+                                (simulation.get('balancesA') as Map).put(strategy, balanceA + ((simulation.get('tradeIncrement') as Double) * (1 + (simulation.get('transactionCost') as Double))))
+                                (simulation.get('balancesB') as Map).put(strategy, balanceB - ((simulation.get('tradeIncrement') as Double) * correlationAssociation.price))
+                            }
                         }
-                    }
-                    if(tag == 'sell' && probability > SELL_THRESHOLD){
-                        Logger.log("Selling A for B, p: " + probability)
-                        if(balanceA < TRADE_INCREMENT * (1 + TRADE_TRANSACTION_COST)){
-                            Logger.log("Not enough balanceA left: " + balanceA)
-                        }else{
-                            balancesA.put(strategy, balanceA - TRADE_INCREMENT)
-                            balancesB.put(strategy, balanceB + proceedsA)
+                        if(tag == 'sell' && probability > (simulation.get('sellThreshold') as Double)){
+                            Logger.log("Selling A for B, p: " + probability)
+                            if(balanceA < (simulation.get('tradeIncrement') as Double) * (1 + (simulation.get('transactionCost') as Double))){
+                                Logger.log("Not enough balanceA left: " + balanceA)
+                            }else{
+                                (simulation.get('balancesA') as Map).put(strategy, balanceA - (simulation.get('tradeIncrement') as Double))
+                                (simulation.get('balancesB') as Map).put(strategy, balanceB + proceedsA)
+                            }
                         }
                     }
                 }
             }
         }
-        Map result = [
-                'A': balancesA,
-                'B': balancesB,
-                'Result': [:]
-        ]
-        result.A.each {
-            result.Result.put(it.key, it.value + (result.B.get(it.key) / finalPrice))
+
+        Map result = [:]
+        simulations.each {
+            String simulationKey = it.key
+            Map simulation = it.value
+            (simulation.get('balancesA') as Map).each {
+                String strategy = it.key
+                Double finalBalance = it.value + ((simulation.get('balancesA') as Map).get(it.key) / finalPrice)
+                (simulation.get('result', [:]) as Map).put(it.key, finalBalance)
+                result.put(String.format('%s:%s', simulationKey, strategy), finalBalance)
+            }
         }
+
+        result.sort { -it.value }
+
         Logger.log(result as String)
         return result
+
     }
 
 }
