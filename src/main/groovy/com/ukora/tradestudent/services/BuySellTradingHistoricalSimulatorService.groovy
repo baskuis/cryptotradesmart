@@ -39,8 +39,8 @@ class BuySellTradingHistoricalSimulatorService {
 
     private final static Double STARTING_BALANCE = 10
     private final static Double TRADE_INCREMENT = 0.5
-    private final static Double TRADE_TRANSACTION_COST = 0.0025
-    private final static Double LOWEST_THRESHOLD = 0.70
+    private final static Double TRADE_TRANSACTION_COST = 0.0020
+    private final static Double LOWEST_THRESHOLD = 0.60
     private final static Double HIGHEST_THRESHOLD = 1.00
 
     @PostConstruct
@@ -54,17 +54,20 @@ class BuySellTradingHistoricalSimulatorService {
         /**
          * Build simulations
          */
-        for(Double thresholdBuy = LOWEST_THRESHOLD; thresholdBuy <= HIGHEST_THRESHOLD; thresholdBuy += 0.01) {
-            for(Double thresholdSell = LOWEST_THRESHOLD; thresholdSell <= HIGHEST_THRESHOLD; thresholdSell += 0.01) {
-                simulations.put(String.format("buy:%s,sell:%s", thresholdBuy, thresholdSell), [
-                        'buyThreshold' : thresholdBuy,
-                        'sellThreshold' : thresholdSell,
-                        'startingBalance': STARTING_BALANCE,
-                        'tradeIncrement' : TRADE_INCREMENT,
-                        'transactionCost' : TRADE_TRANSACTION_COST,
-                        'balancesA' : [:],
-                        'balancesB' : [:]
-                ])
+        for(Double tradeIncrement = TRADE_INCREMENT; tradeIncrement < STARTING_BALANCE; tradeIncrement += TRADE_INCREMENT) {
+            for (Double thresholdBuy = LOWEST_THRESHOLD; thresholdBuy <= HIGHEST_THRESHOLD; thresholdBuy += 0.01) {
+                for (Double thresholdSell = LOWEST_THRESHOLD; thresholdSell <= HIGHEST_THRESHOLD; thresholdSell += 0.01) {
+                    simulations.put(String.format("buy:%s,sell:%sinc:%s", thresholdBuy, thresholdSell, tradeIncrement), [
+                            'buyThreshold'   : thresholdBuy,
+                            'sellThreshold'  : thresholdSell,
+                            'startingBalance': STARTING_BALANCE,
+                            'tradeIncrement' : tradeIncrement,
+                            'transactionCost': TRADE_TRANSACTION_COST,
+                            'tradeCount'     : 0,
+                            'balancesA'      : [:],
+                            'balancesB'      : [:]
+                    ])
+                }
             }
         }
 
@@ -102,6 +105,7 @@ class BuySellTradingHistoricalSimulatorService {
                             }else{
                                 (simulation.get('balancesA') as Map).put(strategy, balanceA + ((simulation.get('tradeIncrement') as Double) * (1 + (simulation.get('transactionCost') as Double))))
                                 (simulation.get('balancesB') as Map).put(strategy, balanceB - ((simulation.get('tradeIncrement') as Double) * correlationAssociation.price))
+                                simulation.put('tradeCount', (simulation.get('tradeCount', 0) as Integer) + 1)
                             }
                         }
                         if(tag == 'sell' && probability > (simulation.get('sellThreshold') as Double)){
@@ -111,6 +115,7 @@ class BuySellTradingHistoricalSimulatorService {
                             }else{
                                 (simulation.get('balancesA') as Map).put(strategy, balanceA - (simulation.get('tradeIncrement') as Double))
                                 (simulation.get('balancesB') as Map).put(strategy, balanceB + proceedsA)
+                                simulation.put('tradeCount', (simulation.get('tradeCount', 0) as Integer) + 1)
                             }
                         }
                     }
@@ -118,7 +123,7 @@ class BuySellTradingHistoricalSimulatorService {
             }
         }
 
-        Map result = [:]
+        Map<String, Map> result = [:]
         simulations.each {
             String simulationKey = it.key
             Map simulation = it.value
@@ -126,12 +131,16 @@ class BuySellTradingHistoricalSimulatorService {
                 String strategy = it.key
                 Double finalBalance = it.value + ((simulation.get('balancesA') as Map).get(it.key) / finalPrice)
                 (simulation.get('result', [:]) as Map).put(it.key, finalBalance)
-                result.put(String.format('%s:%s', simulationKey, strategy), finalBalance)
+                result.put(String.format('%s:%s', simulationKey, strategy), [
+                        'balance' : finalBalance,
+                        'tradeCount' : simulation.get('tradeCount')
+                ])
             }
         }
 
         Logger.log('results are in')
-        Logger.log(result.sort { -it.value } as String)
+        Logger.log(result.sort { -it.value.get('balance') }.take(20) as String)
+
         return result
 
     }
