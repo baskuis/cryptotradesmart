@@ -96,18 +96,18 @@ class BuySellTradingHistoricalSimulatorService {
                         Double balanceB = (simulation.get('balancesB') as Map).get(strategy, 0) as Double
                         Double balanceA = (simulation.get('balancesA') as Map).get(strategy, STARTING_BALANCE) as Double
                         if(tag == 'buy' && probability > (simulation.get('buyThreshold') as Double)){
-                            Logger.log("Buying A for B, p: " + probability)
+                            Logger.debug("Buying A for B, p: " + probability)
                             if(balanceB < costsA){
-                                Logger.log("Not enough balanceB left: " + balanceB)
+                                Logger.debug("Not enough balanceB left: " + balanceB)
                             }else{
                                 (simulation.get('balancesA') as Map).put(strategy, balanceA + ((simulation.get('tradeIncrement') as Double) * (1 + (simulation.get('transactionCost') as Double))))
                                 (simulation.get('balancesB') as Map).put(strategy, balanceB - ((simulation.get('tradeIncrement') as Double) * correlationAssociation.price))
                             }
                         }
                         if(tag == 'sell' && probability > (simulation.get('sellThreshold') as Double)){
-                            Logger.log("Selling A for B, p: " + probability)
+                            Logger.debug("Selling A for B, p: " + probability)
                             if(balanceA < (simulation.get('tradeIncrement') as Double) * (1 + (simulation.get('transactionCost') as Double))){
-                                Logger.log("Not enough balanceA left: " + balanceA)
+                                Logger.debug("Not enough balanceA left: " + balanceA)
                             }else{
                                 (simulation.get('balancesA') as Map).put(strategy, balanceA - (simulation.get('tradeIncrement') as Double))
                                 (simulation.get('balancesB') as Map).put(strategy, balanceB + proceedsA)
@@ -130,9 +130,8 @@ class BuySellTradingHistoricalSimulatorService {
             }
         }
 
-        result.sort { -it.value }
-
-        Logger.log(result as String)
+        Logger.log('results are in')
+        Logger.log(result.sort { -it.value } as String)
         return result
 
     }

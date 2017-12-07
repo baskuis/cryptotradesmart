@@ -300,6 +300,9 @@ class BytesFetcherService {
         List<News> response = []
         while(cursor.hasNext()){
             DBObject obj = cursor.next()
+            if(!obj["metadata"]['datetime']) return
+            if(!obj["article"]['published']) return
+            if(!obj['article']['title']) return
             News theNews = new News()
             Article theArticle = new Article()
             theArticle.title = obj['article']['title']

@@ -18,9 +18,6 @@ import javax.annotation.PostConstruct
 @Service
 class ProbabilityFigurerService {
 
-    //TODO: Test if this applies or is useful
-    public final static Double MIN_RELEVANCE = 0.01
-
     @Autowired
     CaptureAssociationsService captureAssociationsService
 
@@ -50,7 +47,7 @@ class ProbabilityFigurerService {
      */
     CorrelationAssociation getCorrelationAssociations(Date eventDate){
 
-        println String.format('attempting to get association for %s', eventDate)
+        Logger.log(String.format('attempting to get association for %s', eventDate))
         CorrelationAssociation correlationAssociation = new CorrelationAssociation()
         correlationAssociation.setDate(eventDate)
 
