@@ -26,6 +26,14 @@ class BytesFetcherService {
 
     SimpleDateFormat dateParser = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH)
 
+    final static String COLLECTION_LESSONS = "lessons"
+    final static String COLLECTION_MEMORY = "memory"
+    final static String COLLECTION_NEWS = "news"
+    final static String COLLECTION_TWITTER = "twitter"
+    final static String COLLECTION_ASSOCIATIONS = "associations"
+    final static String COLLECTION_BRAIN = "brain"
+    final static String COLLECTION_SIMULATIONS = "simulations"
+
     @Autowired
     MongoTemplate mongoTemplate
 
@@ -35,15 +43,17 @@ class BytesFetcherService {
     DBCollection twitter
     DBCollection associations
     DBCollection brain
+    DBCollection simulations
 
     @PostConstruct
     void postConstruct(){
-        lessons = mongoTemplate.getCollection("lessons")
-        memory = mongoTemplate.getCollection("memory")
-        news = mongoTemplate.getCollection("news")
-        twitter = mongoTemplate.getCollection("twitter")
-        associations = mongoTemplate.getCollection("associations")
-        this.brain = mongoTemplate.getCollection("brain")
+        this.lessons = mongoTemplate.getCollection(COLLECTION_LESSONS)
+        this.memory = mongoTemplate.getCollection(COLLECTION_MEMORY)
+        this.news = mongoTemplate.getCollection(COLLECTION_NEWS)
+        this.twitter = mongoTemplate.getCollection(COLLECTION_TWITTER)
+        this.associations = mongoTemplate.getCollection(COLLECTION_ASSOCIATIONS)
+        this.brain = mongoTemplate.getCollection(COLLECTION_BRAIN)
+        this.simulations = mongoTemplate.getCollection(COLLECTION_SIMULATIONS)
     }
 
     /**
@@ -63,9 +73,86 @@ class BytesFetcherService {
             "news",
             "twitter",
             "memory",
-            "brainNodes"
+            "brainNodes",
+            "simulations"
     ], allEntries = true)
     void flushCache(){ }
+
+    /**
+     * Get all simulations
+     *
+     * @return
+     */
+    @Cacheable("simulations")
+    List<SimulationResult> getSimulations(){
+        List<SimulationResult> theSimulations = []
+        DBCursor cursor = simulations.find()
+        while(cursor.hasNext()) {
+            try {
+                DBObject obj = cursor.next()
+                SimulationResult simulation = new SimulationResult()
+                if (obj['_id']) {
+                    simulation.id = obj['id']
+                }
+                simulation.differential = obj['differential'] as Double
+                simulation.startDate = dateParser.parse(obj['startDate'] as String)
+                simulation.probabilityCombinerStrategy = obj['probabilityCombinerStrategy']
+                simulation.tradeExecutionStrategy = obj['tradeExecutionStrategy']
+                simulation.tradeIncrement = obj['tradeIncrement'] as Double
+                simulation.buyThreshold = obj['buyThreshold'] as Double
+                simulation.sellThreshold = obj['sellThreshold'] as Double
+                simulation.endDate = dateParser.parse(obj['endDate'] as String)
+                Details details = new Details()
+                details.tradecurrency = obj['exchange']['details']['tradecurrency'] as String
+                details.pricecurrency = obj['exchange']['details']['pricecurrency'] as String
+                Exchange exchange = new Exchange()
+                exchange.platform = obj['exchange']['platform'] as String
+                exchange.exchange = obj['exchange']['exchange'] as String
+                exchange.details = details
+                Metadata metadata = new Metadata()
+                metadata.datetime = dateParser.parse(obj["metadata"]["datetime"] as String)
+                metadata.hostname = obj["metadata"]["hostname"] as String
+                simulation.exchange = exchange
+                simulation.metadata = metadata
+                theSimulations << simulation
+            } catch(Exception e){
+                e.printStackTrace()
+            }
+        }
+        return theSimulations
+    }
+
+    /**
+     * Persist a simulation
+     *
+     * @param simulation
+     */
+    @CacheEvict(value = "simulations", allEntries = true)
+    void saveSimulation(SimulationResult simulation){
+        try {
+            DBObject obj = new BasicDBObject()
+            if(simulation.id){
+                obj['_id'] = new ObjectId(simulation.id)
+            }
+            obj['startDate'] = simulation.startDate
+            obj['endDate'] = simulation.endDate
+            obj['differential'] = String.format("%.16f", simulation.differential)
+            obj['probabilityCombinerStrategy'] = simulation.probabilityCombinerStrategy
+            obj['tradeExecutionStrategy'] = simulation.tradeExecutionStrategy
+            obj['tradeIncrement'] = String.format("%.16f", simulation.tradeIncrement)
+            obj['buyThreshold'] = String.format("%.16f", simulation.buyThreshold)
+            obj['sellThreshold'] = String.format("%.16f", simulation.sellThreshold)
+            obj.get('exchange', [:])['platform'] = simulation.exchange?.platform
+            obj.get('exchange', [:])['exchange'] = simulation.exchange?.exchange
+            (obj.get('exchange', [:]) as Map).get('details', [:])['tradecurrency'] = simulation.exchange?.details?.tradecurrency
+            (obj.get('exchange', [:]) as Map).get('details', [:])['pricecurrency'] = simulation.exchange?.details?.pricecurrency
+            obj.get('metadata', [:])['datetime'] = simulation.metadata?.datetime
+            obj.get('metadata', [:])['hostname'] = simulation.metadata?.hostname
+            this.simulations.save(obj)
+        } catch (Exception e){
+            e.printStackTrace()
+        }
+    }
 
     /**
      * Return existing or new number association object

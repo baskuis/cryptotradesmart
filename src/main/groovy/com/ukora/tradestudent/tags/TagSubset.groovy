@@ -7,6 +7,6 @@ package com.ukora.tradestudent.tags
  */
 interface TagSubset {
 
-    boolean applies(String toTags)
+    boolean applies(String toTag)
 
 }

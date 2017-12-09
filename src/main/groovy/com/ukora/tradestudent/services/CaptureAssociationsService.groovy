@@ -1,14 +1,13 @@
 package com.ukora.tradestudent.services
 
 import com.ukora.tradestudent.entities.*
+import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
-import groovy.util.logging.Log4j2
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
-@Log4j2
 @Service
 class CaptureAssociationsService {
 
@@ -40,7 +39,7 @@ class CaptureAssociationsService {
     void learn(){
         if(leaningEnabled) {
             learningSpeed.times {
-                println String.format("capturing lesson %s", it)
+                Logger.log(String.format("capturing lesson %s", it))
                 Lesson lesson = bytesFetcherService.getNextLesson()
                 if (lesson) {
 
@@ -56,13 +55,13 @@ class CaptureAssociationsService {
                     /** Remember all that */
                     rememberAllThat(lesson)
 
-                    println "done"
+                    Logger.log("done")
                 } else {
-                    println "no lesson"
+                    Logger.log("no lesson")
                 }
             }
         }else{
-            println "leaning disabled"
+            Logger.debug("leaning disabled")
         }
     }
 
@@ -237,7 +236,7 @@ class CaptureAssociationsService {
                 brain.mean,
                 brain.count)
         if(newDeviation == null || newDeviation.naN || newMean == null || newMean.naN){
-            println String.format("Not capturing new value mean %s deviation %s", newMean, newDeviation)
+            Logger.log(String.format("Not capturing new value mean %s deviation %s", newMean, newDeviation))
             return
         }
         brain.standard_deviation = newDeviation

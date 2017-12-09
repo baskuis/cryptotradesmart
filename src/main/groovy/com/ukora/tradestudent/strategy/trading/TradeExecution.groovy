@@ -2,11 +2,10 @@ package com.ukora.tradestudent.strategy.trading
 
 class TradeExecution {
 
-    Double targetPrice
-    Date tradeDate
-    enum tradeType {BUY, SELL}
-    boolean committed = false
+    enum TradeType {BUY, SELL}
 
-    //TODO: Build this out
+    TradeType tradeType
+    Double amount
+    Double price
 
 }

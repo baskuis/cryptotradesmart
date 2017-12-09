@@ -1,16 +1,16 @@
 package com.ukora.tradestudent.services
 
-import groovy.util.logging.Log4j2
+import com.ukora.tradestudent.utils.Logger
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
-@Log4j2
 @Service
 class TraverseLessonsService {
 
     @Scheduled(cron = "*/5 * * * * *")
     void learn(){
-        println 'traverse memory'
+
+        Logger.debug('traverse memory')
 
         /**
          *

@@ -3,6 +3,7 @@ package com.ukora.tradestudent.controller
 import com.ukora.tradestudent.TradestudentApplication
 import com.ukora.tradestudent.entities.BrainNode
 import com.ukora.tradestudent.entities.CorrelationAssociation
+import com.ukora.tradestudent.entities.SimulationResult
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.CaptureAssociationsService
 import com.ukora.tradestudent.services.ProbabilityFigurerService
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping('/learn')
-class LessonController {
+class TradeStudentController {
 
     @Autowired
     ProbabilityFigurerService probabilityFigurerService
@@ -31,17 +32,17 @@ class LessonController {
 
     @RequestMapping(path = '/correlations', produces = 'application/json')
     CorrelationAssociation getCorrelationAssociations(@RequestParam(value = 'date') Date date){
-        return probabilityFigurerService.getCorrelationAssociations(date)
+        probabilityFigurerService.getCorrelationAssociations(date)
     }
 
     @RequestMapping(path = '/braindump', produces = 'application/json')
     Map<String, BrainNode> getBrainNodes(){
-        return probabilityFigurerService.getBrainNodes()
+        probabilityFigurerService.getBrainNodes()
     }
 
     @RequestMapping(path = '/brainon')
     String brainOn(@RequestParam(value = 'speed') Integer speed){
-        if(!speed || speed > 100 || speed < 1) speed = 1
+        if(!speed || speed > 50 || speed < 1) speed = 1
         CaptureAssociationsService.leaningEnabled = true
         CaptureAssociationsService.learningSpeed = speed
         "ON"
@@ -87,6 +88,11 @@ class LessonController {
     String simulation(@RequestParam(value = 'date') Date date){
         tradingHistoricalSimulatorService.runSimulation(date)
         "STARTED"
+    }
+
+    @RequestMapping(path = '/simulations')
+    List<SimulationResult> simulations(){
+        bytesFetcherService.getSimulations()
     }
 
     @InitBinder
