@@ -6,7 +6,7 @@ import com.ukora.tradestudent.entities.CorrelationAssociation
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.CaptureAssociationsService
 import com.ukora.tradestudent.services.ProbabilityFigurerService
-import com.ukora.tradestudent.services.BuySellTradingHistoricalSimulatorService
+import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.propertyeditors.CustomDateEditor
