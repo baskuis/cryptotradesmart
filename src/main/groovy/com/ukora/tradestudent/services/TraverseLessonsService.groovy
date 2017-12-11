@@ -73,19 +73,23 @@ class TraverseLessonsService {
         while (current.isBefore(end)) {
             Double average
             Double total = 0d
-            Map<Date, Double> intervalEntries = reference.findAll {
+            Map<Date, Double> entries = reference.findAll {
                 it.key.after(Date.from(current)) && it.key.before(Date.from(current + hourGap))
             }.each {
                 total += it.value
             }
-            average = total / intervalEntries.size()
-            averages << [
-                    'date': Date.from(current),
-                    'average': average
-            ]
-            println averages
+            average = total / entries.size()
+            if(!average.naN) {
+                averages << [
+                        'date'   : Date.from(current),
+                        'average': average,
+                        'entries': entries
+                ]
+            }
             current = current + hourGap
         }
+
+        println averages
 
     }
 
