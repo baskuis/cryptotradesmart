@@ -299,7 +299,7 @@ class BytesFetcherService {
             someAssociation.memory = getMemory(someAssociation.date)
             if(someAssociation.memory == null){
                 Logger.log("empty memory object")
-                return
+                return null
             }
             someAssociation.exchange = someAssociation.memory.exchange
             someAssociation.price = someAssociation.memory.graph.price
@@ -413,6 +413,27 @@ class BytesFetcherService {
             return lesson
         }
         return null
+    }
+
+    /**
+     * Save lesson
+     *
+     * @param lesson
+     */
+    void saveLesson(Lesson lesson) {
+        try {
+            DBObject obj = new BasicDBObject()
+            if (lesson.id) {
+                obj['_id'] = new ObjectId(lesson.id)
+            }
+            obj["price"] = String.format("%.16f", lesson.price)
+            obj["date"] = lesson.date
+            obj.get("exchange", [:])["platform"] = lesson.exchange?.platform
+            obj.get("exchange", [:])["exchange"] = lesson.exchange?.exchange
+            this.lessons.save(obj)
+        } catch(Exception e){
+            e.printStackTrace()
+        }
     }
 
     /**

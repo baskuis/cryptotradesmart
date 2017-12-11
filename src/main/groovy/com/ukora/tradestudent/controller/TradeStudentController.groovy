@@ -7,6 +7,7 @@ import com.ukora.tradestudent.entities.SimulationResult
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.CaptureAssociationsService
 import com.ukora.tradestudent.services.ProbabilityFigurerService
+import com.ukora.tradestudent.services.TraverseLessonsService
 import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,6 +30,9 @@ class TradeStudentController {
 
     @Autowired
     BytesFetcherService bytesFetcherService
+
+    @Autowired
+    TraverseLessonsService traverseLessonsService
 
     @RequestMapping(path = '/correlations', produces = 'application/json')
     CorrelationAssociation getCorrelationAssociations(@RequestParam(value = 'date') Date date){
@@ -105,6 +109,12 @@ class TradeStudentController {
     String multiOff(){
         BuySellTradingHistoricalSimulatorService.multithreadingEnabled = false
         "OFF"
+    }
+
+    @RequestMapping(path = '/traversehistory')
+    String traverseHistory(){
+        traverseLessonsService.learn()
+        "STARTED"
     }
 
     @InitBinder
