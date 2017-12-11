@@ -3,6 +3,8 @@ package com.ukora.tradestudent.strategy.probability.impl
 import com.ukora.tradestudent.bayes.numbers.NumberAssociationProbability
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.tags.TagSubset
+import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 import static com.ukora.tradestudent.utils.NerdUtils.assertRanges
@@ -13,9 +15,12 @@ class BuySellNaiveBayesianProbabilityCombinerStrategy implements ProbabilityComb
     private static final String SELL_TAG_NAME = 'sell'
     private static final String BUY_TAG_NAME = 'buy'
 
+    @Autowired
+    BuySellTagGroup buySellTagGroup
+
     @Override
     boolean applies(String toTag) {
-        (toTag == SELL_TAG_NAME || toTag == BUY_TAG_NAME)
+        buySellTagGroup.applies(toTag)
     }
 
     /**

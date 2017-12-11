@@ -6,6 +6,7 @@ import com.ukora.tradestudent.entities.BrainNode
 import com.ukora.tradestudent.entities.CorrelationAssociation
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.tags.AbstractCorrelationTag
+import com.ukora.tradestudent.tags.TagGroup
 import com.ukora.tradestudent.tags.TagSubset
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
@@ -27,15 +28,22 @@ class ProbabilityFigurerService {
     @Autowired
     ApplicationContext applicationContext
 
-    List<String> primaryTags = []
+    Map<String, TagGroup> tagGroupMap = [:]
+    Map<String, AbstractCorrelationTag> tagMap = [:]
 
     @PostConstruct
     void init(){
 
-        /** TODO: Handle multipe tag groups - review this */
-        /** Collect available primary tags as a list */
+        /** Collect primary tags */
         applicationContext.getBeansOfType(AbstractCorrelationTag).each {
-            primaryTags << it.value.tagName
+            Logger.log(String.format("Found tag %s", it.key))
+            tagMap.put(it.key, it.value)
+        }
+
+        /** Collect tag groups */
+        applicationContext.getBeansOfType(TagGroup).each {
+            Logger.log(String.format("Found tag group %s", it.key))
+            tagGroupMap.put(it.key, it.value)
         }
 
     }
@@ -82,17 +90,22 @@ class ProbabilityFigurerService {
         Map<String, BrainNode> nodes = bytesFetcherService.getAllBrainNodes()
         nodes.each {
             BrainNode brainNode = it.value
-            NumberAssociation genericAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL_ASSOCIATION_REFERENCE)
-            if(genericAssociation) {
-                primaryTags.each { String tag ->
-                    NumberAssociation tagAssociation = brainNode.tagReference.get(tag)
-                    tagAssociation.relevance = NerdUtils.chanceOfCorrelation(
-                            tagAssociation.mean,
-                            tagAssociation.standard_deviation,
-                            tagAssociation.mean,
-                            genericAssociation.standard_deviation,
-                            genericAssociation.mean
-                    )
+            NumberAssociation generalAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL_ASSOCIATION_REFERENCE)
+            if(generalAssociation) {
+                tagGroupMap.each {
+                    it.value.tags().each {
+                        String tag = it.getTagName()
+                        NumberAssociation tagAssociation = brainNode.tagReference.get(tag)
+                        if(tagAssociation) {
+                            tagAssociation.relevance = NerdUtils.chanceOfCorrelation(
+                                    tagAssociation.mean,
+                                    tagAssociation.standard_deviation,
+                                    tagAssociation.mean,
+                                    generalAssociation.standard_deviation,
+                                    generalAssociation.mean
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -114,18 +127,21 @@ class ProbabilityFigurerService {
             Double normalizedValue = it.value
             NumberAssociation generalAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL_ASSOCIATION_REFERENCE)
             if(generalAssociation) {
-                primaryTags.each { String tag ->
-                    NumberAssociation tagAssociation = brainNode.tagReference.get(tag)
-                    if (tagAssociation) {
-                        NumberAssociationProbability numberAssociationProbability = new NumberAssociationProbability(tagAssociation)
-                        numberAssociationProbability.probability = NerdUtils.chanceOfCorrelation(
-                                normalizedValue,
-                                tagAssociation.standard_deviation,
-                                tagAssociation.mean,
-                                generalAssociation.standard_deviation,
-                                tagAssociation.mean
-                        )
-                        correlationAssociation.numericAssociationProbabilities.get(reference, [:]).put(tag, numberAssociationProbability)
+                tagGroupMap.each {
+                    it.value.tags().each {
+                        String tag = it.getTagName()
+                        NumberAssociation tagAssociation = brainNode.tagReference.get(tag)
+                        if (tagAssociation) {
+                            NumberAssociationProbability numberAssociationProbability = new NumberAssociationProbability(tagAssociation)
+                            numberAssociationProbability.probability = NerdUtils.chanceOfCorrelation(
+                                    normalizedValue,
+                                    tagAssociation.standard_deviation,
+                                    tagAssociation.mean,
+                                    generalAssociation.standard_deviation,
+                                    tagAssociation.mean
+                            )
+                            correlationAssociation.numericAssociationProbabilities.get(reference, [:]).put(tag, numberAssociationProbability)
+                        }
                     }
                 }
             }
@@ -138,15 +154,18 @@ class ProbabilityFigurerService {
      * @param correlationAssociation
      */
     void hydrateTagScores(CorrelationAssociation correlationAssociation){
-        primaryTags.each { String tag ->
-            Map<String, ProbabilityCombinerStrategy> probabilityCombinerStrategyMap = applicationContext.getBeansOfType(ProbabilityCombinerStrategy)
-            probabilityCombinerStrategyMap.each {
-                if(it.value instanceof TagSubset && !(it.value as TagSubset).applies(tag)){
-                    Logger.debug(String.format("Skipping p combiner strategy: %s for tag: %s", it.key, tag))
-                    return
+        tagGroupMap.each {
+            it.value.tags().each {
+                String tag = it.getTagName()
+                Map<String, ProbabilityCombinerStrategy> probabilityCombinerStrategyMap = applicationContext.getBeansOfType(ProbabilityCombinerStrategy)
+                probabilityCombinerStrategyMap.each {
+                    if (it.value instanceof TagSubset && !(it.value as TagSubset).applies(tag)) {
+                        Logger.debug(String.format("Skipping p combiner strategy: %s for tag: %s", it.key, tag))
+                        return
+                    }
+                    Logger.debug(String.format("Running p combiner strategy: %s", it.key))
+                    correlationAssociation.tagScores.get(tag, [:]).put(it.key, it.value.combineProbabilities(tag, correlationAssociation.numericAssociationProbabilities))
                 }
-                Logger.debug(String.format("Running p combiner strategy: %s", it.key))
-                correlationAssociation.tagScores.get(tag, [:]).put(it.key, it.value.combineProbabilities(tag, correlationAssociation.numericAssociationProbabilities))
             }
         }
     }
@@ -162,7 +181,7 @@ class ProbabilityFigurerService {
             it.value.each {
                 String strategy = it.key
                 Double focusTag = correlationAssociation.tagScores.get(tag).get(strategy)
-                Double proportion = NerdUtils.getProportionOf(focusTag, primaryTags.findAll { it != tag }.collect { correlationAssociation.tagScores.get(it).get(strategy) })
+                Double proportion = NerdUtils.getProportionOf(focusTag, tagGroupMap.find { it.value.applies(tag) }.value.tags().findAll({ it.getTagName() != tag }).collect({ correlationAssociation.tagScores.get(it.getTagName()).get(strategy) }))
                 correlationAssociation.tagProbabilities.get(strategy, [:]).put(tag, proportion)
             }
         }

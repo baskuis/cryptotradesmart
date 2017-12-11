@@ -19,6 +19,8 @@ class NerdUtilsSpec extends Specification {
         where:
         value1     | value2                   | value3                   | expectedValue
         0d         | 1d                       | -1d                      | true
+        0.3d       | 0.65d                    | -0.87d                   | true
+        0d         | 1d                       | -2d                      | false
         2d         | 1d                       | -1d                      | false
         Double.NaN | 1d                       | -1d                      | false
         0d         | Double.NEGATIVE_INFINITY | -1d                      | false

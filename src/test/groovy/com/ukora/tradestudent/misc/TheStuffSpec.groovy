@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat
 class TheStuffSpec extends Specification {
 
     def "Test date format conversion"() {
+
         given:
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.mmm'Z'")
         sdf.setTimeZone(TimeZone.getTimeZone("GMT"))
