@@ -3,8 +3,8 @@ package com.ukora.tradestudent.services
 import com.mongodb.*
 import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.entities.*
-import com.ukora.tradestudent.tags.BuyTag
-import com.ukora.tradestudent.tags.SellTag
+import com.ukora.tradestudent.tags.buysell.BuyTag
+import com.ukora.tradestudent.tags.buysell.SellTag
 import com.ukora.tradestudent.utils.Logger
 import org.bson.types.ObjectId
 import org.springframework.beans.factory.annotation.Autowired
@@ -33,6 +33,7 @@ class BytesFetcherService {
     final static String COLLECTION_ASSOCIATIONS = "associations"
     final static String COLLECTION_BRAIN = "brain"
     final static String COLLECTION_SIMULATIONS = "simulations"
+    final static String COLLECTION_PROPERTIES = "properties"
 
     @Autowired
     MongoTemplate mongoTemplate
@@ -44,6 +45,7 @@ class BytesFetcherService {
     DBCollection associations
     DBCollection brain
     DBCollection simulations
+    DBCollection properties
 
     @PostConstruct
     void postConstruct(){
@@ -54,6 +56,53 @@ class BytesFetcherService {
         this.associations = mongoTemplate.getCollection(COLLECTION_ASSOCIATIONS)
         this.brain = mongoTemplate.getCollection(COLLECTION_BRAIN)
         this.simulations = mongoTemplate.getCollection(COLLECTION_SIMULATIONS)
+        this.properties = mongoTemplate.getCollection(COLLECTION_PROPERTIES)
+    }
+
+    /**
+     * Get property
+     *
+     * @param name
+     * @return
+     */
+    @Cacheable("properties")
+    Property getProperty(String name){
+        BasicDBObject query = new BasicDBObject()
+        query.put('name', name)
+        DBObject obj = this.properties.findOne(query)
+        return new Property(
+            name: name,
+            value: obj['value']
+        )
+    }
+
+    /**
+     * Save property
+     *
+     * @param property
+     */
+    @CacheEvict(value = "properties", allEntries = true)
+    void saveProperty(Property property){
+        saveProperty(property.name, property.value)
+    }
+
+    /**
+     * Save property
+     *
+     * @param name
+     * @param value
+     */
+    @CacheEvict(value = "properties", allEntries = true)
+    void saveProperty(String name, String value){
+        try {
+            BasicDBObject query = new BasicDBObject()
+            query.put('name', name)
+            DBObject obj = this.properties.findOne(query)
+            obj['value'] = value
+            this.properties.save(obj)
+        } catch(Exception e){
+            e.printStackTrace()
+        }
     }
 
     /**
@@ -61,7 +110,7 @@ class BytesFetcherService {
      *
      */
     @CacheEvict(value = "brainNodes", allEntries = true)
-    void wiskyBender(){
+    void whiskeyBender(){
         this.brain.remove(new BasicDBObject())
     }
 
@@ -74,7 +123,8 @@ class BytesFetcherService {
             "twitter",
             "memory",
             "brainNodes",
-            "simulations"
+            "simulations",
+            "properties"
     ], allEntries = true)
     void flushCache(){ }
 
@@ -92,7 +142,7 @@ class BytesFetcherService {
                 DBObject obj = cursor.next()
                 SimulationResult simulation = new SimulationResult()
                 if (obj['_id']) {
-                    simulation.id = obj['id']
+                    simulation.id = obj['_id']
                 }
                 simulation.differential = obj['differential'] as Double
                 simulation.startDate = dateParser.parse(obj['startDate'] as String)

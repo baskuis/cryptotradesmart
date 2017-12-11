@@ -10,7 +10,9 @@ class AverageProbabilityCombinerStrategy implements ProbabilityCombinerStrategy 
     @Override
     Double combineProbabilities(String tag, Map<String, Map<String, NumberAssociationProbability>> numberAssociationProbabilities) {
         Double total = 0
-        numberAssociationProbabilities.each { total += it.value.get(tag).probability }
+        numberAssociationProbabilities.each {
+            total += it.value.get(tag).probability
+        }
         return total / numberAssociationProbabilities.size()
     }
 

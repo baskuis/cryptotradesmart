@@ -7,6 +7,7 @@ import com.ukora.tradestudent.services.ProbabilityFigurerService
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.strategy.trading.TradeExecution
 import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
+import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
@@ -35,21 +36,26 @@ class BuySellTradingHistoricalSimulatorService {
 
     public final static long INTERVAL_SECONDS = 60
 
-    private final static String BUY_TAG = 'buy'
-    private final static String SELL_TAG = 'sell'
+    public final static int numCores = Runtime.getRuntime().availableProcessors()
 
+    public static boolean multithreadingEnabled = false
+
+    @Autowired
+    BuySellTagGroup buySellTagGroup
+
+    /** List of possible configuration variations */
     List<Simulation> simulations = []
 
     private final static Double STARTING_BALANCE = 10
-    private final static Double MAX_TRADE_INCREMENT = 3
-    private final static Double TRADE_INCREMENT = 0.6
+    private final static Double MAX_TRADE_INCREMENT = 2.4
+    private final static Double TRADE_INCREMENT = 0.4
     private final static Double TRADE_TRANSACTION_COST = 0.0022
-    private final static Double LOWEST_THRESHOLD = 0.50
+    private final static Double LOWEST_THRESHOLD = 0.65
     private final static Double HIGHEST_THRESHOLD = 1.00
-    private final static Double THRESHOLD_INCREMENT = 0.02
+    private final static Double THRESHOLD_INCREMENT = 0.01
 
     @PostConstruct
-    void init(){
+    void init() {
 
         /**
          * Get probability combiner strategies
@@ -64,19 +70,19 @@ class BuySellTradingHistoricalSimulatorService {
         /**
          * Build simulations
          */
-        for(Double tradeIncrement = TRADE_INCREMENT; tradeIncrement <= MAX_TRADE_INCREMENT; tradeIncrement += TRADE_INCREMENT) {
+        for (Double tradeIncrement = TRADE_INCREMENT; tradeIncrement <= MAX_TRADE_INCREMENT; tradeIncrement += TRADE_INCREMENT) {
             for (Double thresholdBuy = LOWEST_THRESHOLD; thresholdBuy <= HIGHEST_THRESHOLD; thresholdBuy += THRESHOLD_INCREMENT) {
                 for (Double thresholdSell = LOWEST_THRESHOLD; thresholdSell <= HIGHEST_THRESHOLD; thresholdSell += THRESHOLD_INCREMENT) {
                     simulations << new Simulation(
-                        key            : String.format("buy:%s,sell:%s,inc:%s", thresholdBuy, thresholdSell, tradeIncrement),
-                        buyThreshold   : thresholdBuy,
-                        sellThreshold  : thresholdSell,
-                        startingBalance: STARTING_BALANCE,
-                        tradeIncrement : tradeIncrement,
-                        transactionCost: TRADE_TRANSACTION_COST,
-                        tradeCount     : 0,
-                        balancesA      : [:],
-                        balancesB      : [:]
+                            key: String.format("buy:%s,sell:%s,inc:%s", thresholdBuy, thresholdSell, tradeIncrement),
+                            buyThreshold: thresholdBuy,
+                            sellThreshold: thresholdSell,
+                            startingBalance: STARTING_BALANCE,
+                            tradeIncrement: tradeIncrement,
+                            transactionCost: TRADE_TRANSACTION_COST,
+                            tradeCount: 0,
+                            balancesA: [:],
+                            balancesB: [:]
                     )
                 }
             }
@@ -92,25 +98,26 @@ class BuySellTradingHistoricalSimulatorService {
      * @return
      */
     @Async
-    runSimulation(Date fromDate){
-        if(!fromDate) return null
+    runSimulation(Date fromDate) {
+        if (!fromDate) return null
         Instant end = Instant.now()
         Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
         Instant current = Instant.ofEpochMilli(fromDate.time)
         while (current.isBefore(end)) {
             current = current + gap
             CorrelationAssociation correlationAssociation = probabilityFigurerService.getCorrelationAssociations(Date.from(current))
-            int numCores = Runtime.getRuntime().availableProcessors()
             correlationAssociation.tagProbabilities.each {
                 String strategy = it.key
                 it.value.each {
-                    if(!correlationAssociation.price) return
-                    if(!it.value) return
+                    if (!correlationAssociation.price) return
+                    if (!it.value) return
                     String tag = it.key
-                    if(tag != BUY_TAG && tag != SELL_TAG) return
+                    if (!buySellTagGroup.tags().find { it.tagName == tag }) return
                     Double probability = it.value
-                    def partitioned = (0..<numCores).collect{simulations[(it..<simulations.size()).step(numCores)]}
-                    Logger.debug(String.format("Delegating simulation to %s threads", numCores))
+                    def partitioned = multithreadingEnabled ? (0..<numCores).collect {
+                        simulations[(it..<simulations.size()).step(numCores)]
+                    } : [simulations]
+                    if (multithreadingEnabled) Logger.debug(String.format("Delegating simulation to %s threads", numCores))
                     partitioned.collect { group ->
                         Thread.start({
                             group.each {
@@ -123,7 +130,7 @@ class BuySellTradingHistoricalSimulatorService {
                                             tag,
                                             probability,
                                             simulation)
-                                    if(tradeExecution) {
+                                    if (tradeExecution) {
                                         Logger.debug(String.format("key:%s,type:%s,probability:%s", purseKey, tradeExecution.tradeType, probability))
                                         simulateTrade(
                                                 simulation,
@@ -140,22 +147,28 @@ class BuySellTradingHistoricalSimulatorService {
             }
         }
 
-        /**
-         * Output results
-         */
-        Logger.log('results are in')
-        Map<String, Map> finalResults = extractResult().sort { -it.value.get('balance') }.take(20)
-        Logger.log(finalResults as String)
+        /** Capture the results */
+        Map<String, Map> finalResults = captureResults()
 
-        /**
-         * Persist results
-         */
+        /** Persist simulation results */
+        persistSimulationResults(finalResults, fromDate, Date.from(end))
+
+    }
+
+    /**
+     * Persist result of simulation
+     *
+     * @param finalResults
+     * @param fromDate
+     * @param endDate
+     */
+    private void persistSimulationResults(Map<String, Map> finalResults, Date fromDate, Date endDate) {
         finalResults.each {
             Simulation simulation = (it.value.get('simulation') as Simulation)
             SimulationResult simulationResult = new SimulationResult(
                     differential: (it.value.get('balance') as Double) / STARTING_BALANCE,
                     startDate: fromDate,
-                    endDate: Date.from(end),
+                    endDate: endDate,
                     tradeIncrement: simulation.tradeIncrement,
                     tradeExecutionStrategy: it.value.get('tradeExecutionStrategy'),
                     probabilityCombinerStrategy: it.value.get('probabilityCombinerStrategy'),
@@ -164,7 +177,18 @@ class BuySellTradingHistoricalSimulatorService {
             )
             bytesFetcherService.saveSimulation(simulationResult)
         }
+    }
 
+    /**
+     * Capture the final results
+     *
+     * @return
+     */
+    private Map<String, Map> captureResults() {
+        Logger.log('results are in')
+        Map<String, Map> finalResults = extractResult().sort { -it.value.get('balance') }.take(20)
+        Logger.log(finalResults as String)
+        return finalResults
     }
 
     /**
@@ -175,8 +199,8 @@ class BuySellTradingHistoricalSimulatorService {
      * @param purseKey
      * @return
      */
-    private static simulateTrade(Simulation simulation, TradeExecution tradeExecution, String purseKey){
-        if(!tradeExecution) return
+    private static simulateTrade(Simulation simulation, TradeExecution tradeExecution, String purseKey) {
+        if (!tradeExecution) return
         Double costsA = tradeExecution.amount * tradeExecution.price * (1 + simulation.transactionCost)
         Double proceedsA = tradeExecution.amount * tradeExecution.price * (1 - simulation.transactionCost)
         Double balanceB = simulation.balancesB.get(purseKey, 0) as Double
@@ -209,23 +233,23 @@ class BuySellTradingHistoricalSimulatorService {
      *
      * @return
      */
-    private Map<String, Map> extractResult(){
+    private Map<String, Map> extractResult() {
         Map<String, Map> result = [:]
         simulations.each {
             Simulation simulation = it
             simulation.balancesA.each {
                 String[] keys = (it.key as String).split(/:/) /** Extract strategies from purseKey */
-                if(keys.size() != 2) return
+                if (keys.size() != 2) return
                 String probabilityCombinerStrategy = keys[0]
                 String tradeExecutionStrategy = keys[1]
                 Double finalBalance = it.value + (simulation.balancesA.get(it.key) / simulation.finalPrice)
                 simulation.result.put(it.key, finalBalance)
                 result.put(String.format('%s:%s', simulation.key, it.key), [
-                        'probabilityCombinerStrategy' : probabilityCombinerStrategy,
-                        'tradeExecutionStrategy' : tradeExecutionStrategy,
-                        'balance' : finalBalance,
-                        'simulationDescription' : simulation.toString(),
-                        'simulation': simulation
+                        'probabilityCombinerStrategy': probabilityCombinerStrategy,
+                        'tradeExecutionStrategy'     : tradeExecutionStrategy,
+                        'balance'                    : finalBalance,
+                        'simulationDescription'      : simulation.toString(),
+                        'simulation'                 : simulation
                 ])
             }
         }

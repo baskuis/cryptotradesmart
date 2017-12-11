@@ -54,9 +54,9 @@ class TradeStudentController {
         "OFF"
     }
 
-    @RequestMapping(path = '/wiskeybender')
+    @RequestMapping(path = '/whiskeybender')
     String dropBrain(){
-        bytesFetcherService.wiskyBender()
+        bytesFetcherService.whiskeyBender()
         "OK"
     }
 
@@ -93,6 +93,18 @@ class TradeStudentController {
     @RequestMapping(path = '/simulations')
     List<SimulationResult> simulations(){
         bytesFetcherService.getSimulations()
+    }
+
+    @RequestMapping(path = '/multion')
+    String multiOn(){
+        BuySellTradingHistoricalSimulatorService.multithreadingEnabled = true
+        "ON"
+    }
+
+    @RequestMapping(path = '/multioff')
+    String multiOff(){
+        BuySellTradingHistoricalSimulatorService.multithreadingEnabled = false
+        "OFF"
     }
 
     @InitBinder

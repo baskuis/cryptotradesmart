@@ -4,9 +4,9 @@ import com.ukora.tradestudent.entities.CorrelationAssociation
 import com.ukora.tradestudent.services.simulator.Simulation
 import com.ukora.tradestudent.strategy.trading.TradeExecution
 import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
-import com.ukora.tradestudent.tags.BuySellTagGroup
-import com.ukora.tradestudent.tags.BuyTag
-import com.ukora.tradestudent.tags.SellTag
+import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
+import com.ukora.tradestudent.tags.buysell.BuyTag
+import com.ukora.tradestudent.tags.buysell.SellTag
 import com.ukora.tradestudent.tags.TagSubset
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component

@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 @Component
-class ProgressiveThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
+class ProgressiveV1ThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
 
     @Autowired
     BuyTag buyTag
@@ -28,8 +28,8 @@ class ProgressiveThresholdTradeExecutionStrategy implements TradeExecutionStrate
         return buySellTagGroup.applies(toTag)
     }
 
-    final static Double MAX_MULTIPLIER = 2
-    final static Double MIN_MULTIPLIER = 0.2
+    final static Double MAX_MULTIPLIER = 4
+    final static Double MIN_MULTIPLIER = 0.1
 
     /**
      * Multiplier on amount depending on distance from configured threshold

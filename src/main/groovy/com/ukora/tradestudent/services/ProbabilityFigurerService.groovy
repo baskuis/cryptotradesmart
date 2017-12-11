@@ -32,6 +32,7 @@ class ProbabilityFigurerService {
     @PostConstruct
     void init(){
 
+        /** TODO: Handle multipe tag groups - review this */
         /** Collect available primary tags as a list */
         applicationContext.getBeansOfType(AbstractCorrelationTag).each {
             primaryTags << it.value.tagName
