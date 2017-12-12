@@ -37,7 +37,7 @@ class TraverseLessonsService {
     void learn() {
         if (!running) {
             running = true
-            Instant start = Instant.now().minus(70, ChronoUnit.DAYS)
+            Instant start = Instant.now().minus(7, ChronoUnit.DAYS)
             Logger.log(String.format('traverse memory staring from %s', Date.from(start)))
             learnFromHistory(Date.from(start))
             running = false
@@ -73,9 +73,12 @@ class TraverseLessonsService {
             }
             boolean rising = (nextEntries.size() > (REPEAT_FOR_TREND / 2) && nextEntries.findAll { it['average'] > average['average'] }.size() > 0)
             boolean falling = (nextEntries.size() > (REPEAT_FOR_TREND / 2) && nextEntries.findAll { it['average'] < average['average'] }.size() == nextEntries.size())
-
-            boolean upReversal = (previousFalling != null && previousFalling != falling)
-            boolean downReversal = (previousRising != null && previousRising != rising)
+            average['rising'] = rising
+            average['falling'] = falling
+            boolean upReversal = (previousFalling != null && previousFalling != falling && rising && previousRising != rising)
+            boolean downReversal = (previousRising != null && previousRising != rising && falling && previousFalling != falling)
+            average['upReversal'] = upReversal
+            average['downReversal'] = downReversal
 
             Logger.log(String.format("rising: %s, falling: %s, upReversal: %s, downReversal: %s, date: %s",
                 rising, falling, upReversal, downReversal, average['date']
