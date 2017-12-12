@@ -19,7 +19,7 @@ class TraverseLessonsService {
 
     public final static long INTERVAL_SECONDS = 60
 
-    public final static long INTERVAL_HOURS = 2
+    public final static long INTERVAL_HOURS = 1
     public final static long REPEAT_FOR_TREND = 8
     public final static long MINIMAL_DIFFERENTIAL = 0.005
 
@@ -46,30 +46,39 @@ class TraverseLessonsService {
         }
     }
 
+    /**
+     * Learn from trading history
+     *
+     * @param fromDate
+     */
     void learnFromHistory(Date fromDate){
 
-        /**
-         * Get prices
-         */
-        if (!fromDate) return
-        Instant end = Instant.now()
-        Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
-        Instant current = Instant.ofEpochMilli(fromDate.time)
-        Map<Date, Double> reference = [:]
-        while (current.isBefore(end)) {
-            current = current + gap
-            Memory memory = bytesFetcherService.getMemory(Date.from(current))
-            if(memory && memory.graph.price) {
-                reference.put(Date.from(current), memory.graph.price)
-            }
+        Logger.log(String.format("Extracting data points since %s", fromDate))
+        Map<Date, Double> references = getReferences(fromDate)
+        Logger.log(String.format("Extracted %s data points", references.size()))
+
+        List<Map<String, Object>> averages = digestReferences(fromDate, references)
+        Logger.log(String.format("Extracted %s incremental summaries", averages.size()))
+
+        
+        averages.each { Map average, int index ->
+            println index
         }
 
-        /**
-         * Get averages
-         */
+    }
+
+    /**
+     * Extract averages from data points
+     *
+     * @param fromDate
+     * @param references
+     * @return
+     */
+    private static List<Map<String, Object>> digestReferences(Date fromDate, Map<Date, Double> references){
+        Instant end = Instant.now()
         List<Map<String, Object>> averages = []
         Duration hourGap = Duration.ofHours(INTERVAL_HOURS)
-        current = Instant.ofEpochMilli(fromDate.time)
+        Instant current = Instant.ofEpochMilli(fromDate.time)
         while (current.isBefore(end)) {
             Double average
             Double total = 0d
@@ -81,7 +90,7 @@ class TraverseLessonsService {
                     'date': null,
                     'value': null
             ]
-            Map<Date, Double> entries = reference.findAll {
+            Map<Date, Double> entries = references.findAll {
                 it.key.after(Date.from(current)) && it.key.before(Date.from(current + hourGap))
             }.each {
                 total += it.value
@@ -99,16 +108,37 @@ class TraverseLessonsService {
                 averages << [
                         'date'   : Date.from(current),
                         'average': average,
-                        'entries': entries,
+                        'entries': entries as TreeMap,
                         'lowest' : lowest,
                         'highest': highest
                 ]
             }
             current = current + hourGap
         }
+        return averages
+    }
 
-        println averages
-
+    /**
+     * Extract memory from db
+     * for requested time range
+     *
+     * @param fromDate
+     * @return
+     */
+    private Map<Date, Double> getReferences(Date fromDate){
+        if (!fromDate) return null
+        Instant end = Instant.now()
+        Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
+        Instant current = Instant.ofEpochMilli(fromDate.time)
+        Map<Date, Double> reference = [:]
+        while (current.isBefore(end)) {
+            current = current + gap
+            Memory memory = bytesFetcherService.getMemory(Date.from(current))
+            if(memory && memory.graph.price) {
+                reference.put(Date.from(current), memory.graph.price)
+            }
+        }
+        return reference
     }
 
 }
