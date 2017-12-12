@@ -15,7 +15,7 @@ class TradeSimulatorService {
     @Autowired
     BuySellTradingHistoricalSimulatorService buySellTradingHistoricalSimulatorService
 
-    @Scheduled(cron = "0 0 */6 * * *")
+    @Scheduled(cron = "0 0 */8 * * *")
     void runSimulation(){
         Instant current = Instant.now().minus(4, ChronoUnit.DAYS)
         Logger.log(String.format("Running simulation starting from %s", Date.from(current)))

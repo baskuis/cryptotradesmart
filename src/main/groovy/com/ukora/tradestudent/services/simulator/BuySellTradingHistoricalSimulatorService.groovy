@@ -40,6 +40,8 @@ class BuySellTradingHistoricalSimulatorService {
 
     public static boolean multithreadingEnabled = false
 
+    public static boolean simulationRunning = false
+
     @Autowired
     BuySellTagGroup buySellTagGroup
 
@@ -100,6 +102,11 @@ class BuySellTradingHistoricalSimulatorService {
     @Async
     runSimulation(Date fromDate) {
         if (!fromDate) return null
+        if (simulationRunning){
+            Logger.log("There is already a simulation running")
+            return null
+        }
+        simulationRunning = true
         Instant end = Instant.now()
         Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
         Instant current = Instant.ofEpochMilli(fromDate.time)
@@ -152,6 +159,9 @@ class BuySellTradingHistoricalSimulatorService {
 
         /** Persist simulation results */
         persistSimulationResults(finalResults, fromDate, Date.from(end))
+
+        /** Allow another simulation to be started */
+        simulationRunning = false
 
     }
 

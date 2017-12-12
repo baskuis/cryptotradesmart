@@ -73,17 +73,35 @@ class TraverseLessonsService {
         while (current.isBefore(end)) {
             Double average
             Double total = 0d
+            Map highest = [
+                    'date': null,
+                    'value': 0d
+            ]
+            Map lowest = [
+                    'date': null,
+                    'value': null
+            ]
             Map<Date, Double> entries = reference.findAll {
                 it.key.after(Date.from(current)) && it.key.before(Date.from(current + hourGap))
             }.each {
                 total += it.value
+                if(!lowest['value'] || it.value < (lowest['value'] as Double)){
+                    lowest['date'] = it.key
+                    lowest['value'] = it.value
+                }
+                if(it.value > (highest['value'] as Double)){
+                    highest['date'] = it.key
+                    highest['value'] = it.value
+                }
             }
             average = total / entries.size()
             if(!average.naN) {
                 averages << [
                         'date'   : Date.from(current),
                         'average': average,
-                        'entries': entries
+                        'entries': entries,
+                        'lowest' : lowest,
+                        'highest': highest
                 ]
             }
             current = current + hourGap

@@ -3,6 +3,7 @@ package com.ukora.tradestudent.services
 import com.mongodb.*
 import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.entities.*
+import com.ukora.tradestudent.tags.TagGroup
 import com.ukora.tradestudent.tags.buysell.BuyTag
 import com.ukora.tradestudent.tags.buysell.SellTag
 import com.ukora.tradestudent.utils.Logger
@@ -10,6 +11,7 @@ import org.bson.types.ObjectId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.context.ApplicationContext
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.stereotype.Service
 
@@ -36,6 +38,10 @@ class BytesFetcherService {
     final static String COLLECTION_PROPERTIES = "properties"
 
     @Autowired
+    ApplicationContext applicationContext
+    Map<String, TagGroup> tagGroupMap
+
+    @Autowired
     MongoTemplate mongoTemplate
 
     DBCollection lessons
@@ -48,7 +54,7 @@ class BytesFetcherService {
     DBCollection properties
 
     @PostConstruct
-    void postConstruct(){
+    void init() {
         this.lessons = mongoTemplate.getCollection(COLLECTION_LESSONS)
         this.memory = mongoTemplate.getCollection(COLLECTION_MEMORY)
         this.news = mongoTemplate.getCollection(COLLECTION_NEWS)
@@ -57,6 +63,7 @@ class BytesFetcherService {
         this.brain = mongoTemplate.getCollection(COLLECTION_BRAIN)
         this.simulations = mongoTemplate.getCollection(COLLECTION_SIMULATIONS)
         this.properties = mongoTemplate.getCollection(COLLECTION_PROPERTIES)
+        tagGroupMap = applicationContext.getBeansOfType(TagGroup)
     }
 
     /**
@@ -66,13 +73,13 @@ class BytesFetcherService {
      * @return
      */
     @Cacheable("properties")
-    Property getProperty(String name){
+    Property getProperty(String name) {
         BasicDBObject query = new BasicDBObject()
         query.put('name', name)
         DBObject obj = this.properties.findOne(query)
         return new Property(
-            name: name,
-            value: obj['value']
+                name: name,
+                value: obj['value']
         )
     }
 
@@ -82,7 +89,7 @@ class BytesFetcherService {
      * @param property
      */
     @CacheEvict(value = "properties", allEntries = true)
-    void saveProperty(Property property){
+    void saveProperty(Property property) {
         saveProperty(property.name, property.value)
     }
 
@@ -93,14 +100,14 @@ class BytesFetcherService {
      * @param value
      */
     @CacheEvict(value = "properties", allEntries = true)
-    void saveProperty(String name, String value){
+    void saveProperty(String name, String value) {
         try {
             BasicDBObject query = new BasicDBObject()
             query.put('name', name)
             DBObject obj = this.properties.findOne(query)
             obj['value'] = value
             this.properties.save(obj)
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace()
         }
     }
@@ -110,7 +117,7 @@ class BytesFetcherService {
      *
      */
     @CacheEvict(value = "brainNodes", allEntries = true)
-    void whiskeyBender(){
+    void whiskeyBender() {
         this.brain.remove(new BasicDBObject())
     }
 
@@ -126,7 +133,7 @@ class BytesFetcherService {
             "simulations",
             "properties"
     ], allEntries = true)
-    void flushCache(){ }
+    void flushCache() {}
 
     /**
      * Get all simulations
@@ -134,10 +141,10 @@ class BytesFetcherService {
      * @return
      */
     @Cacheable("simulations")
-    List<SimulationResult> getSimulations(){
+    List<SimulationResult> getSimulations() {
         List<SimulationResult> theSimulations = []
         DBCursor cursor = simulations.find()
-        while(cursor.hasNext()) {
+        while (cursor.hasNext()) {
             try {
                 DBObject obj = cursor.next()
                 SimulationResult simulation = new SimulationResult()
@@ -165,7 +172,7 @@ class BytesFetcherService {
                 simulation.exchange = exchange
                 simulation.metadata = metadata
                 theSimulations << simulation
-            } catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace()
             }
         }
@@ -178,10 +185,10 @@ class BytesFetcherService {
      * @param simulation
      */
     @CacheEvict(value = "simulations", allEntries = true)
-    void saveSimulation(SimulationResult simulation){
+    void saveSimulation(SimulationResult simulation) {
         try {
             DBObject obj = new BasicDBObject()
-            if(simulation.id){
+            if (simulation.id) {
                 obj['_id'] = new ObjectId(simulation.id)
             }
             obj['startDate'] = simulation.startDate
@@ -199,7 +206,7 @@ class BytesFetcherService {
             obj.get('metadata', [:])['datetime'] = simulation.metadata?.datetime
             obj.get('metadata', [:])['hostname'] = simulation.metadata?.hostname
             this.simulations.save(obj)
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace()
         }
     }
@@ -210,12 +217,12 @@ class BytesFetcherService {
      * @param reference
      * @return
      */
-    Brain getBrain(String reference, String tag){
+    Brain getBrain(String reference, String tag) {
         BasicDBObject query = new BasicDBObject()
         query.put('reference', reference)
         query.put('tag', tag)
         DBObject obj = this.brain.findOne(query)
-        if(obj == null) return new Brain(
+        if (obj == null) return new Brain(
                 id: null,
                 tag: tag,
                 reference: reference,
@@ -239,9 +246,9 @@ class BytesFetcherService {
      * @param brain
      */
     @CacheEvict(value = "brainNodes", allEntries = true)
-    void saveBrain(Brain brain){
+    void saveBrain(Brain brain) {
         DBObject obj = new BasicDBObject()
-        if(brain.id){
+        if (brain.id) {
             obj['_id'] = new ObjectId(brain.id)
         }
         obj['tag'] = brain.tag as String
@@ -256,9 +263,9 @@ class BytesFetcherService {
      * Update lessons - mark them to be up for processing once more
      *
      */
-    void resetLessons(){
+    void resetLessons() {
         DBCursor cursor = lessons.find()
-        while(cursor.hasNext()){
+        while (cursor.hasNext()) {
             DBObject obj = cursor.next()
             obj.removeField('processed')
             lessons.save(obj)
@@ -271,17 +278,19 @@ class BytesFetcherService {
      * @return
      */
     @Cacheable("brainNodes")
-    Map<String, BrainNode> getAllBrainNodes(){
+    Map<String, BrainNode> getAllBrainNodes() {
         Map<String, BrainNode> nodes = [:]
         DBCursor cursor = this.brain.find().limit(5000)
-        while(cursor.hasNext()){ DBObject object = cursor.next()
+        while (cursor.hasNext()) {
+            DBObject object = cursor.next()
             nodes.get(object['reference'] as String, new BrainNode(reference: object['reference'])).
-                tagReference.put(object['tag'] as String, new NumberAssociation(
+                    tagReference.put(object['tag'] as String, new NumberAssociation(
+                    tagGroup: tagGroupMap.find { (it.value.tags().find { it.getTagName() == object['tag'] }) }?.key,
                     tag: object['tag'],
                     mean: Double.parseDouble(object['mean'] as String),
                     count: Integer.parseInt(object['count'] as String),
                     standard_deviation: Double.parseDouble(object['standard_deviation'] as String)
-                )
+            )
             )
         }
         return nodes
@@ -293,11 +302,11 @@ class BytesFetcherService {
      * @param lesson
      * @return
      */
-    public <T extends AbstractAssociation> T hydrateAssociation(T someAssociation){
-        if(!someAssociation) return null
+    public <T extends AbstractAssociation> T hydrateAssociation(T someAssociation) {
+        if (!someAssociation) return null
         try {
             someAssociation.memory = getMemory(someAssociation.date)
-            if(someAssociation.memory == null){
+            if (someAssociation.memory == null) {
                 Logger.log("empty memory object")
                 return null
             }
@@ -320,7 +329,7 @@ class BytesFetcherService {
         someAssociation.intervals.each { String key ->
             Calendar calendar = Calendar.instance
             calendar.setTime(someAssociation.date)
-            switch(key){
+            switch (key) {
                 case '2minute':
                     calendar.add(Calendar.MINUTE, -2)
                     break
@@ -355,25 +364,25 @@ class BytesFetcherService {
                 Memory thisMemory = getMemory(calendar.time)
                 someAssociation.previousMemory.put(key, thisMemory)
                 try {
-                    if(thisMemory?.graph?.price && someAssociation?.price && someAssociation?.price > 0) {
+                    if (thisMemory?.graph?.price && someAssociation?.price && someAssociation?.price > 0) {
                         Double previousPriceProportion = thisMemory.graph.price / someAssociation.price
-                        if(!previousPriceProportion.naN) {
+                        if (!previousPriceProportion.naN) {
                             someAssociation.previousPrices.put(key, previousPriceProportion)
                         }
-                    }else{
+                    } else {
                         Logger.debug("missing price cannot set previous price")
                         Logger.debug("thisMemory?.graph?.price: " + thisMemory?.graph?.price)
                         Logger.debug("someAssociation?.price: " + someAssociation?.price)
                     }
-                } catch(e){
+                } catch (e) {
                     e.printStackTrace()
                 }
-            } catch(e){
+            } catch (e) {
                 e.printStackTrace()
             }
             try {
                 someAssociation.previousNews.put(key, getNews(calendar.time))
-            } catch(e){
+            } catch (e) {
                 e.printStackTrace()
             }
         }
@@ -385,11 +394,11 @@ class BytesFetcherService {
      *
      * @return
      */
-    Lesson getNextLesson(){
+    Lesson getNextLesson() {
         BasicDBObject query = new BasicDBObject()
         query.put("processed", BasicDBObjectBuilder.start(NOT_EQUALS, true).get())
         DBObject obj = lessons.findOne(query)
-        if(obj != null) {
+        if (obj != null) {
             obj["processed"] = true
             lessons.save(obj)
             Lesson lesson = new Lesson()
@@ -431,7 +440,7 @@ class BytesFetcherService {
             obj.get("exchange", [:])["platform"] = lesson.exchange?.platform
             obj.get("exchange", [:])["exchange"] = lesson.exchange?.exchange
             this.lessons.save(obj)
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace()
         }
     }
@@ -443,7 +452,7 @@ class BytesFetcherService {
      * @return
      */
     @Cacheable("news")
-    List<News> getNews(Date newsDate){
+    List<News> getNews(Date newsDate) {
         BasicDBObject query = new BasicDBObject()
         Calendar calendar = Calendar.instance
         calendar.setTime(newsDate)
@@ -456,22 +465,26 @@ class BytesFetcherService {
                 .add(LESS_THAN, toDate).get())
         DBCursor cursor = news.find(query)
         List<News> response = []
-        while(cursor.hasNext()){
-            DBObject obj = cursor.next()
-            if(!obj["metadata"]['datetime']) return
-            if(!obj["article"]['published']) return
-            if(!obj['article']['title']) return
-            News theNews = new News()
-            Article theArticle = new Article()
-            theArticle.title = obj['article']['title']
-            theArticle.summary = obj['article']['summary']
-            theArticle.published = dateParser.parse(obj["article"]['published'] as String)
-            Metadata metadata = new Metadata()
-            metadata.hostname = obj["metadata"]['hostname']
-            metadata.datetime = dateParser.parse(obj["metadata"]['datetime'] as String)
-            theNews.metadata = metadata
-            theNews.article = theArticle
-            response << theNews
+        while (cursor.hasNext()) {
+            try {
+                DBObject obj = cursor.next()
+                if (!obj["metadata"]['datetime']) return null
+                if (!obj["article"]['published']) return null
+                if (!obj['article']['title']) return null
+                News theNews = new News()
+                Article theArticle = new Article()
+                theArticle.title = obj['article']['title']
+                theArticle.summary = obj['article']['summary']
+                theArticle.published = dateParser.parse(obj["article"]['published'] as String)
+                Metadata metadata = new Metadata()
+                metadata.hostname = obj["metadata"]['hostname']
+                metadata.datetime = dateParser.parse(obj["metadata"]['datetime'] as String)
+                theNews.metadata = metadata
+                theNews.article = theArticle
+                response << theNews
+            } catch(Exception e){
+                e.printStackTrace()
+            }
         }
         return response
     }
@@ -483,7 +496,7 @@ class BytesFetcherService {
      * @return
      */
     @Cacheable("twitter")
-    Twitter getTwitter(Date twitterDate){
+    Twitter getTwitter(Date twitterDate) {
         Twitter the_twitter = new Twitter()
         BasicDBObject query = new BasicDBObject()
         Calendar calendar = Calendar.instance
@@ -496,7 +509,7 @@ class BytesFetcherService {
                 .start(GREATER_THAN, fromDate)
                 .add(LESS_THAN, toDate).get())
         DBObject obj = twitter.findOne(query)
-        if(!obj) return null
+        if (!obj) return null
         Statuses statuses = new Statuses()
         statuses.text = obj['statuses']['text'] as String
         Metadata metadata = new Metadata()
@@ -515,7 +528,7 @@ class BytesFetcherService {
      * @return
      */
     @Cacheable("memory")
-    Memory getMemory(Date memoryDate){
+    Memory getMemory(Date memoryDate) {
         Memory the_memory = new Memory()
         BasicDBObject query = new BasicDBObject()
         Calendar calendar = Calendar.instance
@@ -528,7 +541,7 @@ class BytesFetcherService {
                 .start(GREATER_THAN, fromDate)
                 .add(LESS_THAN, toDate).get())
         DBObject obj = memory.findOne(query)
-        if(!obj) return null
+        if (!obj) return null
         try {
             Ask ask = new Ask()
             ask.ask_medium_median_delta = obj['ask']['ask_medium_median_delta'] as Double
@@ -584,7 +597,7 @@ class BytesFetcherService {
             try {
                 graph.price = obj['graph']['price'] as Double
                 graph.quantity = obj['graph']['quantity'] as Double
-            } catch(Exception e){
+            } catch (Exception e) {
                 Logger.debug('no graph.price')
             }
             the_memory.graph = graph
@@ -594,7 +607,7 @@ class BytesFetcherService {
             the_memory.exchange = exchange
             the_memory.metadata = metadata
             return the_memory
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace()
         }
         return null
