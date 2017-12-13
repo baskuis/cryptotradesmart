@@ -55,6 +55,22 @@ class TraverseLessonsService {
      */
     void learnFromHistory(Date fromDate) {
 
+        /** Learn from trends */
+        learnFromTrend(fromDate)
+
+        /** Learn from optimal buy/sell behavior */
+
+        /** Completed */
+        Logger.log(String.format("Completed"))
+
+    }
+
+    /**
+     * Learn from trends
+     *
+     */
+    void learnFromTrend(Date fromDate) {
+
         /** Step 1.) Extract data points */
         Logger.log(String.format("Extracting data points since %s", fromDate))
         Map<Date, Double> references = getReferences(fromDate)
@@ -78,8 +94,6 @@ class TraverseLessonsService {
         lessons.each {
             bytesFetcherService.saveLesson(it)
         }
-
-        Logger.log(String.format("Completed"))
 
     }
 
