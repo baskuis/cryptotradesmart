@@ -422,7 +422,11 @@ class BytesFetcherService {
                 throw new RuntimeException(String.format('WTF! Tag %s cannot be mapped to a valid tag', obj['tag']))
             }
             lesson.setId(obj["_id"] as String)
-            lesson.setDate(DatatypeConverter.parseDateTime(obj["date"] as String).getTime())
+            try {
+                lesson.setDate(DatatypeConverter.parseDateTime(obj["date"] as String).getTime())
+            } catch (IllegalArgumentException e){
+                lesson.setDate(new Date(obj['date'] as String))
+            }
             lesson.setPrice(obj["price"] as Double)
             Exchange exchange = new Exchange()
             exchange.setPlatform(obj["exchange"]["platform"] as String)
@@ -439,11 +443,15 @@ class BytesFetcherService {
      * @param lesson
      */
     void saveLesson(Lesson lesson) {
+        if(!lesson.tag) return
+        if(!lesson.date) return
+        if(!lesson.price) return
         try {
             DBObject obj = new BasicDBObject()
             if (lesson.id) {
                 obj['_id'] = new ObjectId(lesson.id)
             }
+            obj["tag"] = lesson.tag.tagName
             obj["price"] = String.format("%.16f", lesson.price)
             obj["date"] = lesson.date
             obj.get("exchange", [:])["platform"] = lesson.exchange?.platform

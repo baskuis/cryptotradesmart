@@ -3,7 +3,7 @@ package com.ukora.tradestudent.tags.trend
 import com.ukora.tradestudent.tags.AbstractCorrelationTag
 import org.springframework.stereotype.Component
 
-/*@Component*/
+@Component
 class UpTag extends AbstractCorrelationTag {
 
     @Override

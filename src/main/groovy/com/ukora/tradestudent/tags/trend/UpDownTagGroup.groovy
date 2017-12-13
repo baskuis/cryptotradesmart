@@ -5,7 +5,7 @@ import com.ukora.tradestudent.tags.TagGroup
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
-/*@Component*/
+@Component
 class UpDownTagGroup implements TagGroup {
 
     @Autowired
