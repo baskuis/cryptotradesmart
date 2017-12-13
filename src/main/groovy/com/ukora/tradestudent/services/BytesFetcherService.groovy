@@ -3,17 +3,20 @@ package com.ukora.tradestudent.services
 import com.mongodb.*
 import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.entities.*
+import com.ukora.tradestudent.tags.AbstractCorrelationTag
 import com.ukora.tradestudent.tags.TagGroup
 import com.ukora.tradestudent.tags.buysell.BuyTag
 import com.ukora.tradestudent.tags.buysell.SellTag
 import com.ukora.tradestudent.utils.Logger
 import org.bson.types.ObjectId
+import org.codehaus.groovy.util.StringUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.ApplicationContext
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.stereotype.Service
+import org.springframework.util.StringUtils
 
 import javax.annotation.PostConstruct
 import javax.xml.bind.DatatypeConverter
@@ -39,6 +42,10 @@ class BytesFetcherService {
 
     @Autowired
     ApplicationContext applicationContext
+
+    @Autowired
+    TagService tagService
+
     Map<String, TagGroup> tagGroupMap
 
     @Autowired
@@ -339,8 +346,14 @@ class BytesFetcherService {
                 case '10minute':
                     calendar.add(Calendar.MINUTE, -10)
                     break
+                case '15minute':
+                    calendar.add(Calendar.MINUTE, -15)
+                    break
                 case '30minute':
                     calendar.add(Calendar.MINUTE, -30)
+                    break
+                case '45minute':
+                    calendar.add(Calendar.MINUTE, -45)
                     break
                 case '1hour':
                     calendar.add(Calendar.HOUR, -1)
@@ -358,7 +371,7 @@ class BytesFetcherService {
                     calendar.add(Calendar.HOUR, -16)
                     break
                 default:
-                    throw new Exception(String.format("Unknown interval %s", key))
+                    throw new RuntimeException(String.format("Unknown interval %s", key))
             }
             try {
                 Memory thisMemory = getMemory(calendar.time)
@@ -402,15 +415,11 @@ class BytesFetcherService {
             obj["processed"] = true
             lessons.save(obj)
             Lesson lesson = new Lesson()
-            switch (obj['tag']) {
-                case 'buy':
-                    lesson.tag = new BuyTag()
-                    break
-                case 'sell':
-                    lesson.tag = new SellTag()
-                    break
-                default:
-                    throw new RuntimeException(String.format('WTF! Tag %s cannot be mapped to a valid tag', obj['tag']))
+            def tag = tagService.getTagByName(obj['tag'] as String)
+            if(tag){
+                lesson.tag = tag
+            } else {
+                throw new RuntimeException(String.format('WTF! Tag %s cannot be mapped to a valid tag', obj['tag']))
             }
             lesson.setId(obj["_id"] as String)
             lesson.setDate(DatatypeConverter.parseDateTime(obj["date"] as String).getTime())
@@ -460,7 +469,7 @@ class BytesFetcherService {
         Date fromDate = calendar.time
         calendar.add(Calendar.SECOND, 90)
         Date toDate = calendar.time
-        query.put("metadata.datetime", BasicDBObjectBuilder
+        query.put('metadata.datetime', BasicDBObjectBuilder
                 .start(GREATER_THAN, fromDate)
                 .add(LESS_THAN, toDate).get())
         DBCursor cursor = news.find(query)
@@ -468,9 +477,9 @@ class BytesFetcherService {
         while (cursor.hasNext()) {
             try {
                 DBObject obj = cursor.next()
-                if (!obj["metadata"]['datetime']) return null
-                if (!obj["article"]['published']) return null
-                if (!obj['article']['title']) return null
+                if (!obj['metadata']['datetime'] || StringUtils.isEmpty(obj['metadata']['datetime'])) continue
+                if (!obj['article']['published'] || StringUtils.isEmpty(obj['article']['published'])) continue
+                if (!obj['article']['title'] || StringUtils.isEmpty(obj['article']['title'])) continue
                 News theNews = new News()
                 Article theArticle = new Article()
                 theArticle.title = obj['article']['title']
