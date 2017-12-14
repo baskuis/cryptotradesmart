@@ -90,9 +90,9 @@ class ProbabilityFigurerService {
         Map<String, BrainNode> nodes = bytesFetcherService.getAllBrainNodes()
         nodes.each {
             BrainNode brainNode = it.value
-            NumberAssociation generalAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL_ASSOCIATION_REFERENCE)
-            if(generalAssociation) {
-                tagGroupMap.each {
+            tagGroupMap.each {
+                NumberAssociation generalAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL + CaptureAssociationsService.SEP + it.value.name)
+                if(generalAssociation) {
                     it.value.tags().each {
                         String tag = it.getTagName()
                         NumberAssociation tagAssociation = brainNode.tagReference.get(tag)
@@ -125,9 +125,9 @@ class ProbabilityFigurerService {
             String reference = it.key
             BrainNode brainNode = brainNodes.get(it.key)
             Double normalizedValue = it.value
-            NumberAssociation generalAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL_ASSOCIATION_REFERENCE)
-            if(generalAssociation) {
-                tagGroupMap.each {
+            tagGroupMap.each {
+                NumberAssociation generalAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL + CaptureAssociationsService.SEP + it.value.name)
+                if(generalAssociation) {
                     it.value.tags().each {
                         String tag = it.getTagName()
                         NumberAssociation tagAssociation = brainNode.tagReference.get(tag)

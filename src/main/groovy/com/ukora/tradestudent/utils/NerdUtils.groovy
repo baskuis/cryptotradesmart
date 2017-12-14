@@ -21,7 +21,7 @@ class NerdUtils {
      * @return
      */
     static boolean assertRange(Double value){
-        !(value.naN || value.infinite || value < -1 || value > 1)
+        !(value == null || value.naN || value.infinite || value < -1 || value > 1)
     }
 
     /**
@@ -58,7 +58,7 @@ class NerdUtils {
      * @param value
      * @return
      */
-    static Map<String, Double> extractBoundryDistances(Double value){
+    static Map<String, Double> extractBoundaryDistances(Double value){
         Map response = [:]
         resistanceBoundaries.each { if(it.value <= value){ response[it.key] = (value % it.value) / it.value } }
         return response

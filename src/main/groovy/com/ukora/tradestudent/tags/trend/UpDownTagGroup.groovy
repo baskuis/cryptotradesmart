@@ -14,6 +14,11 @@ class UpDownTagGroup implements TagGroup {
     @Autowired
     DownTag downTag
 
+    @Override
+    String getName() {
+        return "updown"
+    }
+
     List<? extends AbstractCorrelationTag> tags(){
         [upTag, downTag]
     }

@@ -47,6 +47,7 @@ class NerdUtilsSpec extends Specification {
         Double.NaN               | false
         Double.NEGATIVE_INFINITY | false
         Double.POSITIVE_INFINITY | false
+        null                     | false
 
     }
 
@@ -146,7 +147,7 @@ class NerdUtilsSpec extends Specification {
     def "Test emotional boundaries are correctly extracted - provided #value get #expected"() {
 
         when:
-        Map boundaries = NerdUtils.extractBoundryDistances(value)
+        Map boundaries = NerdUtils.extractBoundaryDistances(value)
 
         then:
         boundaries == expected

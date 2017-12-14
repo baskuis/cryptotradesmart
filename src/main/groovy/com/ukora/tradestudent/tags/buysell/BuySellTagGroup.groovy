@@ -14,6 +14,11 @@ class BuySellTagGroup implements TagGroup {
     @Autowired
     SellTag sellTag
 
+    @Override
+    String getName() {
+        return "buysell"
+    }
+
     List<? extends AbstractCorrelationTag> tags(){
         [buyTag, sellTag]
     }

@@ -13,4 +13,6 @@ interface TagGroup extends TagSubset {
 
     List<? extends AbstractCorrelationTag> tags()
 
+    String getName()
+
 }

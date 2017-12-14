@@ -1,6 +1,7 @@
 package com.ukora.tradestudent.services
 
 import com.ukora.tradestudent.entities.*
+import com.ukora.tradestudent.tags.TagGroup
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,9 +12,9 @@ import org.springframework.stereotype.Service
 @Service
 class CaptureAssociationsService {
 
-    public static final String OBNOXIOUS_REFERENCE_SEPARATOR = "/"
-    public static final String GENERAL_ASSOCIATION_REFERENCE = "general"
-    public static final String INSTANT_TIME_REFERENCE = "instant"
+    public static final String SEP = "/"
+    public static final String GENERAL = "general"
+    public static final String INSTANT = "instant"
     public static final String PRICE_DELTA = "priceDelta"
 
     public static final String TIME_HOUR_IN_DAY = 'hourinday'
@@ -25,6 +26,9 @@ class CaptureAssociationsService {
     public static Integer learningSpeed = 1
 
     public static Double PRACTICAL_ZERO = 0.000000001
+
+    @Autowired
+    TagService tagService
 
     @Autowired
     BytesFetcherService bytesFetcherService
@@ -73,7 +77,7 @@ class CaptureAssociationsService {
     void hydrateAssocations(CorrelationAssociation correlationAssociation){
 
         /** Capture associations for normalized data for instance */
-        brainItUpSimple(correlationAssociation.memory, correlationAssociation, INSTANT_TIME_REFERENCE)
+        brainItUpSimple(correlationAssociation.memory, correlationAssociation, INSTANT)
 
         /** Capture associations for normalized data at other time deltas */
         correlationAssociation.intervals.each { String timeDelta ->
@@ -97,14 +101,14 @@ class CaptureAssociationsService {
         /** Normalized properties */
         memory.normalized.properties.each { prop, val ->
             if(val instanceof Double) {
-                correlationAssociation.numericAssociations.put(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop, val)
+                correlationAssociation.numericAssociations.put(timeDelta + SEP + prop, val)
             }
         }
 
         /** Previous price proportions */
         Double previousPriceProportion = correlationAssociation.previousPrices.get(timeDelta)
         if(previousPriceProportion && !previousPriceProportion.naN) {
-            correlationAssociation.numericAssociations.put(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + PRICE_DELTA, previousPriceProportion)
+            correlationAssociation.numericAssociations.put(timeDelta + SEP + PRICE_DELTA, previousPriceProportion)
         }
 
     }
@@ -115,34 +119,39 @@ class CaptureAssociationsService {
      * @param associations
      * @param tagName
      */
-    static void hydrateSpecializedAssociationTags(AbstractAssociation associations, String tagName){
+    void hydrateSpecializedAssociationTags(AbstractAssociation associations, String tagName){
 
         if(!associations) return
         if(!tagName) return
         if(!associations.date) return
 
         /**
+         * Retrieve tag group
+         */
+        TagGroup tagGroup = tagService.getTagGroupByTagName(tagName)
+
+        /**
          * Store time based associations
          */
         Calendar calendar = GregorianCalendar.getInstance()
         calendar.setTime(associations.date)
-        associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_HOUR_IN_DAY, [:]).put(tagName, calendar.get(Calendar.HOUR_OF_DAY))
-        associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_HOUR_IN_DAY, [:]).put(GENERAL_ASSOCIATION_REFERENCE, calendar.get(Calendar.HOUR_OF_DAY))
-        associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_MINUTE_IN_HOUR, [:]).put(tagName, calendar.get(Calendar.MINUTE))
-        associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_MINUTE_IN_HOUR, [:]).put(GENERAL_ASSOCIATION_REFERENCE, calendar.get(Calendar.MINUTE))
-        associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_DAY_IN_WEEK, [:]).put(tagName, calendar.get(Calendar.DAY_OF_WEEK))
-        associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_DAY_IN_WEEK, [:]).put(GENERAL_ASSOCIATION_REFERENCE, calendar.get(Calendar.DAY_OF_WEEK))
-        associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_DAY_IN_MONTH, [:]).put(tagName, calendar.get(Calendar.DAY_OF_MONTH))
-        associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + TIME_DAY_IN_MONTH, [:]).put(GENERAL_ASSOCIATION_REFERENCE, calendar.get(Calendar.DAY_OF_MONTH))
+        associations.associations.get(INSTANT + SEP + TIME_HOUR_IN_DAY, [:]).put(tagName, calendar.get(Calendar.HOUR_OF_DAY))
+        associations.associations.get(INSTANT + SEP + TIME_HOUR_IN_DAY, [:]).put(GENERAL + SEP + tagGroup.name, calendar.get(Calendar.HOUR_OF_DAY))
+        associations.associations.get(INSTANT + SEP + TIME_MINUTE_IN_HOUR, [:]).put(tagName, calendar.get(Calendar.MINUTE))
+        associations.associations.get(INSTANT + SEP + TIME_MINUTE_IN_HOUR, [:]).put(GENERAL + SEP + tagGroup.name, calendar.get(Calendar.MINUTE))
+        associations.associations.get(INSTANT + SEP + TIME_DAY_IN_WEEK, [:]).put(tagName, calendar.get(Calendar.DAY_OF_WEEK))
+        associations.associations.get(INSTANT + SEP + TIME_DAY_IN_WEEK, [:]).put(GENERAL + SEP + tagGroup.name, calendar.get(Calendar.DAY_OF_WEEK))
+        associations.associations.get(INSTANT + SEP + TIME_DAY_IN_MONTH, [:]).put(tagName, calendar.get(Calendar.DAY_OF_MONTH))
+        associations.associations.get(INSTANT + SEP + TIME_DAY_IN_MONTH, [:]).put(GENERAL + SEP + tagGroup.name, calendar.get(Calendar.DAY_OF_MONTH))
 
         /**
          * Store emotional boundary associations
          */
         if(associations.price) {
-            NerdUtils.extractBoundryDistances(associations.price).each {
+            NerdUtils.extractBoundaryDistances(associations.price).each {
                 if(it.value == 0) it.value = PRACTICAL_ZERO
-                associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + it.key, [:]).put(tagName, it.value)
-                associations.associations.get(INSTANT_TIME_REFERENCE + OBNOXIOUS_REFERENCE_SEPARATOR + it.key, [:]).put(GENERAL_ASSOCIATION_REFERENCE, it.value)
+                associations.associations.get(INSTANT + SEP + it.key, [:]).put(tagName, it.value)
+                associations.associations.get(INSTANT + SEP + it.key, [:]).put(GENERAL + SEP + tagGroup.name, it.value)
             }
         }
 
@@ -154,13 +163,13 @@ class CaptureAssociationsService {
      * @param associations
      * @param tagName
      */
-    static void hydrateAssociationTags(AbstractAssociation associations, String tagName){
+    void hydrateAssociationTags(AbstractAssociation associations, String tagName){
 
         if(!associations) return
         if(!tagName) return
 
         /** Capture associations for normalized data for instance */
-        brainItUp(associations.memory, associations, INSTANT_TIME_REFERENCE, tagName)
+        brainItUp(associations.memory, associations, INSTANT, tagName)
 
         /** Capture associations for normalized data at other time deltas */
         associations.intervals.each { String key ->
@@ -177,23 +186,28 @@ class CaptureAssociationsService {
      * @param tagName
      * @param timeDelta
      */
-    static void brainItUp(Memory memory, AbstractAssociation lesson, String timeDelta, String tagName){
+    void brainItUp(Memory memory, AbstractAssociation lesson, String timeDelta, String tagName){
         if(!memory) return
         if(!lesson) return
+
+        /**
+         * Retrieve tag group
+         */
+        TagGroup tagGroup = tagService.getTagGroupByTagName(tagName)
 
         /** Normalized properties */
         memory.normalized.properties.each { prop, val ->
             if(val instanceof Double) {
-                (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop, [:]) as Map).put(tagName, val)
-                (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + prop, [:]) as Map).put(GENERAL_ASSOCIATION_REFERENCE, val)
+                (lesson.associations.get(timeDelta + SEP + prop, [:]) as Map).put(tagName, val)
+                (lesson.associations.get(timeDelta + SEP + prop, [:]) as Map).put(GENERAL + SEP + tagGroup.name, val)
             }
         }
 
         /** Previous price proportions */
         Double previousPriceProportion = lesson.previousPrices.get(timeDelta)
         if(previousPriceProportion) {
-            (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + PRICE_DELTA, [:]) as Map).put(tagName, previousPriceProportion)
-            (lesson.associations.get(timeDelta + OBNOXIOUS_REFERENCE_SEPARATOR + PRICE_DELTA, [:]) as Map).put(GENERAL_ASSOCIATION_REFERENCE, previousPriceProportion)
+            (lesson.associations.get(timeDelta + SEP + PRICE_DELTA, [:]) as Map).put(tagName, previousPriceProportion)
+            (lesson.associations.get(timeDelta + SEP + PRICE_DELTA, [:]) as Map).put(GENERAL + SEP + tagGroup.name, previousPriceProportion)
         }
 
     }
