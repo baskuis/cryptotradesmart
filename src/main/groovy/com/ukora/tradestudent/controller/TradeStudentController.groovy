@@ -118,9 +118,15 @@ class TradeStudentController {
         "OFF"
     }
 
-    @RequestMapping(path = '/traversehistory', method = RequestMethod.GET)
-    String traverseHistory(){
-        traverseLessonsService.learn()
+    @RequestMapping(path = '/learnbuysell', method = RequestMethod.GET)
+    String learnBuySell(){
+        traverseLessonsService.learnFromBuySellBehavior()
+        "STARTED"
+    }
+
+    @RequestMapping(path = '/learntradehistory', method = RequestMethod.GET)
+    String learnTrendHistory(){
+        traverseLessonsService.learnFromHistoryTrendData()
         "STARTED"
     }
 

@@ -2,6 +2,7 @@ package com.ukora.tradestudent.services.learner
 
 import com.ukora.tradestudent.entities.Lesson
 import com.ukora.tradestudent.entities.Memory
+import com.ukora.tradestudent.entities.Property
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.ProbabilityFigurerService
 import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
@@ -9,6 +10,7 @@ import com.ukora.tradestudent.tags.trend.UpDownTagGroup
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 import javax.annotation.PostConstruct
@@ -28,11 +30,15 @@ class TraverseLessonsService {
     public final static long INTERVAL_HOURS = 1
 
     public final static long REPEAT_FOR_TREND = 8 /** Represents hours */
-    public final static long REPEAT_FOR_BUY_SELL = 200 /** Represents minutes */
+    public final static long MINIMUM_HOLD_PERIOD = 15 /** In minutes */
+    public final static long REPEAT_FOR_BUY_SELL = 220 /** Represents minutes */
 
-    private final static int SIMULATION_INTERVAL_INCREMENT = 1
+    private final static int SIMULATION_INTERVAL_INCREMENT = 2
 
     private final static int PEAK_PADDING = 5
+
+    public final static String LATEST_BUY_SELL_PROPERTY_KEY = 'latestBuySell'
+    public final static String LATEST_UP_DOWN_PROPERTY_KEY = 'latestUpDown'
 
     @Autowired
     UpDownTagGroup upDownTagGroup
@@ -43,28 +49,32 @@ class TraverseLessonsService {
     @Autowired
     BytesFetcherService bytesFetcherService
 
-    @Autowired
-    ProbabilityFigurerService probabilityFigurerService
-
     List<LearnSimulation> learnSimulations = []
 
     @PostConstruct
     void init() {
-        for (int i = 1; i <= REPEAT_FOR_BUY_SELL; i += SIMULATION_INTERVAL_INCREMENT) {
+        for (int i = MINIMUM_HOLD_PERIOD; i <= REPEAT_FOR_BUY_SELL; i += SIMULATION_INTERVAL_INCREMENT) {
             learnSimulations << new LearnSimulation(
                     interval: i
             )
         }
     }
 
-    //@Scheduled(cron = "*/5 * * * * *")
+    /**
+     * Learn from trading history
+     *
+     */
+    @Scheduled(cron = "0 0 3 * * *")
     @Async
-    void learn() {
+    void learnFromHistoryTrendData() {
         if (!running) {
             running = true
-            Instant start = Instant.now().minus(7, ChronoUnit.DAYS)
-            Logger.log(String.format('traverse memory staring from %s', Date.from(start)))
-            learnFromHistory(Date.from(start))
+            Property latestUpDown = bytesFetcherService.getProperty(LATEST_UP_DOWN_PROPERTY_KEY)
+            Instant start = Instant.now().minus(14, ChronoUnit.DAYS)
+            if(latestUpDown){ start = new Date(latestUpDown.getValue()).toInstant().minus(6, ChronoUnit.HOURS) }
+            learnFromTrend(Date.from(start))
+            bytesFetcherService.saveProperty(LATEST_UP_DOWN_PROPERTY_KEY, new Date() as String)
+            Logger.log(String.format("Completed"))
             running = false
         } else {
             Logger.log("already learning from memory")
@@ -74,19 +84,22 @@ class TraverseLessonsService {
     /**
      * Learn from trading history
      *
-     * @param fromDate
      */
-    void learnFromHistory(Date fromDate) {
-
-        /** Learn from optimal buy/sell behavior */
-        learnFromBuySell(fromDate)
-
-        /** Learn from trends */
-        learnFromTrend(fromDate)
-
-        /** Completed */
-        Logger.log(String.format("Completed"))
-
+    @Scheduled(cron = "0 0 */4 * * *")
+    @Async
+    void learnFromBuySellBehavior() {
+        if (!running) {
+            running = true
+            Property latestBuySell = bytesFetcherService.getProperty(LATEST_BUY_SELL_PROPERTY_KEY)
+            Instant start = Instant.now().minus(14, ChronoUnit.DAYS)
+            if(latestBuySell){ start = new Date(latestBuySell.getValue()).toInstant().minus(12, ChronoUnit.HOURS) }
+            learnFromBuySell(Date.from(start))
+            bytesFetcherService.saveProperty(LATEST_BUY_SELL_PROPERTY_KEY, new Date() as String)
+            Logger.log(String.format("Completed"))
+            running = false
+        } else {
+            Logger.log("already learning from memory")
+        }
     }
 
     /**
@@ -96,10 +109,13 @@ class TraverseLessonsService {
      */
     void learnFromBuySell(Date fromDate) {
 
+        Logger.log(String.format('Learning from buy/sell starting from %s', fromDate))
+
         /** Step 1.) Extract data points */
         Logger.log(String.format("Extracting data points since %s", fromDate))
         Map<Date, Double> references = getReferences(fromDate)
         Logger.log(String.format("Extracted %s data points", references.size()))
+        if(!references || references.size() == 0) return
 
         /** Step 2.) Transform references */
         List<Map<String, Object>> transformedReferences = []
@@ -226,10 +242,13 @@ class TraverseLessonsService {
      */
     void learnFromTrend(Date fromDate) {
 
+        Logger.log(String.format('Learning from trends starting from %s', fromDate))
+
         /** Step 1.) Extract data points */
         Logger.log(String.format("Extracting data points since %s", fromDate))
         Map<Date, Double> references = getReferences(fromDate)
         Logger.log(String.format("Extracted %s data points", references.size()))
+        if(!references || references.size() == 0) return
 
         /** Step 2.) Digest data points into reference object */
         List<Map<String, Object>> averages = digestReferences(fromDate, references)

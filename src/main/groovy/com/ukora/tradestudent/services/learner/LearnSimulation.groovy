@@ -5,5 +5,4 @@ class LearnSimulation {
     Integer tradeCount = 0
     Double balanceA = 1
     Double balanceB = 0
-
 }

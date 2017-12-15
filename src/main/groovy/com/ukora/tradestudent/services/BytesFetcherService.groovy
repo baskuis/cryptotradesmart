@@ -84,10 +84,13 @@ class BytesFetcherService {
         BasicDBObject query = new BasicDBObject()
         query.put('name', name)
         DBObject obj = this.properties.findOne(query)
-        return new Property(
-                name: name,
-                value: obj['value']
-        )
+        if(obj) {
+            return new Property(
+                    name: name,
+                    value: obj['value']
+            )
+        }
+        return null
     }
 
     /**
@@ -112,6 +115,8 @@ class BytesFetcherService {
             BasicDBObject query = new BasicDBObject()
             query.put('name', name)
             DBObject obj = this.properties.findOne(query)
+            if(!obj) obj = new BasicDBObject()
+            obj['name'] = name
             obj['value'] = value
             this.properties.save(obj)
         } catch (Exception e) {
