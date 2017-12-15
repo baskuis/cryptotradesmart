@@ -42,6 +42,8 @@ class BuySellTradingHistoricalSimulatorService {
 
     public static boolean simulationRunning = false
 
+    public static boolean forceCompleteSimulation = false
+
     @Autowired
     BuySellTagGroup buySellTagGroup
 
@@ -136,7 +138,8 @@ class BuySellTradingHistoricalSimulatorService {
                                             correlationAssociation,
                                             tag,
                                             probability,
-                                            simulation)
+                                            simulation,
+                                            strategy)
                                     if (tradeExecution) {
                                         Logger.debug(String.format("key:%s,type:%s,probability:%s", purseKey, tradeExecution.tradeType, probability))
                                         simulateTrade(
@@ -152,7 +155,11 @@ class BuySellTradingHistoricalSimulatorService {
                     }
                 }
             }
+            if(forceCompleteSimulation) break
         }
+
+        /** Flip back to false */
+        forceCompleteSimulation = false
 
         /** Capture the results */
         Map<String, Map> finalResults = captureResults()
@@ -213,8 +220,8 @@ class BuySellTradingHistoricalSimulatorService {
         if (!tradeExecution) return
         Double costsA = tradeExecution.amount * tradeExecution.price * (1 + simulation.transactionCost)
         Double proceedsA = tradeExecution.amount * tradeExecution.price * (1 - simulation.transactionCost)
-        Double balanceB = simulation.balancesB.get(purseKey, 0) as Double
         Double balanceA = simulation.balancesA.get(purseKey, STARTING_BALANCE) as Double
+        Double balanceB = simulation.balancesB.get(purseKey, 0) as Double
         switch (tradeExecution.tradeType) {
             case TradeExecution.TradeType.BUY:
                 if (balanceB < costsA) {

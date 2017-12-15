@@ -33,7 +33,8 @@ class ThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubs
             CorrelationAssociation correlationAssociation,
             String tag,
             Double probability,
-            Simulation simulation
+            Simulation simulation,
+            String combinerStrategy
     ) {
         TradeExecution tradeExecution = null
         if (tag == buyTag.getTagName() && probability > simulation.buyThreshold) {

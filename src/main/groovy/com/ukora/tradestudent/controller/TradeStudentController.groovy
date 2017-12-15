@@ -94,6 +94,12 @@ class TradeStudentController {
         "STARTED"
     }
 
+    @RequestMapping(path = '/forcecomplete')
+    String forceCompleteSimulation(){
+        tradingHistoricalSimulatorService.forceCompleteSimulation = true
+        "COMPLETED"
+    }
+
     @RequestMapping(path = '/simulations')
     List<SimulationResult> simulations(){
         bytesFetcherService.getSimulations()

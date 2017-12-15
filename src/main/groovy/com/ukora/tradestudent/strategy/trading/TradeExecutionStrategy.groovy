@@ -17,7 +17,8 @@ interface TradeExecutionStrategy {
             CorrelationAssociation correlationAssociation,
             String tag,
             Double probability,
-            Simulation simulation
+            Simulation simulation,
+            String combinerStrategy
     )
 
 }

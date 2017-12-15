@@ -6,11 +6,9 @@ import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.ProbabilityFigurerService
 import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
 import com.ukora.tradestudent.tags.trend.UpDownTagGroup
-import com.ukora.tradestudent.tags.trend.UpTag
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 import javax.annotation.PostConstruct
@@ -30,9 +28,11 @@ class TraverseLessonsService {
     public final static long INTERVAL_HOURS = 1
 
     public final static long REPEAT_FOR_TREND = 8 /** Represents hours */
-    public final static long REPEAT_FOR_BUY_SELL = 60 /** Represents minutes */
+    public final static long REPEAT_FOR_BUY_SELL = 200 /** Represents minutes */
 
     private final static int SIMULATION_INTERVAL_INCREMENT = 1
+
+    private final static int PEAK_PADDING = 5
 
     @Autowired
     UpDownTagGroup upDownTagGroup
@@ -78,11 +78,11 @@ class TraverseLessonsService {
      */
     void learnFromHistory(Date fromDate) {
 
-        /** Learn from trends */
-        learnFromTrend(fromDate)
-
         /** Learn from optimal buy/sell behavior */
         learnFromBuySell(fromDate)
+
+        /** Learn from trends */
+        learnFromTrend(fromDate)
 
         /** Completed */
         Logger.log(String.format("Completed"))
@@ -154,15 +154,15 @@ class TraverseLessonsService {
             List<Map<String, Object>> nextEntries = []
             for (int i = learnSimulation.interval; i > 0; i--) {
                 try {
-                    previousEntries << transformedReferences.get(index - i)
+                    previousEntries << transformedReferences.get(index - PEAK_PADDING - i)
                 } catch (IndexOutOfBoundsException e) { /** Ignore */
                 }
                 try {
-                    nextEntries << transformedReferences.get(index + i)
+                    nextEntries << transformedReferences.get(index + PEAK_PADDING + i)
                 } catch (IndexOutOfBoundsException e) { /** Ignore */
                 }
             }
-            if (previousEntries.size() < learnSimulation.interval || nextEntries.size() < learnSimulation.interval) {
+            if (previousEntries.size() < (learnSimulation.interval / 2) || nextEntries.size() < (learnSimulation.interval / 2)) {
                 Logger.debug("previousEntries:${previousEntries.size()} nextEntries:${nextEntries.size()} out of bounds")
                 return
             }
