@@ -4,7 +4,6 @@ import com.ukora.tradestudent.entities.Lesson
 import com.ukora.tradestudent.entities.Memory
 import com.ukora.tradestudent.entities.Property
 import com.ukora.tradestudent.services.BytesFetcherService
-import com.ukora.tradestudent.services.ProbabilityFigurerService
 import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
 import com.ukora.tradestudent.tags.trend.UpDownTagGroup
 import com.ukora.tradestudent.utils.Logger
@@ -23,7 +22,8 @@ class TraverseLessonsService {
 
     static boolean running = false
 
-    private final static Double TRADE_LOSS = 0.015 /** Represents trade fee - and trade risk 1.3% over regular 0.2% trade fee */
+    private final static Double TRADE_LOSS = 0.015
+    /** Represents trade fee - and trade risk 1.3% over regular 0.2% trade fee */
     private final static Double MINIMAL_PROPORTION = 1.25
 
     public final static long INTERVAL_SECONDS = 60
@@ -71,7 +71,9 @@ class TraverseLessonsService {
             running = true
             Property latestUpDown = bytesFetcherService.getProperty(LATEST_UP_DOWN_PROPERTY_KEY)
             Instant start = Instant.now().minus(14, ChronoUnit.DAYS)
-            if(latestUpDown){ start = new Date(latestUpDown.getValue()).toInstant().minus(6, ChronoUnit.HOURS) }
+            if (latestUpDown) {
+                start = new Date(latestUpDown.getValue()).toInstant().minus(16, ChronoUnit.HOURS)
+            }
             learnFromTrend(Date.from(start))
             bytesFetcherService.saveProperty(LATEST_UP_DOWN_PROPERTY_KEY, new Date() as String)
             Logger.log(String.format("Completed"))
@@ -92,7 +94,9 @@ class TraverseLessonsService {
             running = true
             Property latestBuySell = bytesFetcherService.getProperty(LATEST_BUY_SELL_PROPERTY_KEY)
             Instant start = Instant.now().minus(14, ChronoUnit.DAYS)
-            if(latestBuySell){ start = new Date(latestBuySell.getValue()).toInstant().minus(12, ChronoUnit.HOURS) }
+            if (latestBuySell) {
+                start = new Date(latestBuySell.getValue()).toInstant().minus(24, ChronoUnit.HOURS)
+            }
             learnFromBuySell(Date.from(start))
             bytesFetcherService.saveProperty(LATEST_BUY_SELL_PROPERTY_KEY, new Date() as String)
             Logger.log(String.format("Completed"))
@@ -115,7 +119,7 @@ class TraverseLessonsService {
         Logger.log(String.format("Extracting data points since %s", fromDate))
         Map<Date, Double> references = getReferences(fromDate)
         Logger.log(String.format("Extracted %s data points", references.size()))
-        if(!references || references.size() == 0) return
+        if (!references || references.size() == 0) return
 
         /** Step 2.) Transform references */
         List<Map<String, Object>> transformedReferences = []
@@ -133,9 +137,9 @@ class TraverseLessonsService {
 
         /** Step 4.) Extract lessons from winning simulation */
         LearnSimulation winningSimulation = learnSimulations?.sort({ -it.balanceA })?.first()
-        if(winningSimulation) {
+        if (winningSimulation) {
             Logger.log("winningInterval: ${winningSimulation.interval} winning.balanceA: ${winningSimulation.balanceA}")
-            if(winningSimulation.balanceA > MINIMAL_PROPORTION){
+            if (winningSimulation.balanceA > MINIMAL_PROPORTION) {
                 runTradeSimulation(transformedReferences, winningSimulation).eachWithIndex { Map<String, Object> entry, int index ->
                     if (entry['sell']) {
                         Logger.log("Storing sell lesson date: ${entry['date']} price: ${entry['price']}")
@@ -144,7 +148,7 @@ class TraverseLessonsService {
                                 date: entry['date'] as Date,
                                 price: entry['price'] as Double
                         ))
-                    } else if(entry['buy']) {
+                    } else if (entry['buy']) {
                         Logger.log("Storing buy lesson date: ${entry['date']} price: ${entry['price']}")
                         bytesFetcherService.saveLesson(new Lesson(
                                 tag: buySellTagGroup.buyTag,
@@ -160,7 +164,7 @@ class TraverseLessonsService {
 
     }
 
-    static List<Map<String, Object>> runTradeSimulation(List<Map<String, Object>> transformedReferences, LearnSimulation learnSimulation){
+    static List<Map<String, Object>> runTradeSimulation(List<Map<String, Object>> transformedReferences, LearnSimulation learnSimulation) {
         Logger.log("Running simulation with interval ${learnSimulation.interval}")
         boolean previousRising = null
         boolean previousFalling = null
@@ -248,7 +252,7 @@ class TraverseLessonsService {
         Logger.log(String.format("Extracting data points since %s", fromDate))
         Map<Date, Double> references = getReferences(fromDate)
         Logger.log(String.format("Extracted %s data points", references.size()))
-        if(!references || references.size() == 0) return
+        if (!references || references.size() == 0) return
 
         /** Step 2.) Digest data points into reference object */
         List<Map<String, Object>> averages = digestReferences(fromDate, references)
