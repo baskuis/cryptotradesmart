@@ -15,6 +15,7 @@ import org.springframework.beans.propertyeditors.CustomDateEditor
 import org.springframework.web.bind.WebDataBinder
 import org.springframework.web.bind.annotation.InitBinder
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
@@ -34,17 +35,17 @@ class TradeStudentController {
     @Autowired
     TraverseLessonsService traverseLessonsService
 
-    @RequestMapping(path = '/correlations', produces = 'application/json')
+    @RequestMapping(path = '/correlations', produces = 'application/json', method = RequestMethod.GET)
     CorrelationAssociation getCorrelationAssociations(@RequestParam(value = 'date') Date date){
         probabilityFigurerService.getCorrelationAssociations(date)
     }
 
-    @RequestMapping(path = '/braindump', produces = 'application/json')
+    @RequestMapping(path = '/braindump', produces = 'application/json', method = RequestMethod.GET)
     Map<String, BrainNode> getBrainNodes(){
         probabilityFigurerService.getBrainNodes()
     }
 
-    @RequestMapping(path = '/brainon')
+    @RequestMapping(path = '/brainon', method = RequestMethod.GET)
     String brainOn(@RequestParam(value = 'speed') Integer speed){
         if(!speed || speed > 50 || speed < 1) speed = 1
         CaptureAssociationsService.leaningEnabled = true
@@ -52,72 +53,72 @@ class TradeStudentController {
         "ON"
     }
 
-    @RequestMapping(path = '/brainoff')
+    @RequestMapping(path = '/brainoff', method = RequestMethod.GET)
     String brainOn(){
         CaptureAssociationsService.leaningEnabled = false
         "OFF"
     }
 
-    @RequestMapping(path = '/whiskeybender')
+    @RequestMapping(path = '/whiskeybender', method = RequestMethod.GET)
     String dropBrain(){
         bytesFetcherService.whiskeyBender()
         "OK"
     }
 
-    @RequestMapping(path = '/relearn')
+    @RequestMapping(path = '/relearn', method = RequestMethod.GET)
     String resetLessons(){
         bytesFetcherService.resetLessons()
         "OK"
     }
 
-    @RequestMapping(path = '/flushcache')
+    @RequestMapping(path = '/flushcache', method = RequestMethod.GET)
     String flushCache(){
         bytesFetcherService.flushCache()
         "OK"
     }
 
-    @RequestMapping(path = '/debugon')
+    @RequestMapping(path = '/debugon', method = RequestMethod.GET)
     String debugOn(){
         TradestudentApplication.DEBUG_LOGGING_ENABLED = true
         "OK"
     }
 
-    @RequestMapping(path = '/debugoff')
+    @RequestMapping(path = '/debugoff', method = RequestMethod.GET)
     String debugOff(){
         TradestudentApplication.DEBUG_LOGGING_ENABLED = false
         "OK"
     }
 
-    @RequestMapping(path = '/simulation')
+    @RequestMapping(path = '/simulation', method = RequestMethod.GET)
     String simulation(@RequestParam(value = 'date') Date date){
         tradingHistoricalSimulatorService.runSimulation(date)
         "STARTED"
     }
 
-    @RequestMapping(path = '/forcecomplete')
+    @RequestMapping(path = '/forcecomplete', method = RequestMethod.GET)
     String forceCompleteSimulation(){
         tradingHistoricalSimulatorService.forceCompleteSimulation = true
         "COMPLETED"
     }
 
-    @RequestMapping(path = '/simulations')
+    @RequestMapping(path = '/simulations', method = RequestMethod.GET)
     List<SimulationResult> simulations(){
         bytesFetcherService.getSimulations()
     }
 
-    @RequestMapping(path = '/multion')
+    @RequestMapping(path = '/multion', method = RequestMethod.GET)
     String multiOn(){
         BuySellTradingHistoricalSimulatorService.multithreadingEnabled = true
         "ON"
     }
 
-    @RequestMapping(path = '/multioff')
+    @RequestMapping(path = '/multioff', method = RequestMethod.GET)
     String multiOff(){
         BuySellTradingHistoricalSimulatorService.multithreadingEnabled = false
         "OFF"
     }
 
-    @RequestMapping(path = '/traversehistory')
+    @RequestMapping(path = '/traversehistory', method = RequestMethod.GET)
     String traverseHistory(){
         traverseLessonsService.learn()
         "STARTED"
