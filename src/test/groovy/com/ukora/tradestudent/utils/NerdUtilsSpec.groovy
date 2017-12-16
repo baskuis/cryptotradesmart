@@ -75,6 +75,38 @@ class NerdUtilsSpec extends Specification {
 
     }
 
+    /**
+     * TODO: Fix this !!
+     *
+     * @return
+     */
+    @Unroll
+    def "Test chanceOfCorrelationSoftening produces correct #expectedValue"() {
+
+        when:
+        def p = NerdUtils.chanceOfCorrelationSoftening(
+                value as double,
+                theDeviation as double,
+                theMean as double,
+                commonDeviation as double,
+                commonMean as double,
+                0.2)
+
+        then:
+        p == expectedValue
+
+        where:
+        value | theDeviation | theMean | commonDeviation | commonMean | expectedValue
+        2.5   | 1            | 2.5     | 1               | 2.5        | 0
+        100   | 1            | 2       | 100             | 2          | -0.006132398907915615
+        100   | 100          | 2       | 1               | 2          | 0.006132398907915837
+        2.5   | 1            | 3.5     | 1               | 2.5        | -0.15080180105374574
+        2.5   | 1            | 2.5     | 1               | 3.5        | 0.15080180105374574
+        2.5   | 1            | 2.5     | 1               | 3.5        | 0.15080180105374574
+        0.95  | 0.3          | 1.2     | 0.4             | 0.8        | 0.004436752098924135
+
+    }
+
     @Unroll
     def "Applying new value gets correct new standard deviation #expectedValue"() {
 

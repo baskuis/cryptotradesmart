@@ -94,6 +94,30 @@ class NerdUtils {
     }
 
     /**
+     * Chance of correlation with softening factor
+     *
+     * @param value
+     * @param theDeviation
+     * @param theMean
+     * @param commonDeviation
+     * @param commonMean
+     * @param softeningFactor
+     * @return
+     */
+    static Double chanceOfCorrelationSoftening(Double value, Double theDeviation, Double theMean, Double commonDeviation, Double commonMean, Double softeningFactor) {
+        return (Double) 2 * (((1 /
+                Math.pow(2 * Math.PI * Math.pow(theDeviation, 2), 0.5) *
+                Math.pow(Math.E, (-Math.pow(value - theMean, 2) / (2 * Math.pow(theDeviation, 2))))
+        ) + softeningFactor) / ((1 /
+                Math.pow(2 * Math.PI * Math.pow(commonDeviation, 2), 0.5) *
+                Math.pow(Math.E, (-Math.pow(value - commonMean, 2) / (2 * Math.pow(commonDeviation, 2))))
+        ) + (1 /
+                Math.pow(2 * Math.PI * Math.pow(theDeviation, 2), 0.5) *
+                Math.pow(Math.E, (-Math.pow(value - theMean, 2) / (2 * Math.pow(theDeviation, 2))))
+        ) + (2 * softeningFactor))) - 1
+    }
+
+    /**
      * Apply value to data set
      * and get new standard deviation
      *

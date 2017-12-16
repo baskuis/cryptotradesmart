@@ -31,6 +31,8 @@ class ProbabilityFigurerService {
     Map<String, TagGroup> tagGroupMap = [:]
     Map<String, AbstractCorrelationTag> tagMap = [:]
 
+    final static Double SOFTENING_FACTOR = 0.2
+
     @PostConstruct
     void init(){
 
@@ -97,12 +99,13 @@ class ProbabilityFigurerService {
                         String tag = it.getTagName()
                         NumberAssociation tagAssociation = brainNode.tagReference.get(tag)
                         if(tagAssociation) {
-                            tagAssociation.relevance = NerdUtils.chanceOfCorrelation(
+                            tagAssociation.relevance = NerdUtils.chanceOfCorrelationSoftening(
                                     tagAssociation.mean,
                                     tagAssociation.standard_deviation,
                                     tagAssociation.mean,
                                     generalAssociation.standard_deviation,
-                                    generalAssociation.mean
+                                    generalAssociation.mean,
+                                    SOFTENING_FACTOR
                             )
                         }
                     }
