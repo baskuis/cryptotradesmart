@@ -7,6 +7,7 @@ import com.ukora.tradestudent.entities.SimulationResult
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.CaptureAssociationsService
 import com.ukora.tradestudent.services.ProbabilityFigurerService
+import com.ukora.tradestudent.services.SimulationResultService
 import com.ukora.tradestudent.services.learner.TraverseLessonsService
 import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.utils.NerdUtils
@@ -34,6 +35,9 @@ class TradeStudentController {
 
     @Autowired
     TraverseLessonsService traverseLessonsService
+
+    @Autowired
+    SimulationResultService simulationResultService
 
     @RequestMapping(path = '/correlations', produces = 'application/json', method = RequestMethod.GET)
     CorrelationAssociation getCorrelationAssociations(@RequestParam(value = 'date') Date date){
@@ -128,6 +132,16 @@ class TradeStudentController {
     String learnTrendHistory(){
         traverseLessonsService.learnFromHistoryTrendData()
         "STARTED"
+    }
+
+    @RequestMapping(path = '/bestsimulation', method = RequestMethod.GET)
+    SimulationResult getBestSimulation(){
+        simulationResultService.getTopPerformingSimulation()
+    }
+
+    @RequestMapping(path = '/bestsimulations', method = RequestMethod.GET)
+    List<SimulationResult> getBestSimulations(){
+        simulationResultService.getTopPerformingSimulations()
     }
 
     @InitBinder

@@ -64,7 +64,7 @@ class TraverseLessonsService {
      * Learn from trading history
      *
      */
-    @Scheduled(cron = "0 0 3 * * *")
+    /** @Scheduled(cron = "0 0 3 * * *") */
     @Async
     void learnFromHistoryTrendData() {
         if (!running) {

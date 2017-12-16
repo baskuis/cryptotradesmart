@@ -36,7 +36,11 @@ class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrateg
         return buySellTagGroup.applies(toTag)
     }
 
-    private boolean enabled = true
+    /**
+     * TODO: up/down trend tags are not very stable
+     *
+     */
+    private boolean enabled = false
 
     @Override
     boolean isEnabled() {
