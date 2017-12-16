@@ -30,7 +30,7 @@ class SimulationResultService {
      */
     List<SimulationResult> getTopPerformingSimulations(){
         return bytesFetcherService.getSimulations()?.findAll({
-            it.endDate < Date.from(Instant.now().minusSeconds(MAX_AGE_IN_HOURS * 3600))
+            it.endDate < Date.from(Instant.now().minusSeconds(MAX_AGE_IN_HOURS * 3600)) && it.differential > 1
         })?.sort({ SimulationResult a, SimulationResult b ->
             a.endDate <=> b.endDate
         })?.take(20)?.sort({ SimulationResult a, SimulationResult b ->
@@ -46,7 +46,7 @@ class SimulationResultService {
         } else {
             distanceFromBinary = 1 - simulationResult.buyThreshold
         }
-        (distanceFromBinary / (distanceFromBinary + thresholdBalance)) * simulationResult.differential
+        Math.pow(simulationResult.differential, distanceFromBinary / (distanceFromBinary + thresholdBalance))
     }
 
 }

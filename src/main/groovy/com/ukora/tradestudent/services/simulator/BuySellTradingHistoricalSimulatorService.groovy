@@ -95,6 +95,18 @@ class BuySellTradingHistoricalSimulatorService {
     }
 
     /**
+     * Reset simulation balances
+     *
+     */
+    void resetSimulations(){
+        simulations.each {
+            it.tradeCount = 0
+            it.balancesA = [:]
+            it.balancesB = [:]
+        }
+    }
+
+    /**
      * Start a trading simulation from the requested date
      * to the present
      *
@@ -109,6 +121,7 @@ class BuySellTradingHistoricalSimulatorService {
             return null
         }
         simulationRunning = true
+        resetSimulations()
         Instant end = Instant.now()
         Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
         Instant current = Instant.ofEpochMilli(fromDate.time)
