@@ -13,6 +13,10 @@ import com.ukora.tradestudent.services.simulator.Simulation
  */
 interface TradeExecutionStrategy {
 
+    boolean isEnabled()
+
+    void setEnabled(boolean enabled)
+
     TradeExecution getTrade(
             CorrelationAssociation correlationAssociation,
             String tag,

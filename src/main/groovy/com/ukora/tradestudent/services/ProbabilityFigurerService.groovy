@@ -167,7 +167,7 @@ class ProbabilityFigurerService {
             it.value.tags().each {
                 String tag = it.getTagName()
                 Map<String, ProbabilityCombinerStrategy> probabilityCombinerStrategyMap = applicationContext.getBeansOfType(ProbabilityCombinerStrategy)
-                probabilityCombinerStrategyMap.each {
+                probabilityCombinerStrategyMap.findAll { it.value.enabled }.each {
                     if (it.value instanceof TagSubset && !(it.value as TagSubset).applies(tag)) {
                         Logger.debug(String.format("Skipping p combiner strategy: %s for tag: %s", it.key, tag))
                         return

@@ -28,6 +28,18 @@ class ThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubs
         return buySellTagGroup.applies(toTag)
     }
 
+    private boolean enabled = true
+
+    @Override
+    boolean isEnabled() {
+        return enabled
+    }
+
+    @Override
+    void setEnabled(boolean enabled) {
+        this.enabled = enabled
+    }
+
     @Override
     TradeExecution getTrade(
             CorrelationAssociation correlationAssociation,

@@ -36,6 +36,18 @@ class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrateg
         return buySellTagGroup.applies(toTag)
     }
 
+    private boolean enabled = true
+
+    @Override
+    boolean isEnabled() {
+        return enabled
+    }
+
+    @Override
+    void setEnabled(boolean enabled) {
+        this.enabled = enabled
+    }
+
     /**
      * Execute trades while taking trend probabilities into account
      *

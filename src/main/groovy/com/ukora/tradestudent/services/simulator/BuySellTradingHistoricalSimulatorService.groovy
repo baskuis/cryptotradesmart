@@ -132,7 +132,7 @@ class BuySellTradingHistoricalSimulatorService {
                             group.each {
                                 Simulation simulation = it
                                 simulation.finalPrice = correlationAssociation.price
-                                tradeExecutionStrategyMap.each {
+                                tradeExecutionStrategyMap.findAll { it.value.enabled }.each {
                                     String purseKey = String.format('%s:%s', strategy, it.key)
                                     TradeExecution tradeExecution = it.value.getTrade(
                                             correlationAssociation,

@@ -31,6 +31,18 @@ class ProgressiveThresholdTradeExecutionStrategy implements TradeExecutionStrate
     final static Double MAX_MULTIPLIER = 2
     final static Double MIN_MULTIPLIER = 0.2
 
+    private boolean enabled = true
+
+    @Override
+    boolean isEnabled() {
+        return enabled
+    }
+
+    @Override
+    void setEnabled(boolean enabled) {
+        this.enabled = enabled
+    }
+
     /**
      * Multiplier on amount depending on distance from configured threshold
      * configured with min/max value. This value modifies the amount which is traded
