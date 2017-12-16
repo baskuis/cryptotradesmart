@@ -316,7 +316,6 @@ class TraverseLessonsService {
         boolean previousRising = null
         boolean previousFalling = null
         averages.eachWithIndex { Map average, int index ->
-
             List previousEntries = []
             List nextEntries = []
             for (int i = REPEAT_FOR_TREND; i > 0; i--) {
@@ -329,26 +328,19 @@ class TraverseLessonsService {
                 } catch (IndexOutOfBoundsException e) { /** Ignore */
                 }
             }
-            boolean rising = (nextEntries.size() > (REPEAT_FOR_TREND / 2) && nextEntries.findAll {
-                it['average'] > average['average']
-            }.size() > 0)
-            boolean falling = (nextEntries.size() > (REPEAT_FOR_TREND / 2) && nextEntries.findAll {
-                it['average'] < average['average']
-            }.size() == nextEntries.size())
+            boolean rising = (nextEntries.size() > (REPEAT_FOR_TREND / 2) && nextEntries.collect { it['average'] }.sum() / nextEntries.size() > average['average'])
+            boolean falling = !rising
             average['rising'] = rising
             average['falling'] = falling
             boolean upReversal = (previousFalling != null && previousFalling != falling && rising && previousRising != rising)
             boolean downReversal = (previousRising != null && previousRising != rising && falling && previousFalling != falling)
             average['upReversal'] = upReversal
             average['downReversal'] = downReversal
-
             Logger.log(String.format("rising: %s, falling: %s, upReversal: %s, downReversal: %s, date: %s, avgPrice: %s",
                     rising, falling, upReversal, downReversal, average['date'], average['average']
             ))
-
             previousRising = rising
             previousFalling = falling
-
         }
     }
 

@@ -9,6 +9,13 @@ import static com.ukora.tradestudent.utils.NerdUtils.assertRanges
 @Component
 class WeightedNaiveBayesianProbabilityCombinerStrategy implements ProbabilityCombinerStrategy {
 
+    boolean enabled = true
+
+    @Override
+    boolean isEnabled() {
+        return enabled
+    }
+
     /**
      * This naive bayesian comparison calculates the tag vs baseline score (not probability)
      *

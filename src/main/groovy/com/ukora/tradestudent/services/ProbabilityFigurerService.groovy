@@ -31,7 +31,13 @@ class ProbabilityFigurerService {
     Map<String, TagGroup> tagGroupMap = [:]
     Map<String, AbstractCorrelationTag> tagMap = [:]
 
-    final static Double SOFTENING_FACTOR = 0.2
+    /**
+     * This is a factor by which the bell-curve proportion will be softened
+     * and will determine at which point the threshold will cause P=0 with outliers
+     * vs p -1 or p 1
+     *
+     */
+    final static Double SOFTENING_FACTOR = 0.01
 
     @PostConstruct
     void init(){

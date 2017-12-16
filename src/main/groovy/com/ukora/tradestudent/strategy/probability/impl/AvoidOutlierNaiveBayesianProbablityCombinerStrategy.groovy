@@ -12,6 +12,13 @@ class AvoidOutlierNaiveBayesianProbablityCombinerStrategy implements Probability
 
     public final static long MAX_RELEVANCE_MULTIPLE = 2
 
+    boolean enabled = true
+
+    @Override
+    boolean isEnabled() {
+        return enabled
+    }
+
     @Override
     Double combineProbabilities(String tag, Map<String, Map<String, NumberAssociationProbability>> numberAssociationProbabilities) {
         Double tagAssociationProduct = 1d

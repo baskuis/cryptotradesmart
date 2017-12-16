@@ -23,7 +23,7 @@ class WexTradePlatformSpec extends Specification {
     def "getOrderBook works"() {
 
         when:
-        OrderBook orderBook =wexTradePlatform.getOrderBook(btcUsdCurrencyPair)
+        OrderBook orderBook = wexTradePlatform.getOrderBook(btcUsdCurrencyPair)
 
         then:
         orderBook != null

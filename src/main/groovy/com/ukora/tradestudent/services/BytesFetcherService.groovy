@@ -1,15 +1,12 @@
 package com.ukora.tradestudent.services
 
 import com.mongodb.*
+import com.ukora.tradestudent.TradestudentApplication
 import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.entities.*
-import com.ukora.tradestudent.tags.AbstractCorrelationTag
 import com.ukora.tradestudent.tags.TagGroup
-import com.ukora.tradestudent.tags.buysell.BuyTag
-import com.ukora.tradestudent.tags.buysell.SellTag
 import com.ukora.tradestudent.utils.Logger
 import org.bson.types.ObjectId
-import org.codehaus.groovy.util.StringUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
@@ -328,15 +325,20 @@ class BytesFetcherService {
         } catch (Exception e) {
             e.printStackTrace()
         }
-        try {
-            someAssociation.twitter = getTwitter(someAssociation.date)
-        } catch (Exception e) {
-            e.printStackTrace()
+        if(TradestudentApplication.CONSIDER_TWITTER) {
+            try {
+
+                someAssociation.twitter = getTwitter(someAssociation.date)
+            } catch (Exception e) {
+                e.printStackTrace()
+            }
         }
-        try {
-            someAssociation.news = getNews(someAssociation.date)
-        } catch (Exception e) {
-            e.printStackTrace()
+        if(TradestudentApplication.CONSIDER_NEWS) {
+            try {
+                someAssociation.news = getNews(someAssociation.date)
+            } catch (Exception e) {
+                e.printStackTrace()
+            }
         }
         someAssociation.intervals.each { String key ->
             Calendar calendar = Calendar.instance
@@ -505,7 +507,7 @@ class BytesFetcherService {
                 theNews.article = theArticle
                 response << theNews
             } catch(Exception e){
-                e.printStackTrace()
+                /** Ignore */
             }
         }
         return response

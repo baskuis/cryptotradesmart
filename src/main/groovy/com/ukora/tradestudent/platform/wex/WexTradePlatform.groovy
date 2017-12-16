@@ -8,6 +8,7 @@ import com.ukora.tradestudent.platform.OrderBook
 import com.ukora.tradestudent.platform.OrderBookEntry
 import com.ukora.tradestudent.platform.TradePlatform
 import com.ukora.tradestudent.strategy.trading.TradeExecution
+import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
@@ -53,18 +54,20 @@ class WexTradePlatform implements TradePlatform {
         ResponseEntity response = restTemplate.getForEntity(String.format(URL_GET_ORDER_BOOK, exchangeReference), Map)
         OrderBook orderBook = new OrderBook()
         if(response.statusCodeValue == 200 || response.statusCodeValue == 201) {
-            response.body[exchangeReference]['asks'].each {
+            response.body[exchangeReference]['asks'].each { List it ->
                 orderBook.asks << new OrderBookEntry(
                         price: it[0] as Double,
                         quantity: it[1] as Double
                 )
             }
-            response.body[exchangeReference]['bids'].each {
+            response.body[exchangeReference]['bids'].each { List it ->
                 orderBook.bids << new OrderBookEntry(
                         price: it[0] as Double,
                         quantity: it[1] as Double
                 )
             }
+        } else {
+            Logger.log("Got a non 2XX response ${response.statusCodeValue}")
         }
         return orderBook
     }

@@ -43,7 +43,7 @@ class CaptureAssociationsService {
     void learn(){
         if(leaningEnabled) {
             learningSpeed.times {
-                Logger.log(String.format("capturing lesson %s", it))
+                Logger.debug(String.format("capturing lesson %s", it))
                 Lesson lesson = bytesFetcherService.getNextLesson()
                 if (lesson) {
 
@@ -59,13 +59,12 @@ class CaptureAssociationsService {
                     /** Remember all that */
                     rememberAllThat(lesson)
 
-                    Logger.log("done")
                 } else {
-                    Logger.log("no lesson")
+                    Logger.debug("no lesson")
                 }
             }
         }else{
-            Logger.debug("leaning disabled")
+            Logger.log("leaning disabled")
         }
     }
 

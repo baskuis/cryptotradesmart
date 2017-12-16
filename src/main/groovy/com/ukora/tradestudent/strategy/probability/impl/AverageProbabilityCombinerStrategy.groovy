@@ -7,6 +7,13 @@ import org.springframework.stereotype.Component
 @Component
 class AverageProbabilityCombinerStrategy implements ProbabilityCombinerStrategy {
 
+    boolean enabled = true
+
+    @Override
+    boolean isEnabled() {
+        return enabled
+    }
+
     @Override
     Double combineProbabilities(String tag, Map<String, Map<String, NumberAssociationProbability>> numberAssociationProbabilities) {
         Double total = 0

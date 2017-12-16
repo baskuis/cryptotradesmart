@@ -23,6 +23,13 @@ class BuySellNaiveBayesianProbabilityCombinerStrategy implements ProbabilityComb
         buySellTagGroup.applies(toTag)
     }
 
+    boolean enabled = true
+
+    @Override
+    boolean isEnabled() {
+        return enabled
+    }
+
     /**
      * This naive bayesian comparison calculates the buy vs sell score (not probability)
      *

@@ -7,6 +7,13 @@ import org.springframework.stereotype.Component
 @Component
 class RelevanceWeightedProbabilityCombinerStrategy implements ProbabilityCombinerStrategy {
 
+    boolean enabled = true
+
+    @Override
+    boolean isEnabled() {
+        return enabled
+    }
+
     /**
      *      R1*P1 + R2*P2
      * P = ---------------
