@@ -22,13 +22,10 @@ class CaptureAssociationsService {
     public static final String TIME_DAY_IN_WEEK = 'dayinweek'
     public static final String TIME_DAY_IN_MONTH = 'dayinmonth'
 
-    public static boolean leaningEnabled = false
-    public static Integer learningSpeed = 1
+    public static boolean leaningEnabled = true
+    public static Integer learningSpeed = 5
 
     public static Double PRACTICAL_ZERO = 0.000000001
-
-    @Autowired
-    TagService tagService
 
     @Autowired
     BytesFetcherService bytesFetcherService
