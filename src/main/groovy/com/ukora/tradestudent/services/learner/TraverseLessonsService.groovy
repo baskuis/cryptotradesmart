@@ -22,18 +22,22 @@ class TraverseLessonsService {
 
     static boolean running = false
 
-    private final static Double TRADE_LOSS = 0.005
     /** Represents trade fee - and trade risk 0.3% over regular 0.2% trade fee */
+    private final static Double TRADE_LOSS = 0.005
+
+    /** Minimal gain for trade */
+    private final static Double MINIMAL_GAIN = 1.0075
+
     private final static Double MINIMAL_PROPORTION = 1.15
 
     public final static long INTERVAL_SECONDS = 60
     public final static long INTERVAL_HOURS = 1
 
     public final static long REPEAT_FOR_TREND = 8 /** Represents hours */
-    public final static long MINIMUM_HOLD_PERIOD = 15 /** In minutes */
-    public final static long REPEAT_FOR_BUY_SELL = 220 /** Represents minutes */
+    public final static long MINIMUM_HOLD_PERIOD = 7 /** In minutes */
+    public final static long REPEAT_FOR_BUY_SELL = 90 /** Represents minutes */
 
-    private final static int SIMULATION_INTERVAL_INCREMENT = 2
+    private final static int SIMULATION_INTERVAL_INCREMENT = 1
 
     private final static int PEAK_PADDING = 5
 
@@ -64,7 +68,7 @@ class TraverseLessonsService {
      * Learn from trading history
      *
      */
-    /** @Scheduled(cron = "0 0 3 * * *") */
+    @Scheduled(cron = "0 0 3 * * *")
     @Async
     void learnFromHistoryTrendData() {
         if (!running) {
@@ -172,13 +176,13 @@ class TraverseLessonsService {
         transformedReferences.eachWithIndex { Map<String, Object> reference, int index ->
             List<Map<String, Object>> previousEntries = []
             List<Map<String, Object>> nextEntries = []
-            for (int i = learnSimulation.interval; i > 0; i--) {
+            for (int i = PEAK_PADDING; i < learnSimulation.interval; i++) {
                 try {
-                    previousEntries << transformedReferences.get(index - PEAK_PADDING - i)
+                    previousEntries << transformedReferences.get(index - i)
                 } catch (IndexOutOfBoundsException e) { /** Ignore */
                 }
                 try {
-                    nextEntries << transformedReferences.get(index + PEAK_PADDING + i)
+                    nextEntries << transformedReferences.get(index + i)
                 } catch (IndexOutOfBoundsException e) { /** Ignore */
                 }
             }
@@ -188,18 +192,18 @@ class TraverseLessonsService {
             }
             Map<String, Object> entry = [:]
             boolean rising = (nextEntries.size() > (learnSimulation.interval / 2) && nextEntries.findAll {
-                it.get('price') > reference.get('price')
-            }.size() == nextEntries.size())
+                it.get('price') > reference.get('price') * MINIMAL_GAIN
+            }.size() > 0)
             boolean falling = (nextEntries.size() > (learnSimulation.interval / 2) && nextEntries.findAll {
-                it.get('price') < reference.get('price')
-            }.size() == nextEntries.size())
+                it.get('price') * MINIMAL_GAIN < reference.get('price')
+            }.size() > 0)
 
             boolean risen = (previousEntries.size() > learnSimulation.interval / 2) && previousEntries.findAll {
-                it.get('price') < reference.get('price')
-            }.size() == previousEntries.size()
+                it.get('price') * MINIMAL_GAIN < reference.get('price')
+            }.size() > 0
             boolean fallen = (previousEntries.size() > learnSimulation.interval / 2) && previousEntries.findAll {
-                it.get('price') > reference.get('price')
-            }.size() == previousEntries.size()
+                it.get('price') > reference.get('price') * MINIMAL_GAIN
+            }.size() > 0
 
             boolean buy = fallen && rising
             boolean sell = risen && falling
@@ -224,12 +228,12 @@ class TraverseLessonsService {
         Double finalPrice = 0
         progression.each { Map<String, Object> entry ->
             if (entry['sell']) {
-                learnSimulation.balanceB += ((learnSimulation.balanceA) * (entry['price'] as Double) * (1 - TRADE_LOSS))
-                learnSimulation.balanceA = 0
+                learnSimulation.balanceB += ((learnSimulation.balanceA / PEAK_PADDING) * (entry['price'] as Double) * (1 - TRADE_LOSS))
+                learnSimulation.balanceA = learnSimulation.balanceA * (1 - (1/PEAK_PADDING))
                 learnSimulation.tradeCount++
             } else if (entry['buy']) {
-                learnSimulation.balanceA += (((learnSimulation.balanceB) / (entry['price'] as Double)) * (1 - TRADE_LOSS))
-                learnSimulation.balanceB = 0
+                learnSimulation.balanceA += (((learnSimulation.balanceB / PEAK_PADDING) / (entry['price'] as Double)) * (1 - TRADE_LOSS))
+                learnSimulation.balanceB = learnSimulation.balanceB * (1 - (1/PEAK_PADDING))
                 learnSimulation.tradeCount++
             }
             finalPrice = (entry['price'] as Double)

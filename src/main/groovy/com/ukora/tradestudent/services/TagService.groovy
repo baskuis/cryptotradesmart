@@ -1,5 +1,7 @@
 package com.ukora.tradestudent.services
 
+import com.ukora.tradestudent.bayes.numbers.NumberAssociation
+import com.ukora.tradestudent.entities.BrainNode
 import com.ukora.tradestudent.tags.AbstractCorrelationTag
 import com.ukora.tradestudent.tags.TagGroup
 import org.springframework.beans.factory.annotation.Autowired
@@ -51,6 +53,37 @@ class TagService {
      */
     TagGroup getTagGroupByTagName(String tagName){
         return getTagGroupByTag(getTagByName(tagName))
+    }
+
+    /**
+     * Get general number association from tag group
+     *
+     * @param reference
+     * @param tagGroup
+     * @return
+     */
+    static NumberAssociation getGeneralNumberAssociation(BrainNode brainNode, TagGroup tagGroup){
+        if(!brainNode) return null
+        if(!tagGroup) return null
+        NumberAssociation generalNumberAssociation = new NumberAssociation()
+        Double sumMean = 0
+        Double sumStandardDeviation = 0
+        Double sumCount = 0
+        Integer total = 0
+        brainNode.tagReference.findAll({
+            tagGroup.tags().collect({ it.tagName }).contains(it.key)
+        }).each {
+            sumMean += it.value.mean
+            sumStandardDeviation += it.value.standard_deviation
+            sumCount += it.value.count
+            total++
+        }
+        generalNumberAssociation.mean = sumMean / total
+        generalNumberAssociation.standard_deviation = sumStandardDeviation / total
+        generalNumberAssociation.count = sumCount
+        generalNumberAssociation.tagGroup = tagGroup.name
+        generalNumberAssociation.tag = CaptureAssociationsService.GENERAL + CaptureAssociationsService.SEP + tagGroup.name
+        return generalNumberAssociation
     }
 
 }

@@ -73,7 +73,7 @@ class CaptureAssociationsService {
      *
      * @param correlationAssociation
      */
-    void hydrateAssocations(CorrelationAssociation correlationAssociation){
+    static void hydrateAssocations(CorrelationAssociation correlationAssociation){
 
         /** Capture associations for normalized data for instance */
         brainItUpSimple(correlationAssociation.memory, correlationAssociation, INSTANT)
@@ -118,16 +118,11 @@ class CaptureAssociationsService {
      * @param associations
      * @param tagName
      */
-    void hydrateSpecializedAssociationTags(AbstractAssociation associations, String tagName){
+    static void hydrateSpecializedAssociationTags(AbstractAssociation associations, String tagName){
 
         if(!associations) return
         if(!tagName) return
         if(!associations.date) return
-
-        /**
-         * Retrieve tag group
-         */
-        TagGroup tagGroup = tagService.getTagGroupByTagName(tagName)
 
         /**
          * Store time based associations
@@ -135,13 +130,9 @@ class CaptureAssociationsService {
         Calendar calendar = GregorianCalendar.getInstance()
         calendar.setTime(associations.date)
         associations.associations.get(INSTANT + SEP + TIME_HOUR_IN_DAY, [:]).put(tagName, calendar.get(Calendar.HOUR_OF_DAY))
-        associations.associations.get(INSTANT + SEP + TIME_HOUR_IN_DAY, [:]).put(GENERAL + SEP + tagGroup.name, calendar.get(Calendar.HOUR_OF_DAY))
         associations.associations.get(INSTANT + SEP + TIME_MINUTE_IN_HOUR, [:]).put(tagName, calendar.get(Calendar.MINUTE))
-        associations.associations.get(INSTANT + SEP + TIME_MINUTE_IN_HOUR, [:]).put(GENERAL + SEP + tagGroup.name, calendar.get(Calendar.MINUTE))
         associations.associations.get(INSTANT + SEP + TIME_DAY_IN_WEEK, [:]).put(tagName, calendar.get(Calendar.DAY_OF_WEEK))
-        associations.associations.get(INSTANT + SEP + TIME_DAY_IN_WEEK, [:]).put(GENERAL + SEP + tagGroup.name, calendar.get(Calendar.DAY_OF_WEEK))
         associations.associations.get(INSTANT + SEP + TIME_DAY_IN_MONTH, [:]).put(tagName, calendar.get(Calendar.DAY_OF_MONTH))
-        associations.associations.get(INSTANT + SEP + TIME_DAY_IN_MONTH, [:]).put(GENERAL + SEP + tagGroup.name, calendar.get(Calendar.DAY_OF_MONTH))
 
         /**
          * Store emotional boundary associations
@@ -150,7 +141,6 @@ class CaptureAssociationsService {
             NerdUtils.extractBoundaryDistances(associations.price).each {
                 if(it.value == 0) it.value = PRACTICAL_ZERO
                 associations.associations.get(INSTANT + SEP + it.key, [:]).put(tagName, it.value)
-                associations.associations.get(INSTANT + SEP + it.key, [:]).put(GENERAL + SEP + tagGroup.name, it.value)
             }
         }
 
@@ -162,7 +152,7 @@ class CaptureAssociationsService {
      * @param associations
      * @param tagName
      */
-    void hydrateAssociationTags(AbstractAssociation associations, String tagName){
+    static void hydrateAssociationTags(AbstractAssociation associations, String tagName){
 
         if(!associations) return
         if(!tagName) return
@@ -185,20 +175,14 @@ class CaptureAssociationsService {
      * @param tagName
      * @param timeDelta
      */
-    void brainItUp(Memory memory, AbstractAssociation lesson, String timeDelta, String tagName){
+    static void brainItUp(Memory memory, AbstractAssociation lesson, String timeDelta, String tagName){
         if(!memory) return
         if(!lesson) return
-
-        /**
-         * Retrieve tag group
-         */
-        TagGroup tagGroup = tagService.getTagGroupByTagName(tagName)
 
         /** Normalized properties */
         memory.normalized.properties.each { prop, val ->
             if(val instanceof Double) {
                 (lesson.associations.get(timeDelta + SEP + prop, [:]) as Map).put(tagName, val)
-                (lesson.associations.get(timeDelta + SEP + prop, [:]) as Map).put(GENERAL + SEP + tagGroup.name, val)
             }
         }
 
@@ -206,7 +190,6 @@ class CaptureAssociationsService {
         Double previousPriceProportion = lesson.previousPrices.get(timeDelta)
         if(previousPriceProportion) {
             (lesson.associations.get(timeDelta + SEP + PRICE_DELTA, [:]) as Map).put(tagName, previousPriceProportion)
-            (lesson.associations.get(timeDelta + SEP + PRICE_DELTA, [:]) as Map).put(GENERAL + SEP + tagGroup.name, previousPriceProportion)
         }
 
     }

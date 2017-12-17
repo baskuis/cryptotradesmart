@@ -28,6 +28,9 @@ class ProbabilityFigurerService {
     @Autowired
     ApplicationContext applicationContext
 
+    @Autowired
+    TagService tagService
+
     Map<String, TagGroup> tagGroupMap = [:]
     Map<String, AbstractCorrelationTag> tagMap = [:]
 
@@ -99,7 +102,9 @@ class ProbabilityFigurerService {
         nodes.each {
             BrainNode brainNode = it.value
             tagGroupMap.each {
-                NumberAssociation generalAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL + CaptureAssociationsService.SEP + it.value.name)
+                TagGroup tagGroup = it.value
+                NumberAssociation generalAssociation = TagService.getGeneralNumberAssociation(brainNode, tagGroup)
+                brainNode.tagReference.put(generalAssociation.tag, generalAssociation)
                 if(generalAssociation) {
                     it.value.tags().each {
                         String tag = it.getTagName()
@@ -135,7 +140,7 @@ class ProbabilityFigurerService {
             BrainNode brainNode = brainNodes.get(it.key)
             Double normalizedValue = it.value
             tagGroupMap.each {
-                NumberAssociation generalAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL + CaptureAssociationsService.SEP + it.value.name)
+                NumberAssociation generalAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL)
                 if(generalAssociation) {
                     it.value.tags().each {
                         String tag = it.getTagName()
