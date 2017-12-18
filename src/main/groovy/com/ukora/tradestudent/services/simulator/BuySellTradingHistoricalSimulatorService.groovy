@@ -51,12 +51,12 @@ class BuySellTradingHistoricalSimulatorService {
     List<Simulation> simulations = []
 
     private final static Double STARTING_BALANCE = 10
-    private final static Double MAX_TRADE_INCREMENT = 0.9
-    private final static Double TRADE_INCREMENT = 0.3
+    private final static Double MAX_TRADE_INCREMENT = 0.7
+    private final static Double TRADE_INCREMENT = 0.1
     private final static Double TRADE_TRANSACTION_COST = 0.0022
-    private final static Double LOWEST_THRESHOLD = 0.55
+    private final static Double LOWEST_THRESHOLD = 0.50
     private final static Double HIGHEST_THRESHOLD = 1.00
-    private final static Double THRESHOLD_INCREMENT = 0.03
+    private final static Double THRESHOLD_INCREMENT = 0.02
 
     @PostConstruct
     void init() {
@@ -140,6 +140,7 @@ class BuySellTradingHistoricalSimulatorService {
                         simulations[(it..<simulations.size()).step(numCores)]
                     } : [simulations]
                     if (multithreadingEnabled) Logger.debug(String.format("Delegating simulation to %s threads", numCores))
+                    if (multithreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
                     partitioned.collect { group ->
                         Thread.start({
                             group.each {

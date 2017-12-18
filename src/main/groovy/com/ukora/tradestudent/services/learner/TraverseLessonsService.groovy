@@ -26,7 +26,7 @@ class TraverseLessonsService {
     private final static Double TRADE_LOSS = 0.005
 
     /** Minimal gain for trade */
-    private final static Double MINIMAL_GAIN = 1.0075
+    private final static Double MINIMAL_GAIN = 1.01
 
     private final static Double MINIMAL_PROPORTION = 1.15
 
@@ -34,7 +34,7 @@ class TraverseLessonsService {
     public final static long INTERVAL_HOURS = 1
 
     public final static long REPEAT_FOR_TREND = 8 /** Represents hours */
-    public final static long MINIMUM_HOLD_PERIOD = 7 /** In minutes */
+    public final static long MINIMUM_HOLD_PERIOD = 5 /** In minutes */
     public final static long REPEAT_FOR_BUY_SELL = 90 /** Represents minutes */
 
     private final static int SIMULATION_INTERVAL_INCREMENT = 1
@@ -65,6 +65,16 @@ class TraverseLessonsService {
     }
 
     /**
+     * Reset simulations
+     */
+    void resetSimulations() {
+        learnSimulations?.each {
+            it.balanceA = 1
+            it.balanceB = 0
+        }
+    }
+
+    /**
      * Learn from trading history
      *
      */
@@ -73,6 +83,7 @@ class TraverseLessonsService {
     void learnFromHistoryTrendData() {
         if (!running) {
             running = true
+            resetSimulations()
             Property latestUpDown = bytesFetcherService.getProperty(LATEST_UP_DOWN_PROPERTY_KEY)
             Instant start = Instant.now().minus(14, ChronoUnit.DAYS)
             if (latestUpDown) {
@@ -96,6 +107,7 @@ class TraverseLessonsService {
     void learnFromBuySellBehavior() {
         if (!running) {
             running = true
+            resetSimulations()
             Property latestBuySell = bytesFetcherService.getProperty(LATEST_BUY_SELL_PROPERTY_KEY)
             Instant start = Instant.now().minus(14, ChronoUnit.DAYS)
             if (latestBuySell) {
@@ -168,6 +180,13 @@ class TraverseLessonsService {
 
     }
 
+    /**
+     * Run trade simulation
+     *
+     * @param transformedReferences
+     * @param learnSimulation
+     * @return
+     */
     static List<Map<String, Object>> runTradeSimulation(List<Map<String, Object>> transformedReferences, LearnSimulation learnSimulation) {
         Logger.log("Running simulation with interval ${learnSimulation.interval}")
         boolean previousRising = null

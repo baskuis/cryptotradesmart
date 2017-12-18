@@ -36,11 +36,7 @@ class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrateg
         return buySellTagGroup.applies(toTag)
     }
 
-    /**
-     * TODO: up/down trend tags are not very stable
-     *
-     */
-    private boolean enabled = false
+    private boolean enabled = true
 
     @Override
     boolean isEnabled() {
@@ -74,8 +70,10 @@ class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrateg
         Double upProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(upTag.tagName)
         Double downProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(downTag.tagName)
         if(upProbability && downProbability) {
-            Double modifiedBuyThreshold = simulation.buyThreshold * downProbability
-            Double modifiedSellThreshold = simulation.sellThreshold * upProbability
+            Double buyDiff = 1 - simulation.buyThreshold
+            Double sellDiff = 1 - simulation.sellThreshold
+            Double modifiedBuyThreshold = simulation.buyThreshold + (upProbability * buyDiff)
+            Double modifiedSellThreshold = simulation.sellThreshold + (downProbability * sellDiff)
             if (tag == buyTag.getTagName() && probability > modifiedBuyThreshold) {
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.BUY,

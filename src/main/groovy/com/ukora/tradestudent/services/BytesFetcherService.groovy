@@ -615,7 +615,11 @@ class BytesFetcherService {
             exchange.exchange = obj['exchange']['exchange'] as String
             exchange.details = details
             Metadata metadata = new Metadata()
-            metadata.datetime = dateParser.parse(obj["metadata"]["datetime"] as String)
+            try {
+                metadata.datetime = dateParser.parse(obj["metadata"]["datetime"] as String)
+            } catch(NumberFormatException e){
+                metadata.datetime = memoryDate
+            }
             metadata.hostname = obj["metadata"]["hostname"] as String
             Graph graph = new Graph()
             try {
