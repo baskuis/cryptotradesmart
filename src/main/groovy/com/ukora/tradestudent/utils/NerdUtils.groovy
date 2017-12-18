@@ -56,12 +56,27 @@ class NerdUtils {
      * Get emotional boundaries map of provided value
      *
      * @param value
-     * @return
+     * @return Map
      */
     static Map<String, Double> extractBoundaryDistances(Double value){
         Map response = [:]
         resistanceBoundaries.each { if(it.value <= value){ response[it.key] = (value % it.value) / it.value } }
         return response
+    }
+
+    /**
+     * Combine multiple standard deviation values
+     *
+     * @param standardDeviation
+     * @return Double
+     */
+    static Double combineStandardDeviations(Double... standardDeviation){
+        if(!standardDeviation || standardDeviation.size() < 2 || standardDeviation.findAll({ it.naN || it.infinite })?.size() > 0){
+            return null
+        }
+        Double sumProduct = 0
+        standardDeviation.each { sumProduct += Math.pow(it, 2) }
+        return Math.sqrt(sumProduct)
     }
 
     /**

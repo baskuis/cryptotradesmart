@@ -140,7 +140,8 @@ class ProbabilityFigurerService {
             BrainNode brainNode = brainNodes.get(it.key)
             Double normalizedValue = it.value
             tagGroupMap.each {
-                NumberAssociation generalAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL)
+                TagGroup tagGroup = it.value
+                NumberAssociation generalAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL + CaptureAssociationsService.SEP + tagGroup.name)
                 if(generalAssociation) {
                     it.value.tags().each {
                         String tag = it.getTagName()

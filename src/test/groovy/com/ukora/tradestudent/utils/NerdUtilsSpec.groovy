@@ -29,6 +29,25 @@ class NerdUtilsSpec extends Specification {
     }
 
     @Unroll
+    def "combineStandardDeviations produces #expectedValue for #value1, #value2, #value3"() {
+
+        when:
+        def v = NerdUtils.combineStandardDeviations(value1, value2, value3)
+
+        then:
+        v == expectedValue
+
+        where:
+        value1                   | value2 | value3 | expectedValue
+        2                        | 3      | 4      | 5.385164807134504
+        Double.NaN               | 3      | 4      | null
+        Double.NEGATIVE_INFINITY | 3      | 4      | null
+        Double.POSITIVE_INFINITY | 3      | 4      | null
+        2                        | 2      | 2      | 3.4641016151377544
+
+    }
+
+    @Unroll
     def "Assert value is within range #value produces #expectedValue"() {
 
         when:

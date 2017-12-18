@@ -51,12 +51,12 @@ class BuySellTradingHistoricalSimulatorService {
     List<Simulation> simulations = []
 
     private final static Double STARTING_BALANCE = 10
-    private final static Double MAX_TRADE_INCREMENT = 2.4
-    private final static Double TRADE_INCREMENT = 0.4
+    private final static Double MAX_TRADE_INCREMENT = 0.9
+    private final static Double TRADE_INCREMENT = 0.3
     private final static Double TRADE_TRANSACTION_COST = 0.0022
-    private final static Double LOWEST_THRESHOLD = 0.65
+    private final static Double LOWEST_THRESHOLD = 0.55
     private final static Double HIGHEST_THRESHOLD = 1.00
-    private final static Double THRESHOLD_INCREMENT = 0.01
+    private final static Double THRESHOLD_INCREMENT = 0.03
 
     @PostConstruct
     void init() {

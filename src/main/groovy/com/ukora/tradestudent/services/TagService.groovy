@@ -4,6 +4,7 @@ import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.entities.BrainNode
 import com.ukora.tradestudent.tags.AbstractCorrelationTag
 import com.ukora.tradestudent.tags.TagGroup
+import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
@@ -67,19 +68,20 @@ class TagService {
         if(!tagGroup) return null
         NumberAssociation generalNumberAssociation = new NumberAssociation()
         Double sumMean = 0
-        Double sumStandardDeviation = 0
+        List<Double> standardDeviations = []
         Double sumCount = 0
         Integer total = 0
+
         brainNode.tagReference.findAll({
             tagGroup.tags().collect({ it.tagName }).contains(it.key)
         }).each {
             sumMean += it.value.mean
-            sumStandardDeviation += it.value.standard_deviation
+            standardDeviations << it.value.standard_deviation
             sumCount += it.value.count
             total++
         }
         generalNumberAssociation.mean = sumMean / total
-        generalNumberAssociation.standard_deviation = sumStandardDeviation / total
+        generalNumberAssociation.standard_deviation = NerdUtils.combineStandardDeviations(standardDeviations as Double[])
         generalNumberAssociation.count = sumCount
         generalNumberAssociation.tagGroup = tagGroup.name
         generalNumberAssociation.tag = CaptureAssociationsService.GENERAL + CaptureAssociationsService.SEP + tagGroup.name
