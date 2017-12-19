@@ -149,7 +149,7 @@ class LiveTradeSimulationService {
      */
     static SimulatedTradeEntry getNextSimulatedTradeEntry(SimulatedTradeEntry simulatedTradeEntry, TradeExecution tradeExecution){
         switch (tradeExecution.tradeType){
-            case TradeExecution.TradeType.BUY:
+            case TradeExecution.TradeType.SELL:
                 Double amount = tradeExecution.amount * (1 - TRANSACTION_COST)
                 Double newBalanceA = simulatedTradeEntry.balanceA - tradeExecution.amount
                 Double newBalanceB = simulatedTradeEntry.balanceB + (amount * tradeExecution.price)
@@ -171,7 +171,7 @@ class LiveTradeSimulationService {
                         date: new Date()
                 )
                 break
-            case TradeExecution.TradeType.SELL:
+            case TradeExecution.TradeType.BUY:
                 Double amount = tradeExecution.amount * (1 - TRANSACTION_COST)
                 Double newBalanceA = simulatedTradeEntry.balanceA + amount
                 Double newBalanceB = simulatedTradeEntry.balanceB - (tradeExecution.amount * tradeExecution.price)
