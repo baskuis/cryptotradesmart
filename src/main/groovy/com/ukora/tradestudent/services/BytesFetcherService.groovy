@@ -4,6 +4,7 @@ import com.mongodb.*
 import com.ukora.tradestudent.TradestudentApplication
 import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.entities.*
+import com.ukora.tradestudent.strategy.trading.TradeExecution
 import com.ukora.tradestudent.tags.TagGroup
 import com.ukora.tradestudent.utils.Logger
 import org.bson.types.ObjectId
@@ -36,6 +37,7 @@ class BytesFetcherService {
     final static String COLLECTION_BRAIN = "brain"
     final static String COLLECTION_SIMULATIONS = "simulations"
     final static String COLLECTION_PROPERTIES = "properties"
+    final static String COLLECTION_SIMULATED_TRADES = "simulatedTrades"
 
     @Autowired
     ApplicationContext applicationContext
@@ -56,6 +58,7 @@ class BytesFetcherService {
     DBCollection brain
     DBCollection simulations
     DBCollection properties
+    DBCollection simulatedTrades
 
     @PostConstruct
     void init() {
@@ -67,6 +70,7 @@ class BytesFetcherService {
         this.brain = mongoTemplate.getCollection(COLLECTION_BRAIN)
         this.simulations = mongoTemplate.getCollection(COLLECTION_SIMULATIONS)
         this.properties = mongoTemplate.getCollection(COLLECTION_PROPERTIES)
+        this.simulatedTrades = mongoTemplate.getCollection(COLLECTION_SIMULATED_TRADES)
         tagGroupMap = applicationContext.getBeansOfType(TagGroup)
     }
 
@@ -119,6 +123,55 @@ class BytesFetcherService {
         } catch (Exception e) {
             e.printStackTrace()
         }
+    }
+
+    /**
+     * Get latest simulated trade entry
+     *
+     * @return
+     */
+    SimulatedTradeEntry getLatestSimulatedTradeEntry(){
+        BasicDBObject sortByDateDesc = new BasicDBObject()
+        sortByDateDesc.put('date', -1)
+        DBCursor cursor =  this.simulatedTrades.find().sort(sortByDateDesc).limit(1)
+        while (cursor.hasNext()) {
+            DBObject obj = cursor.next()
+            Metadata metadata = new Metadata(
+                    hostname: obj?.metadata?.hostname as String,
+                    datetime: new Date(obj?.metadata?.datetime as String)
+            )
+            return new SimulatedTradeEntry(
+                    metadata: metadata,
+                    tradeType: Enum.valueOf(TradeExecution.TradeType.class, obj['tradeType'] as String),
+                    date: new Date(obj['date'] as String),
+                    amount: obj['amount'] as Double,
+                    price: obj['price'] as Double,
+                    balanceA: obj['balanceA'] as Double,
+                    balanceB: obj['balanceB'] as Double,
+                    totalValueA: obj['totalValueA'] as Double
+            )
+        }
+        return null
+    }
+
+    /**
+     * Insert simulation trade entry
+     *
+     * @param simulatedTradeEntry
+     */
+    void insertSimulatedTradeEntry(SimulatedTradeEntry simulatedTradeEntry){
+        if(!simulatedTradeEntry) return
+        DBObject obj = new BasicDBObject()
+        obj['tradeType'] = simulatedTradeEntry.getTradeType() as String
+        obj['date'] = simulatedTradeEntry.getDate() as String
+        obj['amount'] = simulatedTradeEntry.getAmount()
+        obj['price'] = simulatedTradeEntry.getPrice()
+        obj['balanceA'] = simulatedTradeEntry.getBalanceA()
+        obj['balanceB'] = simulatedTradeEntry.getBalanceB()
+        obj['totalValueA'] = simulatedTradeEntry.getTotalValueA()
+        obj.get('metadata', [:])['datetime'] = simulatedTradeEntry.metadata?.datetime
+        obj.get('metadata', [:])['hostname'] = simulatedTradeEntry.metadata?.hostname
+        this.simulatedTrades.insert(obj)
     }
 
     /**

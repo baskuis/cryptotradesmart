@@ -3,6 +3,7 @@ package com.ukora.tradestudent.controller
 import com.ukora.tradestudent.TradestudentApplication
 import com.ukora.tradestudent.entities.BrainNode
 import com.ukora.tradestudent.entities.CorrelationAssociation
+import com.ukora.tradestudent.entities.SimulatedTradeEntry
 import com.ukora.tradestudent.entities.SimulationResult
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.CaptureAssociationsService
@@ -142,6 +143,11 @@ class TradeStudentController {
     @RequestMapping(path = '/bestsimulations', method = RequestMethod.GET)
     List<SimulationResult> getBestSimulations(){
         simulationResultService.getTopPerformingSimulations()
+    }
+
+    @RequestMapping(path = '/latestentry', method = RequestMethod.GET)
+    SimulatedTradeEntry getLatestEntry(){
+        bytesFetcherService.getLatestSimulatedTradeEntry()
     }
 
     @InitBinder
