@@ -36,7 +36,10 @@ class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrateg
         return buySellTagGroup.applies(toTag)
     }
 
-    private boolean enabled = true
+    /**
+     * TODO: Refactor this -- need to find winning strategy implementation
+     */
+    private boolean enabled = false
 
     @Override
     boolean isEnabled() {

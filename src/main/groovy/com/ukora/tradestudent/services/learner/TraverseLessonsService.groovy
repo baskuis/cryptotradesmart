@@ -22,13 +22,13 @@ class TraverseLessonsService {
 
     static boolean running = false
 
-    /** Represents trade fee - and trade risk 0.3% over regular 0.2% trade fee */
-    private final static Double TRADE_LOSS = 0.005
+    /** Represents trade fee - and trade risk 0.15% over regular 0.2% trade fee */
+    private final static Double TRADE_LOSS = 0.0035
 
     /** Minimal gain for trade */
-    private final static Double MINIMAL_GAIN = 1.01
+    private final static Double MINIMAL_GAIN = 1.0075
 
-    private final static Double MINIMAL_PROPORTION = 1.15
+    private final static Double MINIMAL_PROPORTION = 1.035
 
     public final static long INTERVAL_SECONDS = 60
     public final static long INTERVAL_HOURS = 1
