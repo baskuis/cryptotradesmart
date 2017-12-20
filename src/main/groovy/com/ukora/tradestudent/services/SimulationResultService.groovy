@@ -20,7 +20,8 @@ class SimulationResultService {
      * @return
      */
     SimulationResult getTopPerformingSimulation(){
-        getTopPerformingSimulations()?.first()
+        List<SimulationResult> r = getTopPerformingSimulations()
+        r ? r.first() : null
     }
 
     /**
@@ -46,8 +47,7 @@ class SimulationResultService {
         } else {
             distanceFromBinary = 1 - simulationResult.buyThreshold
         }
-        Math.pow(simulationResult.differential, distanceFromBinary / (distanceFromBinary + thresholdBalance)) *
-                Date.from(Instant.now().minusNanos(simulationResult.endDate.time)).time
+        (1 - distanceFromBinary) * (1 - thresholdBalance) * simulationResult.differential
     }
 
 }

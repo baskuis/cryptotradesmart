@@ -16,6 +16,8 @@ import org.springframework.stereotype.Component
 @Component
 class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
 
+    private final String TREND_COMBINER_STRATEGY = 'averageProbabilityCombinerStrategy'
+
     @Autowired
     BuyTag buyTag
 
@@ -36,10 +38,7 @@ class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrateg
         return buySellTagGroup.applies(toTag)
     }
 
-    /**
-     * TODO: Refactor this -- need to find winning strategy implementation
-     */
-    private boolean enabled = false
+    private boolean enabled = true
 
     @Override
     boolean isEnabled() {
@@ -70,13 +69,20 @@ class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrateg
             String combinerStrategy
     ) {
         TradeExecution tradeExecution = null
-        Double upProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(upTag.tagName)
-        Double downProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(downTag.tagName)
-        if(upProbability && downProbability) {
-            Double buyDiff = 1 - simulation.buyThreshold
-            Double sellDiff = 1 - simulation.sellThreshold
-            Double modifiedBuyThreshold = simulation.buyThreshold + (upProbability * buyDiff)
-            Double modifiedSellThreshold = simulation.sellThreshold + (downProbability * sellDiff)
+        Double upProbability = correlationAssociation.tagProbabilities?.get(TREND_COMBINER_STRATEGY)?.get(upTag.tagName)
+        Double downProbability = correlationAssociation.tagProbabilities?.get(TREND_COMBINER_STRATEGY)?.get(downTag.tagName)
+        if (upProbability && downProbability) {
+            Double modifiedBuyThreshold
+            Double modifiedSellThreshold
+            if (upProbability > downProbability) {
+                Double trendDelta = upProbability - downProbability
+                modifiedBuyThreshold = simulation.buyThreshold - (trendDelta * (1 - simulation.buyThreshold))
+                modifiedSellThreshold = simulation.sellThreshold + (trendDelta * (1 - simulation.sellThreshold))
+            } else {
+                Double trendDelta = downProbability - upProbability
+                modifiedBuyThreshold = simulation.buyThreshold + (trendDelta * (1 - simulation.buyThreshold))
+                modifiedSellThreshold = simulation.sellThreshold - (trendDelta * (1 - simulation.sellThreshold))
+            }
             if (tag == buyTag.getTagName() && probability > modifiedBuyThreshold) {
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.BUY,

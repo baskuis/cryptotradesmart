@@ -39,7 +39,7 @@ class TraverseLessonsService {
 
     private final static int SIMULATION_INTERVAL_INCREMENT = 1
 
-    private final static int PEAK_PADDING = 5
+    private final static int PEAK_PADDING = 3
 
     public final static String LATEST_BUY_SELL_PROPERTY_KEY = 'latestBuySell'
     public final static String LATEST_UP_DOWN_PROPERTY_KEY = 'latestUpDown'
@@ -224,8 +224,8 @@ class TraverseLessonsService {
                 it.get('price') > reference.get('price') * MINIMAL_GAIN
             }.size() > 0
 
-            boolean buy = fallen && rising
-            boolean sell = risen && falling
+            boolean buy = fallen && rising && !risen && !falling
+            boolean sell = risen && falling && !rising && !fallen
 
             entry['date'] = reference.get('date')
             entry['price'] = reference.get('price')

@@ -32,9 +32,9 @@ class LiveTradeSimulationServiceSpec extends Specification {
         where:
         scenario         | tradeType                     | amount | price | balanceA | balanceB | expected
         "Invalid amount" | TradeExecution.TradeType.BUY  | 0      | 5     | 10       | 0        | 10
-        "Valid buy"      | TradeExecution.TradeType.BUY  | 0.5    | 10000 | 10       | 2000     | 10.199
+        "Valid buy"      | TradeExecution.TradeType.BUY  | 0.5    | 10000 | 10       | 6000     | 10.599
         "Invalid amount" | TradeExecution.TradeType.SELL | 0      | 5     | 10       | 0        | 10
-        "Valid sell"     | TradeExecution.TradeType.SELL | 0.1    | 10000 | 10       | 2000     | 10.1998
+        "Valid sell"     | TradeExecution.TradeType.SELL | 0.1    | 10000 | 10       | 6000     | 10.5998
 
     }
 
