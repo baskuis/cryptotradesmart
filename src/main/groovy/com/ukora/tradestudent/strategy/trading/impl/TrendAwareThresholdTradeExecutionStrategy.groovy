@@ -76,12 +76,12 @@ class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrateg
             Double modifiedSellThreshold
             if (upProbability > downProbability) {
                 Double trendDelta = upProbability - downProbability
-                modifiedBuyThreshold = simulation.buyThreshold - (trendDelta * (1 - simulation.buyThreshold))
-                modifiedSellThreshold = simulation.sellThreshold + (trendDelta * (1 - simulation.sellThreshold))
+                modifiedBuyThreshold = simulation.buyThreshold - (trendDelta * (1 - simulation.buyThreshold) / 2)
+                modifiedSellThreshold = simulation.sellThreshold + (trendDelta * (1 - simulation.sellThreshold) / 2)
             } else {
                 Double trendDelta = downProbability - upProbability
-                modifiedBuyThreshold = simulation.buyThreshold + (trendDelta * (1 - simulation.buyThreshold))
-                modifiedSellThreshold = simulation.sellThreshold - (trendDelta * (1 - simulation.sellThreshold))
+                modifiedBuyThreshold = simulation.buyThreshold + (trendDelta * (1 - simulation.buyThreshold) / 2)
+                modifiedSellThreshold = simulation.sellThreshold - (trendDelta * (1 - simulation.sellThreshold) / 2)
             }
             if (tag == buyTag.getTagName() && probability > modifiedBuyThreshold) {
                 tradeExecution = new TradeExecution(
