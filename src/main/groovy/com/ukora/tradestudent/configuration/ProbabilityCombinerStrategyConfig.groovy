@@ -25,7 +25,7 @@ class ProbabilityCombinerStrategyConfig {
     void disablePoorlyPerformingCombinerStrategies(){
         Map<String, ProbabilityCombinerStrategy> strategyMap = applicationContext.getBeansOfType(ProbabilityCombinerStrategy)
         List<SimulationResult> simulationResults = bytesFetcherService.getSimulations()
-        if(simulationResults.size() > 100) {
+        if(simulationResults.size() > 500) {
             strategyMap.each {
                 String beanName = it.key
                 ProbabilityCombinerStrategy strategy = it.value
