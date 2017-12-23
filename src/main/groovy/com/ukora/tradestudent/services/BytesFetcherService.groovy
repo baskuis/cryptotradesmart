@@ -163,7 +163,7 @@ class BytesFetcherService {
         if(!simulatedTradeEntry) return
         DBObject obj = new BasicDBObject()
         obj['tradeType'] = simulatedTradeEntry.getTradeType() as String
-        obj['date'] = simulatedTradeEntry.getDate() as String
+        obj['date'] = simulatedTradeEntry.getDate()
         obj['amount'] = simulatedTradeEntry.getAmount()
         obj['price'] = simulatedTradeEntry.getPrice()
         obj['balanceA'] = simulatedTradeEntry.getBalanceA()

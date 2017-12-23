@@ -12,6 +12,12 @@ class SimulationResultServiceSpec extends Specification {
     List<SimulationResult> mockSimulations = [
             new SimulationResult(
                     endDate: new Date(),
+                    buyThreshold: 0.59,
+                    sellThreshold: 0.58,
+                    differential: 1.05
+            ),
+            new SimulationResult(
+                    endDate: new Date(),
                     buyThreshold: 0.54,
                     sellThreshold: 0.50,
                     differential: 1.04

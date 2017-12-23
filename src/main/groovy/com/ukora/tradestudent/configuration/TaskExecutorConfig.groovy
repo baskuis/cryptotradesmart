@@ -7,11 +7,14 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 @Configuration
 class TaskExecutorConfig {
 
+    final static Integer POOL_SIZE = 10
+    final static Integer MAX_POOL_SIZE = 20
+
     @Bean
     ThreadPoolTaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor pool = new ThreadPoolTaskExecutor()
-        pool.setCorePoolSize(5)
-        pool.setMaxPoolSize(10)
+        pool.setCorePoolSize(POOL_SIZE)
+        pool.setMaxPoolSize(MAX_POOL_SIZE)
         pool.setWaitForTasksToCompleteOnShutdown(true)
         return pool
     }

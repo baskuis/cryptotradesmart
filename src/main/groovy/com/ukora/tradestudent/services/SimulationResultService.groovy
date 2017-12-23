@@ -14,6 +14,9 @@ class SimulationResultService {
     @Autowired
     BytesFetcherService bytesFetcherService
 
+    static final Integer DISTANCE_FROM_BINARY_SOFTENING_FACTOR = 5
+    static final Integer THRESHOLD_BALANCE_SOFTENENING_FACTOR = 3
+
     /**
      * Get top performing simulation
      *
@@ -39,6 +42,12 @@ class SimulationResultService {
         })
     }
 
+    /**
+     * Sorting function
+     * 
+     * @param simulationResult
+     * @return
+     */
     private static getScore(SimulationResult simulationResult){
         Double thresholdBalance = Math.abs(simulationResult.buyThreshold - simulationResult.sellThreshold)
         Double distanceFromBinary
@@ -47,7 +56,9 @@ class SimulationResultService {
         } else {
             distanceFromBinary = 1 - simulationResult.buyThreshold
         }
-        (1 - distanceFromBinary) * (1 - thresholdBalance) * simulationResult.differential
+        (1 - (distanceFromBinary / DISTANCE_FROM_BINARY_SOFTENING_FACTOR)) *
+                (1 - (thresholdBalance / THRESHOLD_BALANCE_SOFTENENING_FACTOR)) *
+                Math.pow(simulationResult.differential, 2)
     }
 
 }
