@@ -150,6 +150,11 @@ class TradeStudentController {
         bytesFetcherService.getLatestSimulatedTradeEntry()
     }
 
+    @RequestMapping(path = '/latestentries', method = RequestMethod.GET)
+    List<SimulatedTradeEntry> getLatestEntries(){
+        bytesFetcherService.getLatestSimulatedTradeEntries()
+    }
+
     @InitBinder
     void binder(WebDataBinder binder) {
         binder.registerCustomEditor(Date.class, new CustomDateEditor(NerdUtils.getGMTDateFormat(), true))

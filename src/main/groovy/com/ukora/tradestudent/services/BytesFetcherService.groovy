@@ -126,13 +126,45 @@ class BytesFetcherService {
     }
 
     /**
+     * Get latest simulated trade entries
+     *
+     * @return
+     */
+    List<SimulatedTradeEntry> getLatestSimulatedTradeEntries(){
+        List<SimulatedTradeEntry> entries = []
+        BasicDBObject sortByDateDesc = new BasicDBObject()
+        sortByDateDesc.put('date', -1)
+        DBCursor cursor =  this.simulatedTrades.find().sort(sortByDateDesc).limit(2000)
+        while (cursor.hasNext()) {
+            DBObject obj = cursor.next()
+            Metadata metadata = new Metadata(
+                    hostname: obj?.metadata?.hostname as String,
+                    datetime: new Date(obj?.metadata?.datetime as String)
+            )
+            entries << new SimulatedTradeEntry(
+                    metadata: metadata,
+                    tradeType: Enum.valueOf(TradeExecution.TradeType.class, obj['tradeType'] as String),
+                    date: new Date(obj['date'] as String),
+                    amount: obj['amount'] as Double,
+                    price: obj['price'] as Double,
+                    balanceA: obj['balanceA'] as Double,
+                    balanceB: obj['balanceB'] as Double,
+                    totalValueA: obj['totalValueA'] as Double
+            )
+        }
+        return entries.sort({ SimulatedTradeEntry a, SimulatedTradeEntry b ->
+            a.getDate() <=> b.getDate()
+        })
+    }
+
+    /**
      * Get latest simulated trade entry
      *
      * @return
      */
     SimulatedTradeEntry getLatestSimulatedTradeEntry(){
         BasicDBObject sortByDateDesc = new BasicDBObject()
-        sortByDateDesc.put('date', 1)
+        sortByDateDesc.put('date', -1)
         DBCursor cursor =  this.simulatedTrades.find().sort(sortByDateDesc).limit(1)
         while (cursor.hasNext()) {
             DBObject obj = cursor.next()

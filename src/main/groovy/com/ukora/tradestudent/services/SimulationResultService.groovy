@@ -44,7 +44,7 @@ class SimulationResultService {
 
     /**
      * Sorting function
-     * 
+     *
      * @param simulationResult
      * @return
      */
