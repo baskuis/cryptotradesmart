@@ -26,7 +26,7 @@ class TraverseLessonsService {
     private final static Double TRADE_LOSS = 0.0035
 
     /** Minimal gain for trade */
-    private final static Double MINIMAL_GAIN = 1.0075
+    private final static Double MINIMAL_GAIN = 1.0055
 
     private final static Double MINIMAL_PROPORTION = 1.035
 

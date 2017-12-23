@@ -11,10 +11,12 @@ import com.ukora.tradestudent.tags.TagSubset
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
 
 import javax.annotation.PostConstruct
+import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class ProbabilityFigurerService {
@@ -28,11 +30,12 @@ class ProbabilityFigurerService {
     @Autowired
     ApplicationContext applicationContext
 
-    @Autowired
-    TagService tagService
-
     Map<String, TagGroup> tagGroupMap = [:]
     Map<String, AbstractCorrelationTag> tagMap = [:]
+
+    static public boolean multithreadingEnabled = true
+
+    public final static int numCores = Runtime.getRuntime().availableProcessors()
 
     /**
      * This is a factor by which the bell-curve proportion will be softened
@@ -97,6 +100,7 @@ class ProbabilityFigurerService {
      *
      * @return
      */
+    @Cacheable("brainNodes")
     Map<String, BrainNode> getBrainNodes(){
         Map<String, BrainNode> nodes = bytesFetcherService.getAllBrainNodes()
         nodes.each {
@@ -134,33 +138,43 @@ class ProbabilityFigurerService {
      * @param correlationAssociation
      */
     void hydrateProbabilities(CorrelationAssociation correlationAssociation){
+        def partitioned = multithreadingEnabled ? NerdUtils.partitionMap(correlationAssociation.numericAssociations, numCores) : [correlationAssociation.numericAssociations]
+        if (multithreadingEnabled) Logger.debug(String.format("Delegating simulation to %s threads", numCores))
+        if (multithreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
         Map<String, BrainNode> brainNodes = getBrainNodes()
-        correlationAssociation.numericAssociations.each {
-            String reference = it.key
-            BrainNode brainNode = brainNodes.get(it.key)
-            Double normalizedValue = it.value
-            tagGroupMap.each {
-                TagGroup tagGroup = it.value
-                NumberAssociation generalAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL + CaptureAssociationsService.SEP + tagGroup.name)
-                if(generalAssociation) {
-                    it.value.tags().each {
-                        String tag = it.getTagName()
-                        NumberAssociation tagAssociation = brainNode.tagReference.get(tag)
-                        if (tagAssociation) {
-                            NumberAssociationProbability numberAssociationProbability = new NumberAssociationProbability(tagAssociation)
-                            numberAssociationProbability.probability = NerdUtils.chanceOfCorrelation(
-                                    normalizedValue,
-                                    tagAssociation.standard_deviation,
-                                    tagAssociation.mean,
-                                    generalAssociation.standard_deviation,
-                                    tagAssociation.mean
-                            )
-                            correlationAssociation.numericAssociationProbabilities.get(reference, [:]).put(tag, numberAssociationProbability)
+        List<Thread> threads = []
+        partitioned.collect { Map<String, Double> group ->
+            threads << Thread.start({
+                group.each {
+                    String reference = it.key
+                    BrainNode brainNode = brainNodes.get(it.key)
+                    Double normalizedValue = it.value
+                    tagGroupMap.each {
+                        TagGroup tagGroup = it.value
+                        NumberAssociation generalAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL + CaptureAssociationsService.SEP + tagGroup.name)
+                        if(generalAssociation) {
+                            it.value.tags().each {
+                                String tag = it.getTagName()
+                                NumberAssociation tagAssociation = brainNode.tagReference.get(tag)
+                                if (tagAssociation) {
+                                    NumberAssociationProbability numberAssociationProbability = new NumberAssociationProbability(tagAssociation)
+                                    numberAssociationProbability.probability = NerdUtils.chanceOfCorrelationSoftening(
+                                            normalizedValue,
+                                            tagAssociation.standard_deviation,
+                                            tagAssociation.mean,
+                                            generalAssociation.standard_deviation,
+                                            tagAssociation.mean,
+                                            SOFTENING_FACTOR
+                                    )
+                                    correlationAssociation.numericAssociationProbabilities.get(reference, new ConcurrentHashMap<String, NumberAssociationProbability>()).put(tag, numberAssociationProbability)
+                                }
+                            }
                         }
                     }
                 }
-            }
+            })
         }
+        threads*.join()
     }
 
     /**

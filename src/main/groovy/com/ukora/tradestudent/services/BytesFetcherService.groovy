@@ -132,7 +132,7 @@ class BytesFetcherService {
      */
     SimulatedTradeEntry getLatestSimulatedTradeEntry(){
         BasicDBObject sortByDateDesc = new BasicDBObject()
-        sortByDateDesc.put('date', -1)
+        sortByDateDesc.put('date', 1)
         DBCursor cursor =  this.simulatedTrades.find().sort(sortByDateDesc).limit(1)
         while (cursor.hasNext()) {
             DBObject obj = cursor.next()

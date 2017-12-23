@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 import java.time.Duration
 import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class BuySellTradingHistoricalSimulatorService {
@@ -38,7 +39,7 @@ class BuySellTradingHistoricalSimulatorService {
 
     public final static int numCores = Runtime.getRuntime().availableProcessors()
 
-    public static boolean multithreadingEnabled = false
+    public static boolean multithreadingEnabled = true
 
     public static boolean simulationRunning = false
 
@@ -52,11 +53,11 @@ class BuySellTradingHistoricalSimulatorService {
 
     public final static Double STARTING_BALANCE = 10
     private final static Double MAX_TRADE_INCREMENT = 0.7
-    private final static Double TRADE_INCREMENT = 0.1
+    private final static Double TRADE_INCREMENT = 0.2
     private final static Double TRADE_TRANSACTION_COST = 0.0022
-    private final static Double LOWEST_THRESHOLD = 0.50
+    private final static Double LOWEST_THRESHOLD = 0.45
     private final static Double HIGHEST_THRESHOLD = 1.00
-    private final static Double THRESHOLD_INCREMENT = 0.02
+    private final static Double THRESHOLD_INCREMENT = 0.03
 
     @PostConstruct
     void init() {
@@ -101,8 +102,8 @@ class BuySellTradingHistoricalSimulatorService {
     void resetSimulations(){
         simulations.each {
             it.tradeCount = 0
-            it.balancesA = [:]
-            it.balancesB = [:]
+            it.balancesA = new ConcurrentHashMap()
+            it.balancesB = new ConcurrentHashMap()
         }
     }
 
@@ -120,6 +121,11 @@ class BuySellTradingHistoricalSimulatorService {
             Logger.log("There is already a simulation running")
             return null
         }
+        def partitioned = multithreadingEnabled ? (0..<numCores).collect {
+            simulations[(it..<simulations.size()).step(numCores)]
+        } : [simulations]
+        if (multithreadingEnabled) Logger.debug(String.format("Delegating simulation to %s threads", numCores))
+        if (multithreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
         simulationRunning = true
         resetSimulations()
         Instant end = Instant.now()
@@ -136,13 +142,9 @@ class BuySellTradingHistoricalSimulatorService {
                     String tag = it.key
                     if (!buySellTagGroup.tags().find { it.tagName == tag }) return
                     Double probability = it.value
-                    def partitioned = multithreadingEnabled ? (0..<numCores).collect {
-                        simulations[(it..<simulations.size()).step(numCores)]
-                    } : [simulations]
-                    if (multithreadingEnabled) Logger.debug(String.format("Delegating simulation to %s threads", numCores))
-                    if (multithreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
+                    List<Thread> threads = []
                     partitioned.collect { group ->
-                        Thread.start({
+                        threads << Thread.start({
                             group.each {
                                 Simulation simulation = it
                                 simulation.finalPrice = correlationAssociation.price
@@ -165,8 +167,9 @@ class BuySellTradingHistoricalSimulatorService {
 
                                 }
                             }
-                        })*.join()
+                        })
                     }
+                    threads*.join()
                 }
             }
             if(forceCompleteSimulation) break

@@ -1,5 +1,6 @@
 package com.ukora.tradestudent.utils
 
+import spock.lang.Ignore
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -221,6 +222,41 @@ class NerdUtilsSpec extends Specification {
         1     | [1, 1] | 0.3333333333333333d
         -2    | [1, 1] | 0.5
         3     | [2]    | 0.6
+
+    }
+
+    @Unroll
+    def "get partitionMap split map with 6 entries into #pieces pieces produces #size partitions"() {
+
+        when:
+        def r = NerdUtils.partitionMap(map, pieces)
+
+        then:
+        r.size() == size
+
+        where:
+        map | pieces | size
+        [a:1,b:2,c:3,d:4,e:5,f:6] | 0 | 1
+        [a:1,b:2,c:3,d:4,e:5,f:6] | 3 | 3
+        [a:1,b:2,c:3,d:4,e:5,f:6] | 2 | 2
+        [a:1,b:2,c:3,d:4,e:5,f:6] | 1 | 1
+        [a:1,b:2,c:3,d:4,e:5,f:6] | 4 | 6
+        [a:1,b:2,c:3,d:4,e:5,f:6] | 5 | 6
+        [a:1,b:2,c:3,d:4,e:5,f:6] | 6 | 6
+        [a:1,b:2,c:3,d:4,e:5,f:6] | 10 | 6
+
+    }
+
+    @Ignore
+    def "modifying partioned map modifies origin map"() {
+
+        when:
+        Map o = [a:1,b:2]
+        def r = NerdUtils.partitionMap(o, 2)
+        (r.get(1) as Map).put('a', 3)
+
+        then:
+        o.get('a') == 3
 
     }
 
