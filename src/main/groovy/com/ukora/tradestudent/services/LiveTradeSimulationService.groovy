@@ -101,7 +101,7 @@ class LiveTradeSimulationService {
                 return
             }
         }
-        Logger.log(String.format("Unable to evaluate life trades for %s", now))
+        Logger.log(String.format("Unable to evaluate live trades for %s", now))
     }
 
     /**

@@ -235,15 +235,16 @@ class NerdUtilsSpec extends Specification {
         r.size() == size
 
         where:
-        map | pieces | size
-        [a:1,b:2,c:3,d:4,e:5,f:6] | 0 | 1
-        [a:1,b:2,c:3,d:4,e:5,f:6] | 3 | 3
-        [a:1,b:2,c:3,d:4,e:5,f:6] | 2 | 2
-        [a:1,b:2,c:3,d:4,e:5,f:6] | 1 | 1
-        [a:1,b:2,c:3,d:4,e:5,f:6] | 4 | 6
-        [a:1,b:2,c:3,d:4,e:5,f:6] | 5 | 6
-        [a:1,b:2,c:3,d:4,e:5,f:6] | 6 | 6
-        [a:1,b:2,c:3,d:4,e:5,f:6] | 10 | 6
+        map                                  | pieces | size
+        [:]                                  | 8      | 1
+        [a: 1, b: 2, c: 3, d: 4, e: 5, f: 6] | 0      | 1
+        [a: 1, b: 2, c: 3, d: 4, e: 5, f: 6] | 3      | 3
+        [a: 1, b: 2, c: 3, d: 4, e: 5, f: 6] | 2      | 2
+        [a: 1, b: 2, c: 3, d: 4, e: 5, f: 6] | 1      | 1
+        [a: 1, b: 2, c: 3, d: 4, e: 5, f: 6] | 4      | 6
+        [a: 1, b: 2, c: 3, d: 4, e: 5, f: 6] | 5      | 6
+        [a: 1, b: 2, c: 3, d: 4, e: 5, f: 6] | 6      | 6
+        [a: 1, b: 2, c: 3, d: 4, e: 5, f: 6] | 10     | 6
 
     }
 
@@ -251,7 +252,7 @@ class NerdUtilsSpec extends Specification {
     def "modifying partioned map modifies origin map"() {
 
         when:
-        Map o = [a:1,b:2]
+        Map o = [a: 1, b: 2]
         def r = NerdUtils.partitionMap(o, 2)
         (r.get(1) as Map).put('a', 3)
 

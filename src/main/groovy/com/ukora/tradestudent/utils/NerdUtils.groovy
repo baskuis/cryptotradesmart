@@ -206,6 +206,7 @@ class NerdUtils {
      * @return
      */
     static List partitionMap(Map delegate, int pieces) {
+        if(!delegate || !pieces || delegate.size() == 0) return [delegate]
         if(pieces < 1) return [delegate]
         int size = Math.abs(delegate.size() / pieces)
         List r = delegate.inject([new ConcurrentHashMap()]) { List ret, elem -> (ret.last() << elem).size() >= size ? ret << new ConcurrentHashMap() : ret }
