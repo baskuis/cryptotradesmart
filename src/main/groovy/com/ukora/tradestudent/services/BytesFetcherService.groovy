@@ -726,4 +726,72 @@ class BytesFetcherService {
         return null
     }
 
+    /**
+     * Insert memory
+     *
+     *
+     * @param the_memory
+     */
+    void insertMemory(Memory the_memory){
+        if(!the_memory) return
+        try {
+            DBObject obj = new BasicDBObject()
+            obj['ask'] = [:]
+            obj['ask']['ask_medium_median_delta'] = the_memory.ask?.ask_medium_median_delta
+            obj['ask']['volume_ask_quantity'] = the_memory.ask?.volume_ask_quantity
+            obj['ask']['minimum_ask_price'] = the_memory.ask?.minimum_ask_price
+            obj['ask']['medium_ask_price'] = the_memory.ask?.medium_ask_price
+            obj['ask']['total_ask_value'] = the_memory.ask?.total_ask_value
+            obj['ask']['maximum_ask_price'] = the_memory.ask?.maximum_ask_price
+            obj['ask']['medium_per_unit_ask_price'] = the_memory.ask?.medium_per_unit_ask_price
+            obj['ask']['median_ask_price'] = the_memory.ask?.median_ask_price
+            obj['bid'] = [:]
+            obj['bid']['volume_bid_quantity'] = the_memory.bid?.volume_bid_quantity
+            obj['bid']['bid_medium_median_delta'] = the_memory.bid?.bid_medium_median_delta
+            obj['bid']['minimum_bid_price'] = the_memory.bid?.minimum_bid_price
+            obj['bid']['median_bid_price'] = the_memory.bid?.median_bid_price
+            obj['bid']['maximum_bid_price'] = the_memory.bid?.maximum_bid_price
+            obj['bid']['total_bid_value'] = the_memory.bid?.total_bid_value
+            obj['bid']['medium_bid_price'] = the_memory.bid?.medium_bid_price
+            obj['bid']['medium_per_unit_bid_price'] = the_memory.bid?.medium_per_unit_bid_price
+            obj['normalized'] = [:]
+            obj['normalized']['normalized_spread_bid_price'] = the_memory.normalized?.normalized_spread_bid_price
+            obj['normalized']['normalized_medium_per_unit_bid_price'] = the_memory.normalized?.normalized_medium_per_unit_bid_price
+            obj['normalized']['normalized_volume_ask_price'] = the_memory.normalized?.normalized_volume_ask_price
+            obj['normalized']['normalized_maximum_ask_price'] = the_memory.normalized?.normalized_maximum_ask_price
+            obj['normalized']['normalized_bid_medium_median_delta'] = the_memory.normalized?.normalized_bid_medium_median_delta
+            obj['normalized']['normalized_minimum_bid_price'] = the_memory.normalized?.normalized_minimum_bid_price
+            obj['normalized']['normalized_volume_ask_quantity'] = the_memory.normalized?.normalized_volume_ask_quantity
+            obj['normalized']['normalized_medium_bid_price'] = the_memory.normalized?.normalized_medium_bid_price
+            obj['normalized']['normalized_spread'] = the_memory.normalized?.normalized_spread
+            obj['normalized']['normalized_median_bid_price'] = the_memory.normalized?.normalized_median_bid_price
+            obj['normalized']['normalized_spread_ask_price'] = the_memory.normalized?.normalized_spread_ask_price
+            obj['normalized']['normalized_maximum_bid_price'] = the_memory.normalized?.normalized_maximum_bid_price
+            obj['normalized']['normalized_volume_bid_quantity'] = the_memory.normalized?.normalized_volume_bid_quantity
+            obj['normalized']['normalized_ask_medium_median_delta'] = the_memory.normalized?.normalized_ask_medium_median_delta
+            obj['normalized']['normalized_medium_ask_price'] = the_memory.normalized?.normalized_medium_ask_price
+            obj['normalized']['normalized_medium_per_unit_ask_price'] = the_memory.normalized?.normalized_medium_per_unit_ask_price
+            obj['normalized']['normalized_minimum_ask_price'] = the_memory.normalized?.normalized_minimum_ask_price
+            obj['normalized']['normalized_median_ask_price'] = the_memory.normalized?.normalized_median_ask_price
+            obj['normalized']['normalized_total_bid_value'] = the_memory.normalized?.normalized_total_bid_value
+            obj['normalized']['normalized_total_ask_value'] = the_memory.normalized?.normalized_total_ask_value
+            obj['normalized']['normalized_volume_bid_price'] = the_memory.normalized?.normalized_volume_bid_price
+            obj['exchange'] = [:]
+            obj['exchange']['details'] = [:]
+            obj['exchange']['details']['tradecurrency'] = the_memory.exchange?.details?.tradecurrency
+            obj['exchange']['details']['pricecurrency'] = the_memory.exchange?.details?.pricecurrency
+            obj['exchange']['platform'] = the_memory.exchange?.platform
+            obj['exchange']['exchange'] = the_memory.exchange?.exchange
+            obj['metadata'] = [:]
+            obj['metadata']['datetime'] = the_memory.metadata?.datetime
+            obj['metadata']['hostname'] = the_memory.metadata?.hostname
+            obj['graph'] = [:]
+            obj['graph']['price'] = the_memory.graph?.price
+            obj['graph']['quantity'] = the_memory.graph?.quantity
+            this.memory.insert(obj)
+        } catch(Exception e){
+            e.printStackTrace()
+        }
+    }
+
 }
