@@ -202,9 +202,10 @@ class NerdUtilsSpec extends Specification {
         boundaries == expected
 
         where:
-        value | expected
-        1111  | [ones: 0.0, fives: 0.2, tens: 0.1, twenties: 0.55, twentyfives: 0.44, fifties: 0.22, seventyfives: 0.8133333333333334, hundreds: 0.11, twohundreds: 0.555, fivehunderds: 0.222, thousands: 0.111]
-        1275  | [ones: 0.0, fives: 0.0, tens: 0.5, twenties: 0.75, twentyfives: 0.0, fifties: 0.5, seventyfives: 0.0, hundreds: 0.75, twohundreds: 0.375, fivehunderds: 0.55, thousands: 0.275]
+        value     | expected
+        1111      | [ones: 0.0, fives: 0.2, tens: 0.1, twenties: 0.55, twentyfives: 0.44, fifties: 0.22, seventyfives: 0.8133333333333334, hundreds: 0.11, twohundreds: 0.555, fivehunderds: 0.222, thousands: 0.111]
+        1275      | [ones: 0.0, fives: 0.0, tens: 0.5, twenties: 0.75, twentyfives: 0.0, fifties: 0.5, seventyfives: 0.0, hundreds: 0.75, twohundreds: 0.375, fivehunderds: 0.55, thousands: 0.275]
+        1111111.1 | [ones: 0.10000000009313226, fives: 0.22000000001862646, tens: 0.11000000000931323, twenties: 0.5550000000046567, twentyfives: 0.4440000000037253, fifties: 0.22200000000186265, seventyfives: 0.8146666666679084, hundreds: 0.11100000000093133, twohundreds: 0.5555000000004656, fivehunderds: 0.22220000000018628, thousands: 0.11110000000009314, twothousands: 0.5555500000000466, fivethousands: 0.22222000000001862, tenthousands: 0.11111000000000931, twentythousands: 0.5555550000000047, fiftythousands: 0.22222200000000186, hundredthousands: 0.11111100000000093, twohundredthousands: 0.5555555000000004, fivehundredthousands: 0.22222220000000018, millions: 0.11111110000000009]
 
     }
 
