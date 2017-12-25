@@ -116,10 +116,10 @@ class BuySellTradingHistoricalSimulatorService {
      */
     @Async
     runSimulation(Date fromDate) {
-        if (!fromDate) return null
+        if (!fromDate) return
         if (simulationRunning){
             Logger.log("There is already a simulation running")
-            return null
+            return
         }
         def partitioned = multithreadingEnabled ? (0..<numCores).collect {
             simulations[(it..<simulations.size()).step(numCores)]
