@@ -15,7 +15,7 @@ class SimulationResultService {
     BytesFetcherService bytesFetcherService
 
     static final Integer DISTANCE_FROM_BINARY_SOFTENING_FACTOR = 5
-    static final Integer THRESHOLD_BALANCE_SOFTENENING_FACTOR = 3
+    static final Integer THRESHOLD_BALANCE_SOFTENING_FACTOR = 3
 
     /**
      * Get top performing simulation
@@ -57,7 +57,7 @@ class SimulationResultService {
             distanceFromBinary = 1 - simulationResult.buyThreshold
         }
         (1 - (distanceFromBinary / DISTANCE_FROM_BINARY_SOFTENING_FACTOR)) *
-                (1 - (thresholdBalance / THRESHOLD_BALANCE_SOFTENENING_FACTOR)) *
+                (1 - (thresholdBalance / THRESHOLD_BALANCE_SOFTENING_FACTOR)) *
                 Math.pow(simulationResult.differential, 2)
     }
 
