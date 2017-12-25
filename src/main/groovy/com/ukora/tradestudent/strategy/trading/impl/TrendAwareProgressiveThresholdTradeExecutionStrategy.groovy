@@ -87,8 +87,8 @@ class TrendAwareProgressiveThresholdTradeExecutionStrategy implements TradeExecu
                 modifiedSellThreshold = simulation.sellThreshold - (trendDelta * (1 - simulation.sellThreshold) / 2)
             }
             if (tag == buyTag.getTagName() && probability > modifiedBuyThreshold) {
-                Double buyThresholdDistance = 1 - simulation.buyThreshold
-                Double actualBuyThresholdDistance = probability - simulation.buyThreshold
+                Double buyThresholdDistance = 1 - modifiedBuyThreshold
+                Double actualBuyThresholdDistance = probability - modifiedBuyThreshold
                 Double buyMultiplier = MIN_MULTIPLIER + ((actualBuyThresholdDistance / buyThresholdDistance) * (MAX_MULTIPLIER - MIN_MULTIPLIER))
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.BUY,
@@ -96,8 +96,8 @@ class TrendAwareProgressiveThresholdTradeExecutionStrategy implements TradeExecu
                         price: correlationAssociation.price
                 )
             } else if (tag == sellTag.getTagName() && probability > modifiedSellThreshold) {
-                Double sellThresholdDistance = 1 - simulation.sellThreshold
-                Double actualSellThresholdDistance = probability - simulation.sellThreshold
+                Double sellThresholdDistance = 1 - modifiedSellThreshold
+                Double actualSellThresholdDistance = probability - modifiedSellThreshold
                 Double sellMultiplier = MIN_MULTIPLIER + ((actualSellThresholdDistance / sellThresholdDistance) * (MAX_MULTIPLIER - MIN_MULTIPLIER))
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.SELL,
