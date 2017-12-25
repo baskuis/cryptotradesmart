@@ -132,6 +132,7 @@ class BuySellTradingHistoricalSimulatorService {
         Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
         Instant current = Instant.ofEpochMilli(fromDate.time)
         while (current.isBefore(end)) {
+            end = Instant.now()
             current = current + gap
             CorrelationAssociation correlationAssociation = probabilityFigurerService.getCorrelationAssociations(Date.from(current))
             correlationAssociation.tagProbabilities.each {
