@@ -103,8 +103,8 @@ class BytesFetcherServiceSpec {
         /** Compare all fields */
         assert retrievedMemory.metadata.hostname == memory.metadata.hostname
 
-        //TODO: Handle multiple date formats in an elegant manner
-        //assert retrievedMemory.metadata.datetime == memory.metadata.datetime
+        /** Date String->Date conversion loses milliseconds */
+        assert Math.floor(retrievedMemory.metadata.datetime.time / 1000) == Math.floor(memory.metadata.datetime.time / 1000)
 
         assert retrievedMemory.bid.volume_bid_quantity == memory.bid.volume_bid_quantity
         assert retrievedMemory.bid.bid_medium_median_delta == memory.bid.bid_medium_median_delta

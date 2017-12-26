@@ -7,7 +7,10 @@
 */5 * * * * /var/local/respawn.sh
 
 #Respawn mongod if crashed
-* * * * * /usr/bin/mongod
+* * * * * /usr/bin/mongod --config /etc/mongod.conf
+
+#Respawn node server if crashed
+*/5 * * * * /var/www/trades.ukora.com/start_it.sh
 
 #Boot web services on startup
 @reboot /var/www/trades.ukora.com/start_it.sh

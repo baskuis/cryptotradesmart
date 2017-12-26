@@ -1,5 +1,6 @@
 package com.ukora.tradestudent.utils
 
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.concurrent.ConcurrentHashMap
 
@@ -211,6 +212,30 @@ class NerdUtils {
         int size = Math.abs(delegate.size() / pieces)
         List r = delegate.inject([new ConcurrentHashMap()]) { List ret, elem -> (ret.last() << elem).size() >= size ? ret << new ConcurrentHashMap() : ret }
         r.last() ? r : r[0..-2]
+    }
+
+    static List<SimpleDateFormat> knownPatterns = new ArrayList<SimpleDateFormat>()
+    static {
+        knownPatterns.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"))
+        knownPatterns.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm.ss'Z'"))
+        knownPatterns.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"))
+        knownPatterns.add(new SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss"))
+        knownPatterns.add(new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy"))
+    }
+
+    /**
+     * Parse date string
+     *
+     * @param dateString
+     * @return
+     */
+    static Date parseString(String dateString){
+        for (SimpleDateFormat pattern : knownPatterns) {
+            try {
+                return new Date(pattern.parse(dateString).getTime())
+            } catch (ParseException e) { }
+        }
+        return null
     }
 
 }

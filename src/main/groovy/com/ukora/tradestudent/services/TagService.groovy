@@ -71,7 +71,6 @@ class TagService {
         List<Double> standardDeviations = []
         Double sumCount = 0
         Integer total = 0
-
         brainNode.tagReference.findAll({
             tagGroup.tags().collect({ it.tagName }).contains(it.key)
         }).each {

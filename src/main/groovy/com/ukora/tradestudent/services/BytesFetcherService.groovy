@@ -7,6 +7,7 @@ import com.ukora.tradestudent.entities.*
 import com.ukora.tradestudent.strategy.trading.TradeExecution
 import com.ukora.tradestudent.tags.TagGroup
 import com.ukora.tradestudent.utils.Logger
+import com.ukora.tradestudent.utils.NerdUtils
 import org.bson.types.ObjectId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CacheEvict
@@ -700,11 +701,8 @@ class BytesFetcherService {
             exchange.exchange = obj['exchange']['exchange'] as String
             exchange.details = details
             Metadata metadata = new Metadata()
-            try {
-                metadata.datetime = dateParser.parse(obj["metadata"]["datetime"] as String)
-            } catch(NumberFormatException e){
-                metadata.datetime = memoryDate
-            }
+            Date date = NerdUtils.parseString(obj["metadata"]["datetime"] as String)
+            metadata.datetime = (date) ? date : memoryDate
             metadata.hostname = obj["metadata"]["hostname"] as String
             Graph graph = new Graph()
             try {

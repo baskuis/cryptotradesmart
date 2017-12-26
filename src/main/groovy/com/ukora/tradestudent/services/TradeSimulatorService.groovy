@@ -15,9 +15,23 @@ class TradeSimulatorService {
     @Autowired
     BuySellTradingHistoricalSimulatorService buySellTradingHistoricalSimulatorService
 
-    @Scheduled(cron = "0 0 1,5,9,13,17,21 * * *")
-    void runSimulation(){
+    @Scheduled(cron = "0 0 1,13 * * *")
+    void runLongSimulation(){
         Instant current = Instant.now().minus(10, ChronoUnit.DAYS)
+        Logger.log(String.format("Running simulation starting from %s", Date.from(current)))
+        buySellTradingHistoricalSimulatorService.runSimulation(Date.from(current))
+    }
+
+    @Scheduled(cron = "0 0 5,17 * * *")
+    void runMedSimulation(){
+        Instant current = Instant.now().minus(5, ChronoUnit.DAYS)
+        Logger.log(String.format("Running simulation starting from %s", Date.from(current)))
+        buySellTradingHistoricalSimulatorService.runSimulation(Date.from(current))
+    }
+
+    @Scheduled(cron = "0 0 9,21 * * *")
+    void runShortSimulation(){
+        Instant current = Instant.now().minus(2, ChronoUnit.DAYS)
         Logger.log(String.format("Running simulation starting from %s", Date.from(current)))
         buySellTradingHistoricalSimulatorService.runSimulation(Date.from(current))
     }

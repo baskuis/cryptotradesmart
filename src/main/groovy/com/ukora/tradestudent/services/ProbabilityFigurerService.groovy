@@ -163,7 +163,7 @@ class ProbabilityFigurerService {
                                             tagAssociation.standard_deviation,
                                             tagAssociation.mean,
                                             generalAssociation.standard_deviation,
-                                            tagAssociation.mean,
+                                            generalAssociation.mean,
                                             SOFTENING_FACTOR
                                     )
                                     correlationAssociation.numericAssociationProbabilities.get(reference, new ConcurrentHashMap<String, NumberAssociationProbability>()).put(tag, numberAssociationProbability)
