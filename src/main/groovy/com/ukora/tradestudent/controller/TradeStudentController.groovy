@@ -7,6 +7,7 @@ import com.ukora.tradestudent.entities.SimulatedTradeEntry
 import com.ukora.tradestudent.entities.SimulationResult
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.CaptureAssociationsService
+import com.ukora.tradestudent.services.MemoryLimitService
 import com.ukora.tradestudent.services.ProbabilityFigurerService
 import com.ukora.tradestudent.services.SimulationResultService
 import com.ukora.tradestudent.services.learner.TraverseLessonsService
@@ -39,6 +40,9 @@ class TradeStudentController {
 
     @Autowired
     SimulationResultService simulationResultService
+
+    @Autowired
+    MemoryLimitService memoryLimitService
 
     @RequestMapping(path = '/correlations', produces = 'application/json', method = RequestMethod.GET)
     CorrelationAssociation getCorrelationAssociations(@RequestParam(value = 'date') Date date){
@@ -153,6 +157,12 @@ class TradeStudentController {
     @RequestMapping(path = '/latestentries', method = RequestMethod.GET)
     List<SimulatedTradeEntry> getLatestEntries(){
         bytesFetcherService.getLatestSimulatedTradeEntries()
+    }
+
+    @RequestMapping(path = '/resetcounts', method = RequestMethod.GET)
+    String resetCounts(){
+        memoryLimitService.resetCounts()
+        "OK"
     }
 
     @InitBinder

@@ -68,6 +68,7 @@ class ProbabilityFigurerService {
      * @param eventDate
      * @return
      */
+    @Cacheable('memory')
     CorrelationAssociation getCorrelationAssociations(Date eventDate){
 
         Logger.log(String.format('attempting to get association for %s', eventDate))
@@ -118,7 +119,7 @@ class ProbabilityFigurerService {
                                     tagAssociation.mean,
                                     tagAssociation.standard_deviation,
                                     tagAssociation.mean,
-                                    generalAssociation.standard_deviation,
+                                    tagAssociation.standard_deviation,
                                     generalAssociation.mean,
                                     SOFTENING_FACTOR
                             )
@@ -162,7 +163,7 @@ class ProbabilityFigurerService {
                                             normalizedValue,
                                             tagAssociation.standard_deviation,
                                             tagAssociation.mean,
-                                            generalAssociation.standard_deviation,
+                                            tagAssociation.standard_deviation,
                                             generalAssociation.mean,
                                             SOFTENING_FACTOR
                                     )

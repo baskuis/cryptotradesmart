@@ -217,6 +217,29 @@ class BytesFetcherService {
     }
 
     /**
+     * Set ceiling on brain nodes
+     *
+     * @param tagGroup
+     * @param maxCount
+     */
+    @CacheEvict(value = "brainNodes", allEntries = true)
+    void resetBrainNodesCount(TagGroup tagGroup, int maxCount){
+        DBCursor cursor = this.brain.find()
+        while(cursor.hasNext()){
+            DBObject obj = cursor.next()
+            if(
+                obj['tag'] &&
+                tagGroup.tags().collect({ it.tagName }).contains(obj['tag']) &&
+                obj['count'] && obj['count'] > maxCount
+            ){
+                obj['count'] = maxCount
+                this.brain.save(obj)
+            }
+        }
+    }
+
+
+    /**
      * Evict all entries from cache
      *
      */
