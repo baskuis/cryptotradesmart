@@ -1,1 +1,1 @@
-/usr/bin/nohup /usr/bin/java -jar /var/local/tradestudent-learn-0.0.1-SNAPSHOT.jar -Xms512m -Xmx1224m >/var/local/application.out 2>&1 &
+/usr/bin/nohup /usr/bin/java -jar /var/local/tradestudent-learn-0.0.1-SNAPSHOT.jar -Xms5000m -Xmx3000m >/var/local/application.out 2>&1 &
