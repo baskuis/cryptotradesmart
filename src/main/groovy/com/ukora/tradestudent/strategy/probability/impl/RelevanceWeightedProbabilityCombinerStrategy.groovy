@@ -27,9 +27,11 @@ class RelevanceWeightedProbabilityCombinerStrategy implements ProbabilityCombine
     Double combineProbabilities(String tag, Map<String, Map<String, NumberAssociationProbability>> numberAssociationProbabilities) {
         Double totalRelevance = 0
         Double toplineRelevanceProbability = 0
+        Double relevance
+        Double probability
         numberAssociationProbabilities.each {
-            Double relevance = it.value.get(tag).relevance
-            Double probability = it.value.get(tag).probability
+            relevance = it.value.get(tag).relevance
+            probability = it.value.get(tag).probability
             if(!relevance || Double.isNaN(relevance)) return
             if(!probability || Double.isNaN(probability)) return
             toplineRelevanceProbability += Math.abs(relevance) * probability

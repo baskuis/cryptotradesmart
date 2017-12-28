@@ -47,9 +47,11 @@ class BuySellNaiveBayesianProbabilityCombinerStrategy implements ProbabilityComb
         if(tag != SELL_TAG_NAME && tag != BUY_TAG_NAME) return null
         Double tagAssociationProduct = 1d
         Double generalAssociationProduct = 1d
+        Double tagProbability
+        Double oppositeTagProbability
         numberAssociationProbabilities.each {
-            Double tagProbability = it.value.get(tag)?.probability
-            Double oppositeTagProbability = it.value.get(tag == SELL_TAG_NAME ? BUY_TAG_NAME : SELL_TAG_NAME)?.probability
+            tagProbability = it.value.get(tag)?.probability
+            oppositeTagProbability = it.value.get(tag == SELL_TAG_NAME ? BUY_TAG_NAME : SELL_TAG_NAME)?.probability
             if(assertRanges(tagProbability, oppositeTagProbability)){
                 tagProbability = (tagProbability + 1) / 2
                 oppositeTagProbability = (oppositeTagProbability + 1) / 2

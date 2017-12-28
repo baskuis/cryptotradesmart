@@ -31,9 +31,11 @@ class NaiveBayesianProbabilityCombinerStrategy implements ProbabilityCombinerStr
     Double combineProbabilities(String tag, Map<String, Map<String, NumberAssociationProbability>> numberAssociationProbabilities) {
         Double tagAssociationProduct = 1d
         Double generalAssociationProduct = 1d
+        Double tagProbability
+        Double oppositeTagProbability
         numberAssociationProbabilities.each {
-            Double tagProbability = it.value.get(tag)?.probability
-            Double oppositeTagProbability = -tagProbability
+            tagProbability = it.value.get(tag)?.probability
+            oppositeTagProbability = -tagProbability
             if(assertRanges(tagProbability, oppositeTagProbability)){
                 tagProbability = (tagProbability + 1) / 2
                 oppositeTagProbability = (oppositeTagProbability + 1) / 2

@@ -31,10 +31,13 @@ class WeightedNaiveBayesianProbabilityCombinerStrategy implements ProbabilityCom
     Double combineProbabilities(String tag, Map<String, Map<String, NumberAssociationProbability>> numberAssociationProbabilities) {
         Double tagAssociationProduct = 1d
         Double generalAssociationProduct = 1d
+        Double tagProbability
+        Double oppositeTagProbability
+        Double componentWeightFactor
         numberAssociationProbabilities.each {
-            Double tagProbability = it.value.get(tag)?.probability
-            Double oppositeTagProbability = -tagProbability
-            Double componentWeightFactor = Math.abs(it.value.get(tag)?.probability)
+            tagProbability = it.value.get(tag)?.probability
+            oppositeTagProbability = -tagProbability
+            componentWeightFactor = Math.abs(it.value.get(tag)?.probability)
             if(assertRanges(tagProbability, oppositeTagProbability, componentWeightFactor)){
                 tagProbability = ((componentWeightFactor * tagProbability) + 1) / 2
                 oppositeTagProbability = ((componentWeightFactor * oppositeTagProbability) + 1) / 2

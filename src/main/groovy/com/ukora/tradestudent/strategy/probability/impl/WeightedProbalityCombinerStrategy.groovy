@@ -27,8 +27,9 @@ class WeightedProbalityCombinerStrategy implements ProbabilityCombinerStrategy {
     Double combineProbabilities(String tag, Map<String, Map<String, NumberAssociationProbability>> numberAssociationProbabilities) {
         Double toplineProbability = 0
         Double totalProbability = 0
+        Double probability
         numberAssociationProbabilities.each {
-            Double probability = it.value.get(tag).probability
+            probability = it.value.get(tag).probability
             if(!probability || Double.isNaN(probability)) return
             int multiplier = (probability < 0) ? -1 : 1
             toplineProbability += multiplier * Math.pow(probability, 2)

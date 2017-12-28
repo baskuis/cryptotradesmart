@@ -1,1 +1,1 @@
-/usr/bin/nohup /usr/bin/java -jar /var/local/tradestudent-learn-0.0.1-SNAPSHOT.jar -server -Xms512m -Xmx1265m -XX:NewRatio=50 -XX:+UseG1GC -XX:+AggressiveOpts -XX:+UnlockExperimentalVMOptions -XX:MaxGCPauseMillis=400 -XX:GCPauseIntervalMillis=8000 >/var/local/application.out 2>&1 &
+/usr/bin/nohup /usr/bin/java -jar /var/local/tradestudent-learn-0.0.1-SNAPSHOT.jar -Xms512m -Xmx1224m >/var/local/application.out 2>&1 &
