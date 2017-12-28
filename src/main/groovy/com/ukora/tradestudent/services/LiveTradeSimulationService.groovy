@@ -150,11 +150,17 @@ class LiveTradeSimulationService {
     static SimulatedTradeEntry getNextSimulatedTradeEntry(SimulatedTradeEntry simulatedTradeEntry, TradeExecution tradeExecution){
         switch (tradeExecution.tradeType){
             case TradeExecution.TradeType.SELL:
-                Double amount = tradeExecution.amount * (1 - TRANSACTION_COST)
-                Double newBalanceA = simulatedTradeEntry.balanceA - tradeExecution.amount
-                Double newBalanceB = simulatedTradeEntry.balanceB + (amount * tradeExecution.price)
-                if(newBalanceA < 0){
-                    return null
+                Double amount
+                Double newBalanceA
+                Double newBalanceB
+                if(simulatedTradeEntry.balanceA > tradeExecution.amount) {
+                    amount = tradeExecution.amount * (1 - TRANSACTION_COST)
+                    newBalanceA = simulatedTradeEntry.balanceA - tradeExecution.amount
+                    newBalanceB = simulatedTradeEntry.balanceB + (amount * tradeExecution.price)
+                } else {
+                    amount = simulatedTradeEntry.balanceA * (1 - TRANSACTION_COST)
+                    newBalanceA = 0
+                    newBalanceB = simulatedTradeEntry.balanceB + (amount * tradeExecution.price)
                 }
                 Metadata metadata = simulatedTradeEntry.metadata
                 if(!metadata) metadata = new Metadata()
@@ -172,11 +178,18 @@ class LiveTradeSimulationService {
                 )
                 break
             case TradeExecution.TradeType.BUY:
-                Double amount = tradeExecution.amount * (1 - TRANSACTION_COST)
-                Double newBalanceA = simulatedTradeEntry.balanceA + amount
-                Double newBalanceB = simulatedTradeEntry.balanceB - (tradeExecution.amount * tradeExecution.price)
-                if(newBalanceB < 0){
-                    return null
+                Double maxAmount = simulatedTradeEntry.balanceB / tradeExecution.price
+                Double amount
+                Double newBalanceA
+                Double newBalanceB
+                if(simulatedTradeEntry.balanceB > (tradeExecution.amount * tradeExecution.price)){
+                    amount = tradeExecution.amount * (1 - TRANSACTION_COST)
+                    newBalanceA = simulatedTradeEntry.balanceA + amount
+                    newBalanceB = simulatedTradeEntry.balanceB - (tradeExecution.amount * tradeExecution.price)
+                } else {
+                    amount = maxAmount * (1 - TRANSACTION_COST)
+                    newBalanceA = simulatedTradeEntry.balanceA + amount
+                    newBalanceB = simulatedTradeEntry.balanceB - (maxAmount * tradeExecution.price)
                 }
                 Metadata metadata = simulatedTradeEntry.metadata
                 if(!metadata) metadata = new Metadata()
