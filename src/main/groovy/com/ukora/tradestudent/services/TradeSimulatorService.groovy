@@ -22,7 +22,7 @@ class TradeSimulatorService {
         buySellTradingHistoricalSimulatorService.runSimulation(Date.from(current))
     }
 
-    @Scheduled(cron = "0 0 5,17 * * *")
+    @Scheduled(cron = "0 0 6,18 * * *")
     void runMedSimulation(){
         Instant current = Instant.now().minus(5, ChronoUnit.DAYS)
         Logger.log(String.format("Running simulation starting from %s", Date.from(current)))
