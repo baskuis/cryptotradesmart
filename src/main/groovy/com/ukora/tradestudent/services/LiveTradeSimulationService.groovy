@@ -23,6 +23,8 @@ class LiveTradeSimulationService {
 
     private static TRANSACTION_COST = 0.002
 
+    private static Double MINIMUM_AMOUNT = 0.01
+
     @Autowired
     BytesFetcherService bytesFetcherService
 
@@ -162,6 +164,7 @@ class LiveTradeSimulationService {
                     newBalanceA = 0
                     newBalanceB = simulatedTradeEntry.balanceB + (amount * tradeExecution.price)
                 }
+                if(amount < MINIMUM_AMOUNT) return null
                 Metadata metadata = simulatedTradeEntry.metadata
                 if(!metadata) metadata = new Metadata()
                 metadata.datetime = new Date()
@@ -191,6 +194,7 @@ class LiveTradeSimulationService {
                     newBalanceA = simulatedTradeEntry.balanceA + amount
                     newBalanceB = simulatedTradeEntry.balanceB - (maxAmount * tradeExecution.price)
                 }
+                if(amount < MINIMUM_AMOUNT) return null
                 Metadata metadata = simulatedTradeEntry.metadata
                 if(!metadata) metadata = new Metadata()
                 metadata.datetime = new Date()

@@ -26,7 +26,7 @@ class TraverseLessonsService {
     private final static Double TRADE_LOSS = 0.0035
 
     /** Minimal gain for trade */
-    private final static Double MINIMAL_GAIN = 1.0055
+    private final static Double MINIMAL_GAIN = 1.005
 
     private final static Double MINIMAL_PROPORTION = 1.035
 
@@ -39,7 +39,7 @@ class TraverseLessonsService {
 
     private final static int SIMULATION_INTERVAL_INCREMENT = 1
 
-    private final static int PEAK_PADDING = 3
+    private final static int PEAK_PADDING = 4
 
     public final static String LATEST_BUY_SELL_PROPERTY_KEY = 'latestBuySell'
     public final static String LATEST_UP_DOWN_PROPERTY_KEY = 'latestUpDown'
@@ -158,19 +158,23 @@ class TraverseLessonsService {
             if (winningSimulation.balanceA > MINIMAL_PROPORTION) {
                 runTradeSimulation(transformedReferences, winningSimulation).eachWithIndex { Map<String, Object> entry, int index ->
                     if (entry['sell']) {
-                        Logger.log("Storing sell lesson date: ${entry['date']} price: ${entry['price']}")
-                        bytesFetcherService.saveLesson(new Lesson(
-                                tag: buySellTagGroup.sellTag,
-                                date: entry['date'] as Date,
-                                price: entry['price'] as Double
-                        ))
+                        Logger.log("Storing sell lesson date: ${entry['date']} price: ${entry['price']} multiple: ${entry['multiple']}")
+                        (1..entry['multiple']).each {
+                            bytesFetcherService.saveLesson(new Lesson(
+                                    tag: buySellTagGroup.sellTag,
+                                    date: entry['date'] as Date,
+                                    price: entry['price'] as Double
+                            ))
+                        }
                     } else if (entry['buy']) {
-                        Logger.log("Storing buy lesson date: ${entry['date']} price: ${entry['price']}")
-                        bytesFetcherService.saveLesson(new Lesson(
-                                tag: buySellTagGroup.buyTag,
-                                date: entry['date'] as Date,
-                                price: entry['price'] as Double
-                        ))
+                        Logger.log("Storing buy lesson date: ${entry['date']} price: ${entry['price']} multiple: ${entry['multiple']}")
+                        (1..entry['multiple']).each {
+                            bytesFetcherService.saveLesson(new Lesson(
+                                    tag: buySellTagGroup.buyTag,
+                                    date: entry['date'] as Date,
+                                    price: entry['price'] as Double
+                            ))
+                        }
                     }
                 }
             } else {
@@ -210,23 +214,36 @@ class TraverseLessonsService {
                 return
             }
             Map<String, Object> entry = [:]
+            Double risingAmount = reference.get('price') as Double
+            Double fallingAmount = reference.get('price') as Double
+            Double risenAmount = reference.get('price') as Double
+            Double fallenAmount = reference.get('price') as Double
             boolean rising = (nextEntries.size() > (learnSimulation.interval / 2) && nextEntries.findAll {
                 it.get('price') > reference.get('price') * MINIMAL_GAIN
-            }.size() > 0)
+            }.each { risingAmount = it.get('price') as Double }.size() > PEAK_PADDING)
             boolean falling = (nextEntries.size() > (learnSimulation.interval / 2) && nextEntries.findAll {
                 it.get('price') * MINIMAL_GAIN < reference.get('price')
-            }.size() > 0)
+            }.each { fallingAmount = it.get('price') as Double }.size() > PEAK_PADDING)
 
             boolean risen = (previousEntries.size() > learnSimulation.interval / 2) && previousEntries.findAll {
                 it.get('price') * MINIMAL_GAIN < reference.get('price')
-            }.size() > 0
+            }.each { risenAmount = it.get('price') as Double }.size() > PEAK_PADDING
             boolean fallen = (previousEntries.size() > learnSimulation.interval / 2) && previousEntries.findAll {
                 it.get('price') > reference.get('price') * MINIMAL_GAIN
-            }.size() > 0
+            }.each { fallenAmount = it.get('price') as Double }.size() > PEAK_PADDING
 
             boolean buy = fallen && rising && !risen && !falling
             boolean sell = risen && falling && !rising && !fallen
 
+            Double multiple = 1d
+            if(buy){
+                multiple = Math.floor(((risingAmount / (reference.get('price') as Double)) + (fallenAmount / (reference.get('price') as Double))) / MINIMAL_GAIN)
+            }
+            if(sell){
+                multiple = Math.floor(((risenAmount / (reference.get('price') as Double)) + (fallingAmount / (reference.get('price') as Double))) / MINIMAL_GAIN)
+            }
+
+            entry['multiple'] = multiple
             entry['date'] = reference.get('date')
             entry['price'] = reference.get('price')
             entry['rising'] = rising
@@ -236,8 +253,8 @@ class TraverseLessonsService {
             entry['buy'] = buy
             entry['sell'] = sell
             if (buy || sell) {
-                Logger.debug(String.format("risen: %s, rising: %s, fallen: %s, falling: %s, buy: %s, sell: %s, date: %s, price: %s",
-                        risen, rising, fallen, falling, buy, sell, entry['date'], entry['price']
+                Logger.debug(String.format("risen: %s, rising: %s, fallen: %s, falling: %s, buy: %s, sell: %s, date: %s, price: %s, multiple: %s",
+                        risen, rising, fallen, falling, buy, sell, entry['date'], entry['price'], entry['multiple']
                 ))
             }
             progression << entry

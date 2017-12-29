@@ -249,7 +249,8 @@ class BytesFetcherService {
             "memory",
             "brainNodes",
             "simulations",
-            "properties"
+            "properties",
+            "associations"
     ], allEntries = true)
     void flushCache() {}
 
@@ -363,7 +364,10 @@ class BytesFetcherService {
      *
      * @param brain
      */
-    @CacheEvict(value = "brainNodes", allEntries = true)
+    @CacheEvict(value = [
+            "brainNodes",
+            "associations"
+    ], allEntries = true)
     void saveBrain(Brain brain) {
         DBObject obj = new BasicDBObject()
         if (brain.id) {
