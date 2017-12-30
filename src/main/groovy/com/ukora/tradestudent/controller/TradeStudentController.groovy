@@ -10,6 +10,7 @@ import com.ukora.tradestudent.services.CaptureAssociationsService
 import com.ukora.tradestudent.services.MemoryLimitService
 import com.ukora.tradestudent.services.ProbabilityFigurerService
 import com.ukora.tradestudent.services.SimulationResultService
+import com.ukora.tradestudent.services.TechnicalAnalysisService
 import com.ukora.tradestudent.services.learner.TraverseLessonsService
 import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.utils.NerdUtils
@@ -43,6 +44,9 @@ class TradeStudentController {
 
     @Autowired
     MemoryLimitService memoryLimitService
+
+    @Autowired
+    TechnicalAnalysisService technicalAnalysisService
 
     @RequestMapping(path = '/correlations', produces = 'application/json', method = RequestMethod.GET)
     CorrelationAssociation getCorrelationAssociations(@RequestParam(value = 'date') Date date){
@@ -163,6 +167,11 @@ class TradeStudentController {
     String resetCounts(){
         memoryLimitService.resetCounts()
         "OK"
+    }
+
+    @RequestMapping(path = '/technicalanalysis', method = RequestMethod.GET)
+    Map extractTechnicalAnalysis(@RequestParam(value = 'date') Date date){
+        technicalAnalysisService.extractTechnicalAnalysis(date)
     }
 
     @InitBinder

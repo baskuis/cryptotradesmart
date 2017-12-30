@@ -1,0 +1,191 @@
+package com.ukora.tradestudent.services
+
+import com.ukora.tradestudent.entities.Memory
+import com.ukora.tradestudent.entities.PriceEntry
+import com.ukora.tradestudent.utils.Logger
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
+
+import java.time.Duration
+import java.time.Instant
+
+import static com.ukora.tradestudent.services.CaptureAssociationsService.INSTANT
+import static com.ukora.tradestudent.services.CaptureAssociationsService.SEP
+
+/**
+ * The logic could also belong to the CaptureAssociationsService
+ * but since it's a bit more involved - it's broken out into a separate service
+ *
+ */
+@Service
+class TechnicalAnalysisService {
+
+    @Autowired
+    BytesFetcherService bytesFetcherService
+
+    public final String REFERENCE_NAME = 'technicalAnalysis'
+
+    private static final int INTERVAL_SECONDS = 60
+    private static final int MAX_HISTORICAL_REFERENCE_HOURS = 36
+
+    private static final List<Integer> analysisBoundaries = [
+            60,
+            120,
+            480,
+            720
+    ]
+
+    /**
+     * Extract technical analysis from moment in time
+     * We'll calculate the relative distance to from the lower to upper boundary
+     * for each of the analysis intervals
+     *
+     * @param atDate
+     * @return
+     */
+    Map<String, Double> extractTechnicalAnalysis(Date atDate) {
+
+        /** The key is to generate technical analysis references */
+        Map<String, Double> technicalAnalysisReferences = [:]
+
+        /** Define range from which to get prices */
+        Instant from = Instant.ofEpochMilli(atDate.time) - (Duration.ofHours(MAX_HISTORICAL_REFERENCE_HOURS))
+
+        /** Retrieve price entries */
+        List<PriceEntry> priceEntries = getReferences(Date.from(from), atDate)
+
+        /** Quick assertion */
+        if (!priceEntries || priceEntries.size() < 100) {
+            Logger.log('No value priceEntries')
+            return null
+        }
+
+        /** Create references */
+        analysisBoundaries.each {
+            String reference = INSTANT + SEP + REFERENCE_NAME + SEP + it
+            Map<String, Double> analysisValues = extractAnalysis(it, priceEntries)
+            if (analysisValues) {
+                analysisValues.each {
+                    technicalAnalysisReferences.put(reference + SEP + it.key, it.value)
+                }
+            }
+        }
+
+        return technicalAnalysisReferences
+
+    }
+
+    /**
+     * Extract analysis value from price entries
+     *
+     * @param boundary
+     * @param priceEntries
+     * @return
+     */
+    private static Map<String,Double> extractAnalysis(Integer boundary, List<PriceEntry> priceEntries) {
+
+        PriceEntry finalEntry = priceEntries.last()
+
+        List<PriceEntry> reversed = priceEntries.reverse()
+
+        int counter = 0
+        PriceEntry earlyHighest
+        PriceEntry lateHighest
+        PriceEntry earlyLowest
+        PriceEntry lateLowest
+
+        try {
+            reversed.each {
+                if (boundary / 2 < counter) {
+                    if (boundary + (boundary / 2) > counter) {
+                        if (!lateHighest || lateHighest.price < it.price) {
+                            lateHighest = it
+                        }
+                        if (!lateLowest || lateLowest.price > it.price) {
+                            lateLowest = it
+                        }
+                    }
+                }
+                if (boundary * 2 < counter) {
+                    if (3 * boundary > counter) {
+                        if (!earlyHighest || earlyHighest.price < it.price) {
+                            earlyHighest = it
+                        }
+                        if (!earlyLowest || earlyLowest.price > it.price) {
+                            earlyLowest = it
+                        }
+                    } else {
+                        throw new RuntimeException('Past boundary')
+                    }
+                }
+                counter++
+            }
+        } catch (RuntimeException e) {
+            /** Ignore */
+        }
+
+        /** Assert we found thresholds */
+        if (!earlyHighest || !earlyLowest || !lateHighest || !lateLowest) {
+            Logger.log('No earlyHighest earlyLowest lateHighest lateLowest')
+            return null
+        }
+
+        /** Digest values - project values at current price latestEntry */
+        Double topTrendProjection = (
+                (lateHighest.price - earlyHighest.price) /
+                        (lateHighest.date.time - earlyHighest.date.time) *
+                        (finalEntry.date.time - lateHighest.date.time)
+        ) + lateHighest.price
+        Double bottomTrendProjection = (
+                (lateLowest.price - earlyLowest.price) /
+                        (lateLowest.date.time - earlyLowest.date.time) *
+                        (finalEntry.date.time - lateLowest.date.time)
+        ) + lateHighest.price
+        Double deltaTrendProjection = topTrendProjection - bottomTrendProjection
+
+        /** Assert valid numerical values */
+        if(!topTrendProjection || topTrendProjection.naN || !bottomTrendProjection || bottomTrendProjection.naN || !deltaTrendProjection || deltaTrendProjection.naN){
+            Logger.log('Invalid topTrendProjection | bottomTrendProjection | deltaTrendProjection')
+            return null
+        }
+
+        return [
+                'normalizedTopTrendProjection': topTrendProjection / finalEntry.price,
+                'normalizedBottomTrendProjection': bottomTrendProjection / finalEntry.price,
+                'normalizedDeltaTrendProjection': deltaTrendProjection / finalEntry.price,
+                'normalizedTopDistance': (topTrendProjection - finalEntry.price) / finalEntry.price,
+                'normalizedBottomDistance': (finalEntry.price - bottomTrendProjection) / finalEntry.price
+        ]
+
+    }
+
+    /**
+     * Extract memory from db
+     * for requested time range
+     *
+     * @param fromDate
+     * @return
+     */
+    private List<PriceEntry> getReferences(Date fromDate, Date toDate) {
+        if (!fromDate) return null
+        Instant end = Instant.ofEpochMilli(toDate.time)
+        Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
+        Instant current = Instant.ofEpochMilli(fromDate.time)
+        List<PriceEntry> priceEntries = []
+        while (current.isBefore(end)) {
+            current = current + gap
+            Memory memory = bytesFetcherService.getMemory(Date.from(current))
+            if (memory && memory.graph.price) {
+                if (!memory.metadata?.datetime || !memory.graph?.price) {
+                    continue
+                }
+                priceEntries << new PriceEntry(
+                        date: memory.metadata.datetime,
+                        price: memory.graph.price
+                )
+            }
+        }
+        return priceEntries
+    }
+
+}
