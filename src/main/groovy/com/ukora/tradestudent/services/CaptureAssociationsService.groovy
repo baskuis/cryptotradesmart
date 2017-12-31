@@ -30,6 +30,9 @@ class CaptureAssociationsService {
     @Autowired
     BytesFetcherService bytesFetcherService
 
+    @Autowired
+    TechnicalAnalysisService technicalAnalysisService
+
     /**
      * Main schedule to digest lessons
      * and create associations
@@ -48,10 +51,10 @@ class CaptureAssociationsService {
                     bytesFetcherService.hydrateAssociation(lesson)
 
                     /** Hydrate association tags */
-                    hydrateAssociationTags(lesson, lesson.getTag().getTagName())
+                    hydrateAssociationTags(lesson, lesson.tag?.tagName)
 
                     /** Hydrate specialized numeric association tags */
-                    hydrateSpecializedAssociationTags(lesson, lesson.getTag().getTagName())
+                    hydrateSpecializedAssociationTags(lesson, lesson.tag?.tagName)
 
                     /** Remember all that */
                     rememberAllThat(lesson)
@@ -70,7 +73,7 @@ class CaptureAssociationsService {
      *
      * @param correlationAssociation
      */
-    static void hydrateAssocations(CorrelationAssociation correlationAssociation){
+    void hydrateAssocations(CorrelationAssociation correlationAssociation){
 
         /** Capture associations for normalized data for instance */
         brainItUpSimple(correlationAssociation.memory, correlationAssociation, INSTANT)
@@ -79,6 +82,39 @@ class CaptureAssociationsService {
         correlationAssociation.intervals.each { String timeDelta ->
             Memory memory = correlationAssociation.previousMemory.get(timeDelta)
             if(memory){ brainItUpSimple(memory, correlationAssociation, timeDelta) }
+        }
+
+        /**
+         * Store time based associations
+         *
+         */
+        Calendar calendar = GregorianCalendar.getInstance()
+        calendar.setTime(correlationAssociation.date)
+        correlationAssociation.numericAssociations.put(INSTANT + SEP + TIME_HOUR_IN_DAY, calendar.get(Calendar.HOUR_OF_DAY))
+        correlationAssociation.numericAssociations.put(INSTANT + SEP + TIME_MINUTE_IN_HOUR, calendar.get(Calendar.MINUTE))
+        correlationAssociation.numericAssociations.put(INSTANT + SEP + TIME_DAY_IN_WEEK, calendar.get(Calendar.DAY_OF_WEEK))
+        correlationAssociation.numericAssociations.put(INSTANT + SEP + TIME_DAY_IN_MONTH, calendar.get(Calendar.DAY_OF_MONTH))
+
+        /**
+         * Store emotional boundary associations
+         *
+         */
+        if(correlationAssociation.price) {
+            NerdUtils.extractBoundaryDistances(correlationAssociation.price).each {
+                if(it.value == 0) it.value = PRACTICAL_ZERO
+                correlationAssociation.numericAssociations.put(INSTANT + SEP + it.key, it.value)
+            }
+        }
+
+        /**
+         * Add technical analysis
+         *
+         */
+        Map<String, Double> technicalAnalysis = technicalAnalysisService.extractTechnicalAnalysis(correlationAssociation.date)
+        if(technicalAnalysis) {
+            technicalAnalysis.each {
+                correlationAssociation.numericAssociations.put(it.key, it.value)
+            }
         }
 
     }
@@ -91,6 +127,7 @@ class CaptureAssociationsService {
      * @param timeDelta
      */
     static void brainItUpSimple(Memory memory, CorrelationAssociation correlationAssociation, String timeDelta){
+
         if(!memory) return
         if(!correlationAssociation) return
 
@@ -115,7 +152,7 @@ class CaptureAssociationsService {
      * @param associations
      * @param tagName
      */
-    static void hydrateSpecializedAssociationTags(AbstractAssociation associations, String tagName){
+    void hydrateSpecializedAssociationTags(AbstractAssociation associations, String tagName){
 
         if(!associations) return
         if(!tagName) return
@@ -123,6 +160,7 @@ class CaptureAssociationsService {
 
         /**
          * Store time based associations
+         *
          */
         Calendar calendar = GregorianCalendar.getInstance()
         calendar.setTime(associations.date)
@@ -133,11 +171,23 @@ class CaptureAssociationsService {
 
         /**
          * Store emotional boundary associations
+         *
          */
         if(associations.price) {
             NerdUtils.extractBoundaryDistances(associations.price).each {
                 if(it.value == 0) it.value = PRACTICAL_ZERO
                 associations.associations.get(INSTANT + SEP + it.key, [:]).put(tagName, it.value)
+            }
+        }
+
+        /**
+         * Add technical analysis
+         *
+         */
+        Map<String, Double> technicalAnalysis = technicalAnalysisService.extractTechnicalAnalysis(associations.date)
+        if(technicalAnalysis) {
+            technicalAnalysis.each {
+                associations.associations.get(it.key, [:]).put(tagName, it.value)
             }
         }
 

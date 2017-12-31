@@ -18,6 +18,9 @@ class AverageProbabilityCombinerStrategy implements ProbabilityCombinerStrategy 
     Double combineProbabilities(String tag, Map<String, Map<String, NumberAssociationProbability>> numberAssociationProbabilities) {
         Double total = 0
         numberAssociationProbabilities.each {
+            if(it.value.get(tag) == null){
+                println tag
+            }
             total += it.value.get(tag).probability
         }
         return total / numberAssociationProbabilities.size()

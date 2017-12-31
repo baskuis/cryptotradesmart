@@ -28,6 +28,8 @@ class TechnicalAnalysisService {
     private static final int INTERVAL_SECONDS = 60
     private static final int MAX_HISTORICAL_REFERENCE_HOURS = 36
 
+    private static final int MIN_DISTANCE_FROM_PEAK = 30
+
     private static final List<Integer> analysisBoundaries = [
             60,
             120,
@@ -96,8 +98,8 @@ class TechnicalAnalysisService {
 
         try {
             reversed.each {
-                if (boundary / 2 < counter) {
-                    if (boundary + (boundary / 2) > counter) {
+                if (MIN_DISTANCE_FROM_PEAK < counter) {
+                    if (boundary + MIN_DISTANCE_FROM_PEAK > counter) {
                         if (!lateHighest || lateHighest.price < it.price) {
                             lateHighest = it
                         }
@@ -106,8 +108,8 @@ class TechnicalAnalysisService {
                         }
                     }
                 }
-                if (boundary * 2 < counter) {
-                    if (3 * boundary > counter) {
+                if (boundary + (2 * MIN_DISTANCE_FROM_PEAK) < counter) {
+                    if (2 * boundary + (2 * MIN_DISTANCE_FROM_PEAK) > counter) {
                         if (!earlyHighest || earlyHighest.price < it.price) {
                             earlyHighest = it
                         }
