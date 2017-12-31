@@ -90,10 +90,10 @@ class CaptureAssociationsService {
          */
         Calendar calendar = GregorianCalendar.getInstance()
         calendar.setTime(correlationAssociation.date)
-        correlationAssociation.numericAssociations.put(INSTANT + SEP + TIME_HOUR_IN_DAY, calendar.get(Calendar.HOUR_OF_DAY))
-        correlationAssociation.numericAssociations.put(INSTANT + SEP + TIME_MINUTE_IN_HOUR, calendar.get(Calendar.MINUTE))
-        correlationAssociation.numericAssociations.put(INSTANT + SEP + TIME_DAY_IN_WEEK, calendar.get(Calendar.DAY_OF_WEEK))
-        correlationAssociation.numericAssociations.put(INSTANT + SEP + TIME_DAY_IN_MONTH, calendar.get(Calendar.DAY_OF_MONTH))
+        correlationAssociation.numericAssociations.put(INSTANT + SEP + TIME_HOUR_IN_DAY, calendar.get(Calendar.HOUR_OF_DAY) as Double)
+        correlationAssociation.numericAssociations.put(INSTANT + SEP + TIME_MINUTE_IN_HOUR, calendar.get(Calendar.MINUTE) as Double)
+        correlationAssociation.numericAssociations.put(INSTANT + SEP + TIME_DAY_IN_WEEK, calendar.get(Calendar.DAY_OF_WEEK) as Double)
+        correlationAssociation.numericAssociations.put(INSTANT + SEP + TIME_DAY_IN_MONTH, calendar.get(Calendar.DAY_OF_MONTH) as Double)
 
         /**
          * Store emotional boundary associations
