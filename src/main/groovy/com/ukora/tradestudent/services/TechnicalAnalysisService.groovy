@@ -192,6 +192,7 @@ class TechnicalAnalysisService {
                 if (!memory.metadata?.datetime || !memory.graph?.price) {
                     continue
                 }
+                priceCache.put(Date.from(current), memory.graph.price)
                 priceEntries << new PriceEntry(
                         date: memory.metadata.datetime,
                         price: memory.graph.price
