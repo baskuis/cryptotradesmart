@@ -2,6 +2,7 @@ package com.ukora.tradestudent.strategy.probability.impl
 
 import com.ukora.tradestudent.bayes.numbers.NumberAssociationProbability
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
+import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.stereotype.Component
 
 @Component
@@ -18,9 +19,7 @@ class AverageProbabilityCombinerStrategy implements ProbabilityCombinerStrategy 
     Double combineProbabilities(String tag, Map<String, Map<String, NumberAssociationProbability>> numberAssociationProbabilities) {
         Double total = 0
         numberAssociationProbabilities.each {
-            if(it.value.get(tag) == null){
-                println tag
-            }
+            if(!it.value.get(tag) || !NerdUtils.assertRange(it.value.get(tag).probability)) return
             total += it.value.get(tag).probability
         }
         return total / numberAssociationProbabilities.size()
