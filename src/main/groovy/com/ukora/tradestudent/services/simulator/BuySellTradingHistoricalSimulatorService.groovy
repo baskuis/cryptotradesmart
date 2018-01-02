@@ -52,7 +52,7 @@ class BuySellTradingHistoricalSimulatorService {
     List<Simulation> simulations = []
 
     public final static Double STARTING_BALANCE = 10
-    private final static Double MAX_TRADE_INCREMENT = 3
+    private final static Double MAX_TRADE_INCREMENT = 5
     private final static Double TRADE_INCREMENT = 0.6
     private final static Double TRADE_TRANSACTION_COST = 0.0020
     private final static Double LOWEST_THRESHOLD = 0.45

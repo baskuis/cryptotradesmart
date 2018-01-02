@@ -28,6 +28,7 @@ class AvoidOutlierNaiveBayesianProbablityCombinerStrategy implements Probability
         Double relevance
         numberAssociationProbabilities.each {
             tagProbability = it.value.get(tag)?.probability
+            if(!tagProbability || !it.value.get(tag)?.probability) return
             relevance = Math.abs(it.value.get(tag)?.relevance)
             oppositeTagProbability = -tagProbability
             if(MIN_RELEVANCE < relevance) {

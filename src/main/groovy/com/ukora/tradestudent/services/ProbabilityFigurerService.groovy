@@ -152,22 +152,24 @@ class ProbabilityFigurerService {
                     Double normalizedValue = it.value
                     tagGroupMap.each {
                         TagGroup tagGroup = it.value
-                        NumberAssociation generalAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL + CaptureAssociationsService.SEP + tagGroup.name)
-                        if(generalAssociation) {
-                            it.value.tags().each {
-                                String tag = it.getTagName()
-                                NumberAssociation tagAssociation = brainNode.tagReference.get(tag)
-                                if (tagAssociation) {
-                                    NumberAssociationProbability numberAssociationProbability = new NumberAssociationProbability(tagAssociation)
-                                    numberAssociationProbability.probability = NerdUtils.chanceOfCorrelationSoftening(
-                                            normalizedValue,
-                                            tagAssociation.standard_deviation,
-                                            tagAssociation.mean,
-                                            tagAssociation.standard_deviation,
-                                            generalAssociation.mean,
-                                            SOFTENING_FACTOR
-                                    )
-                                    correlationAssociation.numericAssociationProbabilities.get(reference, new ConcurrentHashMap<String, NumberAssociationProbability>()).put(tag, numberAssociationProbability)
+                        if(brainNode) {
+                            NumberAssociation generalAssociation = brainNode.tagReference.get(CaptureAssociationsService.GENERAL + CaptureAssociationsService.SEP + tagGroup.name)
+                            if (generalAssociation) {
+                                it.value.tags().each {
+                                    String tag = it.getTagName()
+                                    NumberAssociation tagAssociation = brainNode.tagReference.get(tag)
+                                    if (tagAssociation) {
+                                        NumberAssociationProbability numberAssociationProbability = new NumberAssociationProbability(tagAssociation)
+                                        numberAssociationProbability.probability = NerdUtils.chanceOfCorrelationSoftening(
+                                                normalizedValue,
+                                                tagAssociation.standard_deviation,
+                                                tagAssociation.mean,
+                                                tagAssociation.standard_deviation,
+                                                generalAssociation.mean,
+                                                SOFTENING_FACTOR
+                                        )
+                                        correlationAssociation.numericAssociationProbabilities.get(reference, new ConcurrentHashMap<String, NumberAssociationProbability>()).put(tag, numberAssociationProbability)
+                                    }
                                 }
                             }
                         }
