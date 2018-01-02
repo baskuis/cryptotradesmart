@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service
 
 import java.time.Duration
 import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
 
 import static com.ukora.tradestudent.services.CaptureAssociationsService.INSTANT
 import static com.ukora.tradestudent.services.CaptureAssociationsService.SEP
@@ -29,6 +30,8 @@ class TechnicalAnalysisService {
     private static final int MAX_HISTORICAL_REFERENCE_HOURS = 36
 
     private static final int MIN_DISTANCE_FROM_PEAK = 30
+
+    private static Map<Date, Double> priceCache = new ConcurrentHashMap<>()
 
     private static final List<Integer> analysisBoundaries = [
             60,
@@ -170,17 +173,26 @@ class TechnicalAnalysisService {
      */
     private List<PriceEntry> getReferences(Date fromDate, Date toDate) {
         if (!fromDate) return null
-        Instant end = Instant.ofEpochMilli(toDate.time)
+        Instant end = Instant.ofEpochMilli((Math.floor(toDate.time / 1000) * 1000) as Long)
         Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
-        Instant current = Instant.ofEpochMilli(fromDate.time)
+        Instant current = Instant.ofEpochMilli((Math.floor(fromDate.time / 1000) * 1000) as Long)
         List<PriceEntry> priceEntries = []
         while (current.isBefore(end)) {
             current = current + gap
+            Double cachedPrice = priceCache.get(Date.from(current))
+            if(cachedPrice){
+                priceEntries << new PriceEntry(
+                        date: Date.from(current),
+                        price: cachedPrice
+                )
+                continue
+            }
             Memory memory = bytesFetcherService.getMemory(Date.from(current))
             if (memory && memory.graph.price) {
                 if (!memory.metadata?.datetime || !memory.graph?.price) {
                     continue
                 }
+                priceCache.put(Date.from(current), memory.graph.price)
                 priceEntries << new PriceEntry(
                         date: memory.metadata.datetime,
                         price: memory.graph.price

@@ -20,7 +20,7 @@ class AverageProbabilityCombinerStrategy implements ProbabilityCombinerStrategy 
         Double total = 0
         numberAssociationProbabilities.each {
             if(!it.value.get(tag) || !NerdUtils.assertRange(it.value.get(tag).probability)) return
-            total += it.value.get(tag).probability
+            total += (1 + it.value.get(tag).probability) / 2
         }
         return total / numberAssociationProbabilities.size()
     }
