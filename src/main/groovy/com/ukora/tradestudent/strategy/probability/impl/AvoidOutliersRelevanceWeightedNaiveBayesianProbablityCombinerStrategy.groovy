@@ -28,6 +28,7 @@ class AvoidOutliersRelevanceWeightedNaiveBayesianProbablityCombinerStrategy impl
         Double relevance
         numberAssociationProbabilities.each {
             tagProbability = it.value.get(tag)?.probability
+            if(!tagProbability) return
             oppositeTagProbability = -tagProbability
             relevance = Math.abs(it.value.get(tag)?.relevance)
             if(MIN_RELEVANCE > relevance) {

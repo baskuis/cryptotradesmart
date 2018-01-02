@@ -237,10 +237,10 @@ class TraverseLessonsService {
 
             Double multiple = 1d
             if(buy){
-                multiple = Math.floor(((risingAmount / (reference.get('price') as Double)) + (fallenAmount / (reference.get('price') as Double))) / MINIMAL_GAIN)
+                multiple = Math.round(((risingAmount / (reference.get('price') as Double)) + (fallenAmount / (reference.get('price') as Double))) / MINIMAL_GAIN)
             }
             if(sell){
-                multiple = Math.floor(((risenAmount / (reference.get('price') as Double)) + (fallingAmount / (reference.get('price') as Double))) / MINIMAL_GAIN)
+                multiple = Math.round(((risenAmount / (reference.get('price') as Double)) + (fallingAmount / (reference.get('price') as Double))) / MINIMAL_GAIN)
             }
 
             entry['multiple'] = multiple

@@ -29,12 +29,14 @@ class TechnicalAnalysisService {
     private static final int INTERVAL_SECONDS = 60
     private static final int MAX_HISTORICAL_REFERENCE_HOURS = 36
 
-    private static final int MIN_DISTANCE_FROM_PEAK = 30
+    private static final int MIN_DISTANCE_FROM_PEAK = 20
 
     private static Map<Date, Double> priceCache = new ConcurrentHashMap<>()
 
     private static final List<Integer> analysisBoundaries = [
+            30,
             60,
+            90,
             120,
             480,
             720
