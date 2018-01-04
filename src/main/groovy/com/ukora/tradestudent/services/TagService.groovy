@@ -2,6 +2,7 @@ package com.ukora.tradestudent.services
 
 import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.entities.BrainNode
+import com.ukora.tradestudent.services.associations.CaptureAssociationsService
 import com.ukora.tradestudent.tags.AbstractCorrelationTag
 import com.ukora.tradestudent.tags.TagGroup
 import com.ukora.tradestudent.utils.NerdUtils

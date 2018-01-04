@@ -1,7 +1,7 @@
-package com.ukora.tradestudent.services
+package com.ukora.tradestudent.services.associations
 
 import com.ukora.tradestudent.entities.*
-import com.ukora.tradestudent.tags.TagGroup
+import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired

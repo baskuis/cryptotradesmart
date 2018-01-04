@@ -10,13 +10,13 @@ import java.time.temporal.ChronoUnit
 @Service
 class SimulationResultService {
 
-    public final Integer MAX_AGE_IN_HOURS = 48
+    public final Integer MAX_AGE_IN_HOURS = 24
 
     @Autowired
     BytesFetcherService bytesFetcherService
 
-    static final Integer DISTANCE_FROM_BINARY_SOFTENING_FACTOR = 5
-    static final Integer THRESHOLD_BALANCE_SOFTENING_FACTOR = 3
+    static final Integer DISTANCE_FROM_BINARY_SOFTENING_FACTOR = 10
+    static final Integer THRESHOLD_BALANCE_SOFTENING_FACTOR = 5
     static final Double MINIMUM_DIFFERENTIAL = 1
 
     /**

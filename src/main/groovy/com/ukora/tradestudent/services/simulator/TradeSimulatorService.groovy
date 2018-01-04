@@ -1,4 +1,4 @@
-package com.ukora.tradestudent.services
+package com.ukora.tradestudent.services.simulator
 
 import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.utils.Logger

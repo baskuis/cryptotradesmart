@@ -6,11 +6,11 @@ import com.ukora.tradestudent.entities.CorrelationAssociation
 import com.ukora.tradestudent.entities.SimulatedTradeEntry
 import com.ukora.tradestudent.entities.SimulationResult
 import com.ukora.tradestudent.services.BytesFetcherService
-import com.ukora.tradestudent.services.CaptureAssociationsService
+import com.ukora.tradestudent.services.associations.CaptureAssociationsService
 import com.ukora.tradestudent.services.MemoryLimitService
 import com.ukora.tradestudent.services.ProbabilityFigurerService
 import com.ukora.tradestudent.services.SimulationResultService
-import com.ukora.tradestudent.services.TechnicalAnalysisService
+import com.ukora.tradestudent.services.associations.TechnicalAnalysisService
 import com.ukora.tradestudent.services.learner.TraverseLessonsService
 import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.utils.NerdUtils

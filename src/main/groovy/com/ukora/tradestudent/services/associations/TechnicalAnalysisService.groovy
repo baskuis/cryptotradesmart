@@ -1,7 +1,8 @@
-package com.ukora.tradestudent.services
+package com.ukora.tradestudent.services.associations
 
 import com.ukora.tradestudent.entities.Memory
 import com.ukora.tradestudent.entities.PriceEntry
+import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -9,9 +10,6 @@ import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
-
-import static com.ukora.tradestudent.services.CaptureAssociationsService.INSTANT
-import static com.ukora.tradestudent.services.CaptureAssociationsService.SEP
 
 /**
  * The logic could also belong to the CaptureAssociationsService
@@ -69,11 +67,11 @@ class TechnicalAnalysisService {
 
         /** Create references */
         analysisBoundaries.each {
-            String reference = INSTANT + SEP + REFERENCE_NAME + SEP + it
+            String reference = CaptureAssociationsService.INSTANT + CaptureAssociationsService.SEP + REFERENCE_NAME + CaptureAssociationsService.SEP + it
             Map<String, Double> analysisValues = extractAnalysis(it, priceEntries)
             if (analysisValues) {
                 analysisValues.each {
-                    technicalAnalysisReferences.put(reference + SEP + it.key, it.value)
+                    technicalAnalysisReferences.put(reference + CaptureAssociationsService.SEP + it.key, it.value)
                 }
             }
         }
