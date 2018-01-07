@@ -81,6 +81,8 @@ class SimulationResultService {
                 return diff / 86400000
             case ChronoUnit.HOURS:
                 return diff / 3600000
+            case ChronoUnit.MINUTES:
+                return diff / 60000
             case ChronoUnit.SECONDS:
                 return diff / 1000
             case ChronoUnit.MILLIS:

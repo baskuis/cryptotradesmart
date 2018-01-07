@@ -7,8 +7,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 @Configuration
 class TaskExecutorConfig {
 
-    final static Integer POOL_SIZE = 10
-    final static Integer MAX_POOL_SIZE = 20
+    final static Integer POOL_SIZE = 5
+    final static Integer MAX_POOL_SIZE = 10
 
     @Bean
     ThreadPoolTaskExecutor taskExecutor() {

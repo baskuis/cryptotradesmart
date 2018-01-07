@@ -1,1 +1,1 @@
-/usr/bin/nohup /usr/bin/java -jar /var/local/tradestudent-learn-0.0.1-SNAPSHOT.jar -Xms5000m -Xmx3000m -XX:-UseGCOverheadLimit >/var/local/application.out 2>&1 &
+/usr/bin/nohup /usr/bin/java -jar /var/local/tradestudent-learn-0.0.1-SNAPSHOT.jar -Xms3000m -Xmx6000m -XX:-UseGCOverheadLimit >/var/local/application.out 2>&1 &
