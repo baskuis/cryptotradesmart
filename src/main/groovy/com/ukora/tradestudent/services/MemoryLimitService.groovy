@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 class MemoryLimitService {
 
     final static MAX_BUY_SELL_COUNT = 5000
-    final static MAX_UP_DOWN_COUNT = 20000
+    final static MAX_UP_DOWN_COUNT = 40000
 
     @Autowired
     BytesFetcherService bytesFetcherService

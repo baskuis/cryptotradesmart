@@ -39,7 +39,7 @@ class BuySellTradingHistoricalSimulatorService {
 
     public final static int numCores = Runtime.getRuntime().availableProcessors()
 
-    public static boolean multithreadingEnabled = true
+    public static boolean multiThreadingEnabled = true
 
     public static boolean simulationRunning = false
 
@@ -121,11 +121,11 @@ class BuySellTradingHistoricalSimulatorService {
             Logger.log("There is already a simulation running")
             return
         }
-        def partitioned = multithreadingEnabled ? (0..<numCores).collect {
+        def partitioned = multiThreadingEnabled ? (0..<numCores).collect {
             simulations[(it..<simulations.size()).step(numCores)]
         } : [simulations]
-        if (multithreadingEnabled) Logger.debug(String.format("Delegating simulation to %s threads", numCores))
-        if (multithreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
+        if (multiThreadingEnabled) Logger.debug(String.format("Delegating simulation to %s threads", numCores))
+        if (multiThreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
         simulationRunning = true
         resetSimulations()
         Instant end = Instant.now()

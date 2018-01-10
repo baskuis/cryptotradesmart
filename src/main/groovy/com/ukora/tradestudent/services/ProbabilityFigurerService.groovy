@@ -34,7 +34,7 @@ class ProbabilityFigurerService {
     Map<String, TagGroup> tagGroupMap = [:]
     Map<String, AbstractCorrelationTag> tagMap = [:]
 
-    static public boolean multithreadingEnabled = true
+    static public boolean multiThreadingEnabled = true
 
     public final static int numCores = Runtime.getRuntime().availableProcessors()
 
@@ -140,9 +140,9 @@ class ProbabilityFigurerService {
      * @param correlationAssociation
      */
     void hydrateProbabilities(CorrelationAssociation correlationAssociation){
-        def partitioned = multithreadingEnabled ? NerdUtils.partitionMap(correlationAssociation.numericAssociations, numCores) : [correlationAssociation.numericAssociations]
-        if (multithreadingEnabled) Logger.debug(String.format("Delegating simulation to %s threads", numCores))
-        if (multithreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
+        def partitioned = multiThreadingEnabled ? NerdUtils.partitionMap(correlationAssociation.numericAssociations, numCores) : [correlationAssociation.numericAssociations]
+        if (multiThreadingEnabled) Logger.debug(String.format("Delegating simulation to %s threads", numCores))
+        if (multiThreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
         Map<String, BrainNode> brainNodes = getBrainNodes()
         List<Thread> threads = []
         partitioned.collect { Map<String, Double> group ->

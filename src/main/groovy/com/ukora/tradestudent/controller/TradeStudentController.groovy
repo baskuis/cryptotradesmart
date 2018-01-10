@@ -75,14 +75,16 @@ class TradeStudentController {
 
     @RequestMapping(path = '/whiskeybender', method = RequestMethod.GET)
     String dropBrain(){
-        bytesFetcherService.whiskeyBender()
-        "OK"
+        return "DISABLED"
+        //bytesFetcherService.whiskeyBender()
+        //"OK"
     }
 
     @RequestMapping(path = '/relearn', method = RequestMethod.GET)
     String resetLessons(){
-        bytesFetcherService.resetLessons()
-        "OK"
+        return "DISABLED"
+        //bytesFetcherService.resetLessons()
+        //"OK"
     }
 
     @RequestMapping(path = '/flushcache', method = RequestMethod.GET)
@@ -122,13 +124,13 @@ class TradeStudentController {
 
     @RequestMapping(path = '/multion', method = RequestMethod.GET)
     String multiOn(){
-        BuySellTradingHistoricalSimulatorService.multithreadingEnabled = true
+        BuySellTradingHistoricalSimulatorService.multiThreadingEnabled = true
         "ON"
     }
 
     @RequestMapping(path = '/multioff', method = RequestMethod.GET)
     String multiOff(){
-        BuySellTradingHistoricalSimulatorService.multithreadingEnabled = false
+        BuySellTradingHistoricalSimulatorService.multiThreadingEnabled = false
         "OFF"
     }
 
