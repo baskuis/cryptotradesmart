@@ -55,9 +55,10 @@ class BuySellTradingHistoricalSimulatorService {
     private final static Double MAX_TRADE_INCREMENT = 1.2
     private final static Double TRADE_INCREMENT = 0.6
     private final static Double TRADE_TRANSACTION_COST = 0.0020
-    private final static Double LOWEST_THRESHOLD = 0.45
+    private final static Double LOWEST_THRESHOLD = 0.46
     private final static Double HIGHEST_THRESHOLD = 1.00
-    private final static Double THRESHOLD_INCREMENT = 0.02
+    private final static Double THRESHOLD_INCREMENT = 0.003
+    private final static Double MAX_THRESHOLD_DELTA = 0.03
 
     @PostConstruct
     void init() {
@@ -77,7 +78,9 @@ class BuySellTradingHistoricalSimulatorService {
          */
         for (Double tradeIncrement = TRADE_INCREMENT; tradeIncrement <= MAX_TRADE_INCREMENT; tradeIncrement += TRADE_INCREMENT) {
             for (Double thresholdBuy = LOWEST_THRESHOLD; thresholdBuy <= HIGHEST_THRESHOLD; thresholdBuy += THRESHOLD_INCREMENT) {
-                for (Double thresholdSell = LOWEST_THRESHOLD; thresholdSell <= HIGHEST_THRESHOLD; thresholdSell += THRESHOLD_INCREMENT) {
+                Double maxBuyThreshold = (thresholdBuy + MAX_THRESHOLD_DELTA < HIGHEST_THRESHOLD) ? thresholdBuy + MAX_THRESHOLD_DELTA : HIGHEST_THRESHOLD
+                Double minBuyThreshold = (thresholdBuy - MAX_THRESHOLD_DELTA > LOWEST_THRESHOLD) ? thresholdBuy - MAX_THRESHOLD_DELTA : LOWEST_THRESHOLD
+                for (Double thresholdSell = minBuyThreshold; thresholdSell <= maxBuyThreshold; thresholdSell += THRESHOLD_INCREMENT) {
                     simulations << new Simulation(
                             key: String.format("buy:%s,sell:%s,inc:%s", thresholdBuy, thresholdSell, tradeIncrement),
                             buyThreshold: thresholdBuy,
