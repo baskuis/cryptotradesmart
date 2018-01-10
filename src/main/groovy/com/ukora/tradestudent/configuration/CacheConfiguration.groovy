@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
 @Configuration
 class CacheConfiguration implements CachingConfigurer {
 
-    static final long MAX_CACHED_ENTRIES = 200000
+    static final long MAX_CACHED_ENTRIES = 10000
 
     @Bean
     @Override
@@ -28,7 +28,7 @@ class CacheConfiguration implements CachingConfigurer {
             protected Cache createConcurrentMapCache(final String name) {
                 return new ConcurrentMapCache(
                         name,
-                        CacheBuilder.newBuilder().expireAfterWrite(24, TimeUnit.HOURS).maximumSize(MAX_CACHED_ENTRIES).build().asMap(),
+                        CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.HOURS).maximumSize(MAX_CACHED_ENTRIES).build().asMap(),
                         true
                 )
             }
