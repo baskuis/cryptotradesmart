@@ -13,6 +13,7 @@ import com.ukora.tradestudent.services.SimulationResultService
 import com.ukora.tradestudent.services.associations.TechnicalAnalysisService
 import com.ukora.tradestudent.services.learner.TraverseLessonsService
 import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
+import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.propertyeditors.CustomDateEditor
@@ -172,6 +173,11 @@ class TradeStudentController {
     @RequestMapping(path = '/technicalanalysis', method = RequestMethod.GET)
     Map extractTechnicalAnalysis(@RequestParam(value = 'date') Date date){
         technicalAnalysisService.extractTechnicalAnalysis(date)
+    }
+
+    @RequestMapping(path = '/log', method = RequestMethod.GET)
+    String log(){
+        Logger.tailLog()
     }
 
     @InitBinder

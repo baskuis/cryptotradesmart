@@ -30,7 +30,7 @@ class TrendAwareProgressiveThresholdTradeExecutionStrategySpec extends Specifica
         setup:
         CorrelationAssociation correlationAssociation = new CorrelationAssociation(
                 tagProbabilities: [
-                        averageProbabilityCombinerStrategy: [
+                        relevanceWeightedProbabilityCombinerStrategy: [
                                 buy : buyProbability,
                                 sell: sellProbablity,
                                 up  : upProbability,

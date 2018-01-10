@@ -5,6 +5,7 @@ import com.ukora.tradestudent.entities.PriceEntry
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 import java.time.Duration
@@ -78,6 +79,14 @@ class TechnicalAnalysisService {
 
         return technicalAnalysisReferences
 
+    }
+
+    /**
+     * Drop price cache
+     */
+    @Scheduled(fixedRate = 30000l)
+    static void dropPriceCache(){
+        priceCache = new ConcurrentHashMap<>()
     }
 
     /**

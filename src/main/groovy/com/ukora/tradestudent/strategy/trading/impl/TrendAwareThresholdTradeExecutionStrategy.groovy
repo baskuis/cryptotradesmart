@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component
 @Component
 class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
 
-    private final String TREND_COMBINER_STRATEGY = 'averageProbabilityCombinerStrategy'
+    private final String TREND_COMBINER_STRATEGY = 'relevanceWeightedProbabilityCombinerStrategy'
 
     @Autowired
     BuyTag buyTag
