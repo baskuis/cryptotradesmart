@@ -8,18 +8,15 @@ import com.ukora.tradestudent.tags.TagSubset
 import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
 import com.ukora.tradestudent.tags.buysell.BuyTag
 import com.ukora.tradestudent.tags.buysell.SellTag
-import com.ukora.tradestudent.tags.trend.DownTag
-import com.ukora.tradestudent.tags.trend.UpTag
+import com.ukora.tradestudent.tags.reversal.DownReversalTag
+import com.ukora.tradestudent.tags.reversal.UpReversalTag
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 @Component
-class TrendAwareProgressiveThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
+class ReversalAwareThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
 
     private final String TREND_COMBINER_STRATEGY = 'relevanceWeightedProbabilityCombinerStrategy'
-
-    final static Double MAX_MULTIPLIER = 2
-    final static Double MIN_MULTIPLIER = 0.2
 
     @Autowired
     BuyTag buyTag
@@ -31,10 +28,10 @@ class TrendAwareProgressiveThresholdTradeExecutionStrategy implements TradeExecu
     BuySellTagGroup buySellTagGroup
 
     @Autowired
-    UpTag upTag
+    UpReversalTag upReversalTag
 
     @Autowired
-    DownTag downTag
+    DownReversalTag downReversalTag
 
     @Override
     boolean applies(String toTag) {
@@ -54,7 +51,7 @@ class TrendAwareProgressiveThresholdTradeExecutionStrategy implements TradeExecu
     }
 
     /**
-     * Execute progressive trades while taking trend probabilities into account
+     * Execute trades while taking reversal probabilities into account
      *
      * @param correlationAssociation
      * @param tag
@@ -72,8 +69,8 @@ class TrendAwareProgressiveThresholdTradeExecutionStrategy implements TradeExecu
             String combinerStrategy
     ) {
         TradeExecution tradeExecution = null
-        Double upProbability = correlationAssociation.tagProbabilities?.get(TREND_COMBINER_STRATEGY)?.get(upTag.tagName)
-        Double downProbability = correlationAssociation.tagProbabilities?.get(TREND_COMBINER_STRATEGY)?.get(downTag.tagName)
+        Double upProbability = correlationAssociation.tagProbabilities?.get(TREND_COMBINER_STRATEGY)?.get(upReversalTag.tagName)
+        Double downProbability = correlationAssociation.tagProbabilities?.get(TREND_COMBINER_STRATEGY)?.get(downReversalTag.tagName)
         if (upProbability && downProbability) {
             Double modifiedBuyThreshold
             Double modifiedSellThreshold
@@ -87,21 +84,15 @@ class TrendAwareProgressiveThresholdTradeExecutionStrategy implements TradeExecu
                 modifiedSellThreshold = simulation.sellThreshold - (trendDelta * (1 - simulation.sellThreshold) / 2)
             }
             if (tag == buyTag.getTagName() && probability > modifiedBuyThreshold) {
-                Double buyThresholdDistance = 1 - modifiedBuyThreshold
-                Double actualBuyThresholdDistance = probability - modifiedBuyThreshold
-                Double buyMultiplier = MIN_MULTIPLIER + ((actualBuyThresholdDistance / buyThresholdDistance) * (MAX_MULTIPLIER - MIN_MULTIPLIER))
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.BUY,
-                        amount: buyMultiplier * simulation.tradeIncrement,
+                        amount: simulation.tradeIncrement,
                         price: correlationAssociation.price
                 )
             } else if (tag == sellTag.getTagName() && probability > modifiedSellThreshold) {
-                Double sellThresholdDistance = 1 - modifiedSellThreshold
-                Double actualSellThresholdDistance = probability - modifiedSellThreshold
-                Double sellMultiplier = MIN_MULTIPLIER + ((actualSellThresholdDistance / sellThresholdDistance) * (MAX_MULTIPLIER - MIN_MULTIPLIER))
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.SELL,
-                        amount: sellMultiplier * simulation.tradeIncrement,
+                        amount: simulation.tradeIncrement,
                         price: correlationAssociation.price
                 )
             }

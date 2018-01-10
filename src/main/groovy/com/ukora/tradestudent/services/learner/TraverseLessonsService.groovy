@@ -5,6 +5,7 @@ import com.ukora.tradestudent.entities.Memory
 import com.ukora.tradestudent.entities.Property
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
+import com.ukora.tradestudent.tags.reversal.UpDownReversalTagGroup
 import com.ukora.tradestudent.tags.trend.UpDownTagGroup
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
@@ -49,6 +50,9 @@ class TraverseLessonsService {
 
     @Autowired
     BuySellTagGroup buySellTagGroup
+
+    @Autowired
+    UpDownReversalTagGroup upDownReversalTagGroup
 
     @Autowired
     BytesFetcherService bytesFetcherService
@@ -329,8 +333,18 @@ class TraverseLessonsService {
                 boolean up = false
                 if (average['upReversal']) {
                     up = (it.key as Date).after(average['lowest']['date'] as Date)
+                    lessons << new Lesson(
+                            tag: upDownReversalTagGroup.upReversalTag,
+                            date: it.key as Date,
+                            price: it.value as Double
+                    )
                 } else if (average['downReversal']) {
                     up = (it.key as Date).before(average['highest']['date'] as Date)
+                    lessons << new Lesson(
+                            tag: upDownReversalTagGroup.downReversalTag,
+                            date: it.key as Date,
+                            price: it.value as Double
+                    )
                 } else if (average['rising']) {
                     up = true
                 } else if (average['falling']) {
