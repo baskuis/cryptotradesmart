@@ -57,8 +57,8 @@ class BuySellTradingHistoricalSimulatorService {
     private final static Double TRADE_TRANSACTION_COST = 0.0020
     private final static Double LOWEST_THRESHOLD = 0.46
     private final static Double HIGHEST_THRESHOLD = 1.00
-    private final static Double THRESHOLD_INCREMENT = 0.003
-    private final static Double MAX_THRESHOLD_DELTA = 0.03
+    private final static Double THRESHOLD_INCREMENT = 0.004
+    private final static Double MAX_THRESHOLD_DELTA = 0.024
 
     @PostConstruct
     void init() {
@@ -105,8 +105,8 @@ class BuySellTradingHistoricalSimulatorService {
     void resetSimulations(){
         simulations.each {
             it.tradeCount = 0
-            it.balancesA = new ConcurrentHashMap()
-            it.balancesB = new ConcurrentHashMap()
+            it.balancesA = [:]
+            it.balancesB = [:]
         }
     }
 
