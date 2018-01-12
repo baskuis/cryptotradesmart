@@ -1,6 +1,7 @@
 package com.ukora.tradestudent.services
 
 import com.ukora.tradestudent.entities.SimulationResult
+import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -19,6 +20,8 @@ class SimulationResultService {
     static final Integer THRESHOLD_BALANCE_SOFTENING_FACTOR = 5
     static final Double MINIMUM_DIFFERENTIAL = 1
 
+    final int SECONS_IN_HOUR = 3600
+
     /**
      * Get top performing simulation
      *
@@ -36,10 +39,10 @@ class SimulationResultService {
      */
     List<SimulationResult> getTopPerformingSimulations() {
         return bytesFetcherService.getSimulations()?.findAll({
-            it.endDate > Date.from(Instant.now().minusSeconds(MAX_AGE_IN_HOURS * 3600)) && it.differential > MINIMUM_DIFFERENTIAL
+            it.endDate > Date.from(Instant.now().minusSeconds(MAX_AGE_IN_HOURS * SECONS_IN_HOUR)) && it.differential > MINIMUM_DIFFERENTIAL
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
-        })?.take(80)?.sort({ SimulationResult a, SimulationResult b ->
+        })?.take(BuySellTradingHistoricalSimulatorService.STORE_NUMBER_OF_RESULTS)?.sort({ SimulationResult a, SimulationResult b ->
             getScore(b) <=> getScore(a)
         })
     }

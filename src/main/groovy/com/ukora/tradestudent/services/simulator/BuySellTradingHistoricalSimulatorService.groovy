@@ -35,6 +35,8 @@ class BuySellTradingHistoricalSimulatorService {
 
     Map<String, TradeExecutionStrategy> tradeExecutionStrategyMap
 
+    public final static int STORE_NUMBER_OF_RESULTS = 20
+
     public final static long INTERVAL_SECONDS = 60
 
     public final static int numCores = Runtime.getRuntime().availableProcessors()
@@ -224,7 +226,7 @@ class BuySellTradingHistoricalSimulatorService {
      */
     private Map<String, Map> captureResults() {
         Logger.log('results are in')
-        Map<String, Map> finalResults = extractResult().sort { -it.value.get('balance') }.take(20)
+        Map<String, Map> finalResults = extractResult().sort { -it.value.get('balance') }.take(STORE_NUMBER_OF_RESULTS)
         Logger.log(finalResults as String)
         return finalResults
     }
