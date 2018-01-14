@@ -69,7 +69,8 @@ class ProgressiveV2ThresholdTradeExecutionStrategy implements TradeExecutionStra
             tradeExecution = new TradeExecution(
                     tradeType: TradeExecution.TradeType.BUY,
                     amount: buyMultiplier * simulation.tradeIncrement,
-                    price: correlationAssociation.price
+                    price: correlationAssociation.price,
+                    date: correlationAssociation.date
             )
         } else if (tag == sellTag.getTagName() && probability > simulation.sellThreshold) {
             Double sellThresholdDistance = 1 - simulation.sellThreshold
@@ -78,7 +79,8 @@ class ProgressiveV2ThresholdTradeExecutionStrategy implements TradeExecutionStra
             tradeExecution = new TradeExecution(
                     tradeType: TradeExecution.TradeType.SELL,
                     amount: sellMultiplier * simulation.tradeIncrement,
-                    price: correlationAssociation.price
+                    price: correlationAssociation.price,
+                    date: correlationAssociation.date
             )
         }
         return tradeExecution

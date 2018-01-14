@@ -87,13 +87,15 @@ class ReversalAwareThresholdTradeExecutionStrategy implements TradeExecutionStra
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.BUY,
                         amount: simulation.tradeIncrement,
-                        price: correlationAssociation.price
+                        price: correlationAssociation.price,
+                        date: correlationAssociation.date
                 )
             } else if (tag == sellTag.getTagName() && probability > modifiedSellThreshold) {
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.SELL,
                         amount: simulation.tradeIncrement,
-                        price: correlationAssociation.price
+                        price: correlationAssociation.price,
+                        date: correlationAssociation.date
                 )
             }
         }

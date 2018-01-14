@@ -15,4 +15,6 @@ class SimulationResult {
     Double buyThreshold
     Double sellThreshold
     Double differential
+    List<String> tradeLog = []
+    Integer tradeCount
 }

@@ -3,6 +3,8 @@ package com.ukora.tradestudent.strategy.trading.impl
 import com.ukora.tradestudent.entities.CorrelationAssociation
 import com.ukora.tradestudent.services.simulator.Simulation
 import com.ukora.tradestudent.strategy.trading.TradeExecution
+import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
+import com.ukora.tradestudent.tags.TagSubset
 import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
 import com.ukora.tradestudent.tags.buysell.BuyTag
 import com.ukora.tradestudent.tags.buysell.SellTag
@@ -20,7 +22,7 @@ import org.springframework.stereotype.Component
  * This version uses a different reversal weight - and lower trend division factor
  */
 @Component
-class ReversalTrendAwareProgressiveV2TradeExecutionStrategy {
+class ReversalTrendAwareProgressiveV2TradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
 
     /**
      * P combiner strategies
@@ -138,7 +140,8 @@ class ReversalTrendAwareProgressiveV2TradeExecutionStrategy {
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.BUY,
                         amount: buyMultiplier * simulation.tradeIncrement,
-                        price: correlationAssociation.price
+                        price: correlationAssociation.price,
+                        date: correlationAssociation.date
                 )
             } else if (tag == sellTag.getTagName() && probability > modifiedSellThreshold) {
                 Double sellThresholdDistance = 1 - simulation.sellThreshold
@@ -147,7 +150,8 @@ class ReversalTrendAwareProgressiveV2TradeExecutionStrategy {
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.SELL,
                         amount: sellMultiplier * simulation.tradeIncrement,
-                        price: correlationAssociation.price
+                        price: correlationAssociation.price,
+                        date: correlationAssociation.date
                 )
             }
 

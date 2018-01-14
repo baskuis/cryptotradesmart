@@ -205,6 +205,7 @@ class BuySellTradingHistoricalSimulatorService {
     private void persistSimulationResults(Map<String, Map> finalResults, Date fromDate, Date endDate) {
         finalResults.each {
             Simulation simulation = (it.value.get('simulation') as Simulation)
+            List<String> tradeLog = simulation.tradeLog.get(it.value.get('purseKey'))
             SimulationResult simulationResult = new SimulationResult(
                     differential: (it.value.get('balance') as Double) / STARTING_BALANCE,
                     startDate: fromDate,
@@ -213,7 +214,9 @@ class BuySellTradingHistoricalSimulatorService {
                     tradeExecutionStrategy: it.value.get('tradeExecutionStrategy'),
                     probabilityCombinerStrategy: it.value.get('probabilityCombinerStrategy'),
                     buyThreshold: simulation.buyThreshold,
-                    sellThreshold: simulation.sellThreshold
+                    sellThreshold: simulation.sellThreshold,
+                    tradeLog: tradeLog,
+                    tradeCount: tradeLog.size()
             )
             bytesFetcherService.saveSimulation(simulationResult)
         }
@@ -250,18 +253,36 @@ class BuySellTradingHistoricalSimulatorService {
                 if (balanceB < costsA) {
                     Logger.debug(String.format("Not enough balanceB:%s left to buy costsA:%s ", balanceB, costsA))
                 } else {
-                    simulation.balancesA.put(purseKey, balanceA + (tradeExecution.amount * (1 - simulation.transactionCost)))
-                    simulation.balancesB.put(purseKey, balanceB - (tradeExecution.amount * tradeExecution.price))
+                    Double newBalanceA = balanceA + (tradeExecution.amount * (1 - simulation.transactionCost))
+                    Double newBalanceB = balanceB - (tradeExecution.amount * tradeExecution.price)
+                    simulation.balancesA.put(purseKey, newBalanceA)
+                    simulation.balancesB.put(purseKey, newBalanceB)
                     simulation.tradeCount++
+                    simulation.tradeLog.get(purseKey, []) << String.format('On %s performing BUY at price:%s Had a:%s, b:%s now have a:%s, b:%s',
+                            tradeExecution.date,
+                            tradeExecution.price,
+                            balanceA,
+                            balanceB,
+                            newBalanceA,
+                            newBalanceB)
                 }
                 break
             case TradeExecution.TradeType.SELL:
                 if (balanceA < (tradeExecution.amount as Double) * (1 + simulation.transactionCost)) {
                     Logger.debug(String.format("Not enough balanceA:%s left ", balanceA))
                 } else {
+                    Double newBalanceA = balanceA - tradeExecution.amount
+                    Double newBalanceB = balanceB + proceedsA
                     simulation.balancesA.put(purseKey, balanceA - tradeExecution.amount)
                     simulation.balancesB.put(purseKey, balanceB + proceedsA)
                     simulation.tradeCount++
+                    simulation.tradeLog.get(purseKey, []) << String.format('On %s performing SELL at price:%s Had a:%s, b:%s now have a:%s, b:%s',
+                            tradeExecution.date,
+                            tradeExecution.price,
+                            balanceA,
+                            balanceB,
+                            newBalanceA,
+                            newBalanceB)
                 }
                 break
         }
@@ -289,7 +310,8 @@ class BuySellTradingHistoricalSimulatorService {
                         'tradeExecutionStrategy'     : tradeExecutionStrategy,
                         'balance'                    : finalBalance,
                         'simulationDescription'      : simulation.toString(),
-                        'simulation'                 : simulation
+                        'simulation'                 : simulation,
+                        'purseKey'                   : it.key
                 ])
             }
         }

@@ -1,8 +1,5 @@
 package com.ukora.tradestudent.services.simulator
 
-import java.util.concurrent.ConcurrentHashMap
-
-
 class Simulation {
 
     String key
@@ -13,9 +10,10 @@ class Simulation {
     Double transactionCost
     Double finalPrice
     Integer tradeCount = 0
-    Map balancesA = new ConcurrentHashMap()
-    Map balancesB = new ConcurrentHashMap()
-    Map result = new ConcurrentHashMap()
+    Map balancesA = [:]
+    Map balancesB = [:]
+    Map result = [:]
+    Map<String, List<String>> tradeLog = [:]
 
     @Override
     String toString() {
