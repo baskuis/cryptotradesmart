@@ -3,17 +3,18 @@ package com.ukora.tradestudent.services.simulator
 class Simulation {
 
     String key
+    boolean enabled = true
     Double buyThreshold
     Double sellThreshold
     Double startingBalance
     Double tradeIncrement
     Double transactionCost
     Double finalPrice
-    Integer tradeCount = 0
     Map balancesA = [:]
     Map balancesB = [:]
+    Map tradeCounts = [:]
+    Map totalBalances = [:]
     Map result = [:]
-    Map<String, List<String>> tradeLog = [:]
 
     @Override
     String toString() {

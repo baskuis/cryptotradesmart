@@ -278,7 +278,7 @@ class BytesFetcherService {
                 simulation.buyThreshold = obj['buyThreshold'] as Double
                 simulation.sellThreshold = obj['sellThreshold'] as Double
                 simulation.tradeCount = obj['tradeCount'] as Integer
-                simulation.tradeLog = obj['tradeLog'] as List
+                simulation.totalValue = obj['totalValue'] as Double
                 simulation.endDate = dateParser.parse(obj['endDate'] as String)
                 Details details = new Details()
                 details.tradecurrency = obj['exchange']['details']['tradecurrency'] as String
@@ -320,8 +320,8 @@ class BytesFetcherService {
             obj['tradeIncrement'] = String.format("%.16f", simulation.tradeIncrement)
             obj['buyThreshold'] = String.format("%.16f", simulation.buyThreshold)
             obj['sellThreshold'] = String.format("%.16f", simulation.sellThreshold)
-            obj['tradeLog'] = simulation.tradeLog
-            obj['tradeCount'] = simulation.tradeCount
+            obj['totalValue'] = String.format("%.16f", simulation.totalValue)
+            obj['tradeCount'] = String.format("%.16f", simulation.tradeCount)
             obj.get('exchange', [:])['platform'] = simulation.exchange?.platform
             obj.get('exchange', [:])['exchange'] = simulation.exchange?.exchange
             (obj.get('exchange', [:]) as Map).get('details', [:])['tradecurrency'] = simulation.exchange?.details?.tradecurrency

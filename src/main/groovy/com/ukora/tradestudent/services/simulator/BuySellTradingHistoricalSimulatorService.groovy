@@ -17,10 +17,13 @@ import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 import java.time.Duration
 import java.time.Instant
-import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class BuySellTradingHistoricalSimulatorService {
+
+    /** For better performance - we'll stop losing/hyper simulation */
+    private final static MAXIMUM_LOSS_TILL_QUIT = 0.6
+    private final static MAXIMUM_TRADES_TILL_QUIT = 1000
 
     @Autowired
     BytesFetcherService bytesFetcherService
@@ -34,6 +37,8 @@ class BuySellTradingHistoricalSimulatorService {
     Map<String, ProbabilityCombinerStrategy> probabilityCombinerStrategyMap
 
     Map<String, TradeExecutionStrategy> tradeExecutionStrategyMap
+
+    private static Double MINIMUM_AMOUNT = 0.01
 
     public final static int STORE_NUMBER_OF_RESULTS = 20
 
@@ -90,7 +95,6 @@ class BuySellTradingHistoricalSimulatorService {
                             startingBalance: STARTING_BALANCE,
                             tradeIncrement: tradeIncrement,
                             transactionCost: TRADE_TRANSACTION_COST,
-                            tradeCount: 0,
                             balancesA: [:],
                             balancesB: [:]
                     )
@@ -104,11 +108,13 @@ class BuySellTradingHistoricalSimulatorService {
      * Reset simulation balances
      *
      */
-    void resetSimulations(){
+    void resetSimulations() {
         simulations.each {
-            it.tradeCount = 0
+            it.enabled = true
             it.balancesA = [:]
             it.balancesB = [:]
+            it.tradeCounts = [:]
+            it.totalBalances = [:]
         }
     }
 
@@ -122,7 +128,7 @@ class BuySellTradingHistoricalSimulatorService {
     @Async
     runSimulation(Date fromDate) {
         if (!fromDate) return
-        if (simulationRunning){
+        if (simulationRunning) {
             Logger.log("There is already a simulation running")
             return
         }
@@ -178,7 +184,7 @@ class BuySellTradingHistoricalSimulatorService {
                     threads*.join()
                 }
             }
-            if(forceCompleteSimulation) break
+            if (forceCompleteSimulation) break
         }
 
         /** Flip back to false */
@@ -205,7 +211,6 @@ class BuySellTradingHistoricalSimulatorService {
     private void persistSimulationResults(Map<String, Map> finalResults, Date fromDate, Date endDate) {
         finalResults.each {
             Simulation simulation = (it.value.get('simulation') as Simulation)
-            List<String> tradeLog = simulation.tradeLog.get(it.value.get('purseKey'))
             SimulationResult simulationResult = new SimulationResult(
                     differential: (it.value.get('balance') as Double) / STARTING_BALANCE,
                     startDate: fromDate,
@@ -215,8 +220,8 @@ class BuySellTradingHistoricalSimulatorService {
                     probabilityCombinerStrategy: it.value.get('probabilityCombinerStrategy'),
                     buyThreshold: simulation.buyThreshold,
                     sellThreshold: simulation.sellThreshold,
-                    tradeLog: tradeLog,
-                    tradeCount: tradeLog.size()
+                    tradeCount: simulation.tradeCounts.get(it.value.get('purseKey')),
+                    totalValue: simulation.totalBalances.get(it.value.get('purseKey'))
             )
             bytesFetcherService.saveSimulation(simulationResult)
         }
@@ -242,47 +247,76 @@ class BuySellTradingHistoricalSimulatorService {
      * @param purseKey
      * @return
      */
-    private static simulateTrade(Simulation simulation, TradeExecution tradeExecution, String purseKey) {
+    static simulateTrade(Simulation simulation, TradeExecution tradeExecution, String purseKey) {
         if (!tradeExecution) return
-        Double costsA = tradeExecution.amount * tradeExecution.price * (1 + simulation.transactionCost)
-        Double proceedsA = tradeExecution.amount * tradeExecution.price * (1 - simulation.transactionCost)
+        if (tradeExecution.amount < 0) {
+            Logger.log(String.format("Ignoring %s trade execution with negative amount %s on date %s",
+                    tradeExecution.tradeType,
+                    tradeExecution.amount,
+                    tradeExecution.date
+            ))
+            return
+        }
         Double balanceA = simulation.balancesA.get(purseKey, STARTING_BALANCE) as Double
         Double balanceB = simulation.balancesB.get(purseKey, 0) as Double
         switch (tradeExecution.tradeType) {
             case TradeExecution.TradeType.BUY:
-                if (balanceB < costsA) {
-                    Logger.debug(String.format("Not enough balanceB:%s left to buy costsA:%s ", balanceB, costsA))
+                Double maxAmount = balanceB / tradeExecution.price
+                Double amount
+                Double newBalanceA
+                Double newBalanceB
+                if (balanceB > tradeExecution.amount * tradeExecution.price) {
+                    amount = tradeExecution.amount * (1 - simulation.transactionCost)
+                    newBalanceA = balanceA + amount
+                    newBalanceB = balanceB - (tradeExecution.amount * tradeExecution.price)
                 } else {
-                    Double newBalanceA = balanceA + (tradeExecution.amount * (1 - simulation.transactionCost))
-                    Double newBalanceB = balanceB - (tradeExecution.amount * tradeExecution.price)
+                    amount = maxAmount * (1 - simulation.transactionCost)
+                    newBalanceA = balanceA + amount
+                    newBalanceB = balanceB - (maxAmount * tradeExecution.price)
+                }
+                if (amount < MINIMUM_AMOUNT) {
+                    Logger.debug(String.format("Not enough balanceB:%s left to buy amount:%s ", balanceB, amount))
+                } else {
                     simulation.balancesA.put(purseKey, newBalanceA)
                     simulation.balancesB.put(purseKey, newBalanceB)
-                    simulation.tradeCount++
-                    simulation.tradeLog.get(purseKey, []) << String.format('On %s performing BUY at price:%s Had a:%s, b:%s now have a:%s, b:%s',
+                    simulation.tradeCounts.get(purseKey, 0)++
+                    simulation.totalBalances.put(purseKey, newBalanceA + (newBalanceB / tradeExecution.price))
+                    Logger.debug(String.format('On %s performing BUY at price:%s Had a:%s, b:%s now have a:%s, b:%s',
                             tradeExecution.date,
                             tradeExecution.price,
                             balanceA,
                             balanceB,
                             newBalanceA,
-                            newBalanceB)
+                            newBalanceB))
                 }
                 break
             case TradeExecution.TradeType.SELL:
-                if (balanceA < (tradeExecution.amount as Double) * (1 + simulation.transactionCost)) {
+                Double amount
+                Double newBalanceA
+                Double newBalanceB
+                if (balanceA > tradeExecution.amount) {
+                    amount = tradeExecution.amount * (1 - simulation.transactionCost)
+                    newBalanceA = balanceA - tradeExecution.amount
+                    newBalanceB = balanceB + (amount * tradeExecution.price)
+                } else {
+                    amount = balanceA * (1 - simulation.transactionCost)
+                    newBalanceA = 0
+                    newBalanceB = balanceB + (amount * tradeExecution.price)
+                }
+                if (amount < MINIMUM_AMOUNT) {
                     Logger.debug(String.format("Not enough balanceA:%s left ", balanceA))
                 } else {
-                    Double newBalanceA = balanceA - tradeExecution.amount
-                    Double newBalanceB = balanceB + proceedsA
-                    simulation.balancesA.put(purseKey, balanceA - tradeExecution.amount)
-                    simulation.balancesB.put(purseKey, balanceB + proceedsA)
-                    simulation.tradeCount++
-                    simulation.tradeLog.get(purseKey, []) << String.format('On %s performing SELL at price:%s Had a:%s, b:%s now have a:%s, b:%s',
+                    simulation.balancesA.put(purseKey, newBalanceA)
+                    simulation.balancesB.put(purseKey, newBalanceB)
+                    simulation.tradeCounts.get(purseKey, 0)++
+                    simulation.totalBalances.put(purseKey, newBalanceA + (newBalanceB / tradeExecution.price))
+                    Logger.debug(String.format('On %s performing SELL at price:%s Had a:%s, b:%s now have a:%s, b:%s',
                             tradeExecution.date,
                             tradeExecution.price,
                             balanceA,
                             balanceB,
                             newBalanceA,
-                            newBalanceB)
+                            newBalanceB))
                 }
                 break
         }
