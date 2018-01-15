@@ -143,8 +143,8 @@ class ReversalTrendAwareProgressiveTradeExecutionStrategy implements TradeExecut
                         date: correlationAssociation.date
                 )
             } else if (tag == sellTag.getTagName() && probability > modifiedSellThreshold) {
-                Double sellThresholdDistance = 1 - simulation.sellThreshold
-                Double actualSellThresholdDistance = probability - simulation.sellThreshold
+                Double sellThresholdDistance = 1 - modifiedSellThreshold
+                Double actualSellThresholdDistance = probability - modifiedSellThreshold
                 Double sellMultiplier = MIN_MULTIPLIER + ((actualSellThresholdDistance / sellThresholdDistance) * (MAX_MULTIPLIER - MIN_MULTIPLIER))
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.SELL,

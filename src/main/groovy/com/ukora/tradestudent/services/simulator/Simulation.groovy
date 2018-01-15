@@ -14,6 +14,7 @@ class Simulation {
     Map balancesB = [:]
     Map tradeCounts = [:]
     Map totalBalances = [:]
+    Map pursesEnabled = [:]
     Map result = [:]
 
     @Override
@@ -25,16 +26,14 @@ class Simulation {
             "startingBalance:%s," +
             "tradeIncrement:%s," +
             "transactionCost:%s," +
-            "finalPrice:%s," +
-            "tradeCount:%s",
+            "finalPrice:%s,",
             key,
             buyThreshold,
             sellThreshold,
             startingBalance,
             tradeIncrement,
             transactionCost,
-            finalPrice,
-            tradeCount)
+            finalPrice)
     }
 
 }

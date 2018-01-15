@@ -111,6 +111,7 @@ class BuySellTradingHistoricalSimulatorService {
     void resetSimulations() {
         simulations.each {
             it.enabled = true
+            it.pursesEnabled = [:]
             it.balancesA = [:]
             it.balancesB = [:]
             it.tradeCounts = [:]
@@ -145,6 +146,8 @@ class BuySellTradingHistoricalSimulatorService {
         while (current.isBefore(end)) {
             end = Instant.now()
             current = current + gap
+
+            /** Get probabilities */
             CorrelationAssociation correlationAssociation = probabilityFigurerService.getCorrelationAssociations(Date.from(current))
             correlationAssociation.tagProbabilities.each {
                 String strategy = it.key
@@ -157,27 +160,38 @@ class BuySellTradingHistoricalSimulatorService {
                     List<Thread> threads = []
                     partitioned.collect { group ->
                         threads << Thread.start({
-                            group.each {
+                            group.findAll { it.enabled }.each {
+
+                                /** Run simulation */
                                 Simulation simulation = it
                                 simulation.finalPrice = correlationAssociation.price
                                 tradeExecutionStrategyMap.findAll { it.value.enabled }.each {
                                     String purseKey = String.format('%s:%s', strategy, it.key)
-                                    TradeExecution tradeExecution = it.value.getTrade(
-                                            correlationAssociation,
-                                            tag,
-                                            probability,
-                                            simulation,
-                                            strategy)
-                                    if (tradeExecution) {
-                                        Logger.debug(String.format("key:%s,type:%s,probability:%s", purseKey, tradeExecution.tradeType, probability))
-                                        simulateTrade(
+                                    boolean purseEnabled = simulation.pursesEnabled.get(purseKey, true)
+                                    if(purseEnabled) {
+                                        TradeExecution tradeExecution = it.value.getTrade(
+                                                correlationAssociation,
+                                                tag,
+                                                probability,
                                                 simulation,
-                                                tradeExecution,
-                                                purseKey
-                                        )
+                                                strategy)
+                                        if (tradeExecution) {
+                                            Logger.debug(String.format("key:%s,type:%s,probability:%s", purseKey, tradeExecution.tradeType, probability))
+                                            simulateTrade(
+                                                    simulation,
+                                                    tradeExecution,
+                                                    purseKey
+                                            )
+                                        }
                                     }
-
                                 }
+
+                                /** Disable simulation when all purses are disabled */
+                                if(simulation.pursesEnabled.collect { it.value }.size() == 0){
+                                    Logger.log(String.format("Disabling on simulation %s all purses disabled", simulation))
+                                    simulation.enabled = false
+                                }
+
                             }
                         })
                     }
@@ -220,8 +234,8 @@ class BuySellTradingHistoricalSimulatorService {
                     probabilityCombinerStrategy: it.value.get('probabilityCombinerStrategy'),
                     buyThreshold: simulation.buyThreshold,
                     sellThreshold: simulation.sellThreshold,
-                    tradeCount: simulation.tradeCounts.get(it.value.get('purseKey')),
-                    totalValue: simulation.totalBalances.get(it.value.get('purseKey'))
+                    tradeCount: simulation.tradeCounts.get(it.value.get('purseKey'), 0),
+                    totalValue: simulation.totalBalances.get(it.value.get('purseKey'), 0)
             )
             bytesFetcherService.saveSimulation(simulationResult)
         }
@@ -250,10 +264,13 @@ class BuySellTradingHistoricalSimulatorService {
     static simulateTrade(Simulation simulation, TradeExecution tradeExecution, String purseKey) {
         if (!tradeExecution) return
         if (tradeExecution.amount < 0) {
-            Logger.log(String.format("Ignoring %s trade execution with negative amount %s on date %s",
+            Logger.debug(String.format("Ignoring %s trade execution with negative amount %s on date %s, %s, buy:%s, sell:%s",
                     tradeExecution.tradeType,
                     tradeExecution.amount,
-                    tradeExecution.date
+                    tradeExecution.date,
+                    purseKey,
+                    simulation.buyThreshold,
+                    simulation.sellThreshold
             ))
             return
         }
@@ -288,6 +305,7 @@ class BuySellTradingHistoricalSimulatorService {
                             balanceB,
                             newBalanceA,
                             newBalanceB))
+                    asserSimulationPurseIsHealthy(simulation, purseKey)
                 }
                 break
             case TradeExecution.TradeType.SELL:
@@ -317,8 +335,27 @@ class BuySellTradingHistoricalSimulatorService {
                             balanceB,
                             newBalanceA,
                             newBalanceB))
+                    asserSimulationPurseIsHealthy(simulation, purseKey)
+
                 }
                 break
+        }
+    }
+
+    /**
+     * Disable purse
+     *
+     * @param simulation
+     * @param purseKey
+     */
+    private static void asserSimulationPurseIsHealthy(Simulation simulation, String purseKey) {
+        if(simulation.totalBalances.get(purseKey) / STARTING_BALANCE < MAXIMUM_LOSS_TILL_QUIT){
+            Logger.log(String.format("Disabling no longer performing simulation purse %s, loss to great", purseKey))
+            simulation.pursesEnabled.put(purseKey, false)
+        }
+        if(simulation.tradeCounts.get(purseKey) > MAXIMUM_TRADES_TILL_QUIT){
+            Logger.log(String.format("Disabling no longer performing simulation purse %s, too many trades", purseKey))
+            simulation.pursesEnabled.put(purseKey, false)
         }
     }
 
@@ -343,7 +380,6 @@ class BuySellTradingHistoricalSimulatorService {
                         'probabilityCombinerStrategy': probabilityCombinerStrategy,
                         'tradeExecutionStrategy'     : tradeExecutionStrategy,
                         'balance'                    : finalBalance,
-                        'simulationDescription'      : simulation.toString(),
                         'simulation'                 : simulation,
                         'purseKey'                   : it.key
                 ])

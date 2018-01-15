@@ -321,7 +321,7 @@ class BytesFetcherService {
             obj['buyThreshold'] = String.format("%.16f", simulation.buyThreshold)
             obj['sellThreshold'] = String.format("%.16f", simulation.sellThreshold)
             obj['totalValue'] = String.format("%.16f", simulation.totalValue)
-            obj['tradeCount'] = String.format("%.16f", simulation.tradeCount)
+            obj['tradeCount'] = String.format("%d", simulation.tradeCount)
             obj.get('exchange', [:])['platform'] = simulation.exchange?.platform
             obj.get('exchange', [:])['exchange'] = simulation.exchange?.exchange
             (obj.get('exchange', [:]) as Map).get('details', [:])['tradecurrency'] = simulation.exchange?.details?.tradecurrency
