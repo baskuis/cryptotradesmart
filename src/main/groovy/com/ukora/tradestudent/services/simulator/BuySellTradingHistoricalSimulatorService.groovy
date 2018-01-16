@@ -23,7 +23,7 @@ class BuySellTradingHistoricalSimulatorService {
 
     /** For better performance - we'll stop losing/hyper simulation */
     private final static MAXIMUM_LOSS_TILL_QUIT = 0.6
-    private final static MAXIMUM_TRADES_TILL_QUIT = 1000
+    private final static MAXIMUM_TRADES_TILL_QUIT = 10000
 
     @Autowired
     BytesFetcherService bytesFetcherService
@@ -188,7 +188,7 @@ class BuySellTradingHistoricalSimulatorService {
 
                                 /** Disable simulation when all purses are disabled */
                                 if(simulation.pursesEnabled.collect { it.value }.size() == 0){
-                                    Logger.log(String.format("Disabling on simulation %s all purses disabled", simulation))
+                                    Logger.debug(String.format("Disabling on simulation %s all purses disabled", simulation))
                                     simulation.enabled = false
                                 }
 
@@ -296,7 +296,7 @@ class BuySellTradingHistoricalSimulatorService {
                 } else {
                     simulation.balancesA.put(purseKey, newBalanceA)
                     simulation.balancesB.put(purseKey, newBalanceB)
-                    simulation.tradeCounts.get(purseKey, 0)++
+                    simulation.tradeCounts.put(purseKey, simulation.tradeCounts.get(purseKey, 0)++)
                     simulation.totalBalances.put(purseKey, newBalanceA + (newBalanceB / tradeExecution.price))
                     Logger.debug(String.format('On %s performing BUY at price:%s Had a:%s, b:%s now have a:%s, b:%s',
                             tradeExecution.date,
@@ -326,7 +326,7 @@ class BuySellTradingHistoricalSimulatorService {
                 } else {
                     simulation.balancesA.put(purseKey, newBalanceA)
                     simulation.balancesB.put(purseKey, newBalanceB)
-                    simulation.tradeCounts.get(purseKey, 0)++
+                    simulation.tradeCounts.put(purseKey, simulation.tradeCounts.get(purseKey, 0)++)
                     simulation.totalBalances.put(purseKey, newBalanceA + (newBalanceB / tradeExecution.price))
                     Logger.debug(String.format('On %s performing SELL at price:%s Had a:%s, b:%s now have a:%s, b:%s',
                             tradeExecution.date,
@@ -350,11 +350,11 @@ class BuySellTradingHistoricalSimulatorService {
      */
     private static void asserSimulationPurseIsHealthy(Simulation simulation, String purseKey) {
         if(simulation.totalBalances.get(purseKey) / STARTING_BALANCE < MAXIMUM_LOSS_TILL_QUIT){
-            Logger.log(String.format("Disabling no longer performing simulation purse %s, loss to great", purseKey))
+            Logger.debug(String.format("Disabling no longer performing simulation purse %s, loss to great", purseKey))
             simulation.pursesEnabled.put(purseKey, false)
         }
         if(simulation.tradeCounts.get(purseKey) > MAXIMUM_TRADES_TILL_QUIT){
-            Logger.log(String.format("Disabling no longer performing simulation purse %s, too many trades", purseKey))
+            Logger.debug(String.format("Disabling no longer performing simulation purse %s, too many trades", purseKey))
             simulation.pursesEnabled.put(purseKey, false)
         }
     }

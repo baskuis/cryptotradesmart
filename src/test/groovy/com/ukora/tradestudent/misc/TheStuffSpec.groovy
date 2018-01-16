@@ -24,4 +24,18 @@ class TheStuffSpec extends Specification {
 
     }
 
+    def "test incrementing value in map"() {
+
+        given:
+        Map<String, Integer> incMap = [:]
+
+        when:
+        incMap.put('v', incMap.get('v', 0) + 1)
+        incMap.put('v', incMap.get('v', 0) + 1)
+
+        then:
+        incMap.get('v') == 2
+
+    }
+
 }
