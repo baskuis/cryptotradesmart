@@ -32,9 +32,15 @@ class TheStuffSpec extends Specification {
         when:
         incMap.put('v', incMap.get('v', 0) + 1)
         incMap.put('v', incMap.get('v', 0) + 1)
+        incMap.put('v', incMap.get('v', 0) + 1)
+
+        Integer i = incMap.get('v', 0)
+        i+=1
+        i+=1
 
         then:
-        incMap.get('v') == 2
+        incMap.get('v') == 3
+        i == 5
 
     }
 

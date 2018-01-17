@@ -238,7 +238,6 @@ class BytesFetcherService {
         }
     }
 
-
     /**
      * Evict all entries from cache
      *
@@ -346,20 +345,20 @@ class BytesFetcherService {
         query.put('tag', tag)
         DBObject obj = this.brain.findOne(query)
         if (obj == null) return new Brain(
-                id: null,
-                tag: tag,
-                reference: reference,
-                mean: 0 as Double,
-                count: 0 as Integer,
-                standard_deviation: 0 as Double
+            id: null,
+            tag: tag,
+            reference: reference,
+            mean: 0 as Double,
+            count: 0 as Integer,
+            standard_deviation: 0 as Double
         )
         return new Brain(
-                id: obj['_id'] as String,
-                tag: obj['tag'] as String,
-                reference: obj['reference'] as String,
-                mean: obj['mean'] as Double,
-                count: obj['count'] as Integer,
-                standard_deviation: obj['standard_deviation'] as Double
+            id: obj['_id'] as String,
+            tag: obj['tag'] as String,
+            reference: obj['reference'] as String,
+            mean: obj['mean'] as Double,
+            count: obj['count'] as Integer,
+            standard_deviation: obj['standard_deviation'] as Double
         )
     }
 
@@ -410,14 +409,13 @@ class BytesFetcherService {
         while (cursor.hasNext()) {
             DBObject object = cursor.next()
             nodes.get(object['reference'] as String, new BrainNode(reference: object['reference'])).
-                    tagReference.put(object['tag'] as String, new NumberAssociation(
-                    tagGroup: tagGroupMap.find { (it.value.tags().find { it.getTagName() == object['tag'] }) }?.key,
-                    tag: object['tag'],
-                    mean: Double.parseDouble(object['mean'] as String),
-                    count: Integer.parseInt(object['count'] as String),
-                    standard_deviation: Double.parseDouble(object['standard_deviation'] as String)
-            )
-            )
+                tagReference.put(object['tag'] as String, new NumberAssociation(
+                tagGroup: tagGroupMap.find { (it.value.tags().find { it.getTagName() == object['tag'] }) }?.key,
+                tag: object['tag'],
+                mean: Double.parseDouble(object['mean'] as String),
+                count: Integer.parseInt(object['count'] as String),
+                standard_deviation: Double.parseDouble(object['standard_deviation'] as String)
+            ))
         }
         return nodes
     }

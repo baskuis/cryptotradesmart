@@ -96,7 +96,9 @@ class BuySellTradingHistoricalSimulatorService {
                             tradeIncrement: tradeIncrement,
                             transactionCost: TRADE_TRANSACTION_COST,
                             balancesA: [:],
-                            balancesB: [:]
+                            balancesB: [:],
+                            tradeCounts: [:],
+                            totalBalances: [:]
                     )
                 }
             }
@@ -296,7 +298,7 @@ class BuySellTradingHistoricalSimulatorService {
                 } else {
                     simulation.balancesA.put(purseKey, newBalanceA)
                     simulation.balancesB.put(purseKey, newBalanceB)
-                    simulation.tradeCounts.put(purseKey, simulation.tradeCounts.get(purseKey, 0)++)
+                    simulation.tradeCounts.put(purseKey, simulation.tradeCounts.get(purseKey, 0) + 1)
                     simulation.totalBalances.put(purseKey, newBalanceA + (newBalanceB / tradeExecution.price))
                     Logger.debug(String.format('On %s performing BUY at price:%s Had a:%s, b:%s now have a:%s, b:%s',
                             tradeExecution.date,
@@ -326,7 +328,7 @@ class BuySellTradingHistoricalSimulatorService {
                 } else {
                     simulation.balancesA.put(purseKey, newBalanceA)
                     simulation.balancesB.put(purseKey, newBalanceB)
-                    simulation.tradeCounts.put(purseKey, simulation.tradeCounts.get(purseKey, 0)++)
+                    simulation.tradeCounts.put(purseKey, simulation.tradeCounts.get(purseKey, 0) + 1)
                     simulation.totalBalances.put(purseKey, newBalanceA + (newBalanceB / tradeExecution.price))
                     Logger.debug(String.format('On %s performing SELL at price:%s Had a:%s, b:%s now have a:%s, b:%s',
                             tradeExecution.date,
