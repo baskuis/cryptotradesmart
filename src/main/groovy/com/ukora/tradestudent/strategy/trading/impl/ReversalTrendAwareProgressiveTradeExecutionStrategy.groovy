@@ -24,12 +24,6 @@ import org.springframework.stereotype.Component
 class ReversalTrendAwareProgressiveTradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
 
     /**
-     * P combiner strategies
-     */
-    private final String TREND_COMBINER_STRATEGY = 'relevanceWeightedProbabilityCombinerStrategy'
-    private final String REVERSAL_COMBINER_STRATEGY = 'relevanceWeightedProbabilityCombinerStrategy'
-
-    /**
      * Implementation specific settings
      */
     private final Double TREND_REVERSAL_DIVISION_FACTOR = 2
@@ -103,14 +97,14 @@ class ReversalTrendAwareProgressiveTradeExecutionStrategy implements TradeExecut
         /**
          * Get reversal probabilities
          */
-        Double upReversalProbability = correlationAssociation.tagProbabilities?.get(REVERSAL_COMBINER_STRATEGY)?.get(upReversalTag.tagName)
-        Double downReversalProbability = correlationAssociation.tagProbabilities?.get(REVERSAL_COMBINER_STRATEGY)?.get(downReversalTag.tagName)
+        Double upReversalProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(upReversalTag.tagName)
+        Double downReversalProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(downReversalTag.tagName)
 
         /**
          * Get trend probabilities
          */
-        Double upProbability = correlationAssociation.tagProbabilities?.get(TREND_COMBINER_STRATEGY)?.get(upTag.tagName)
-        Double downProbability = correlationAssociation.tagProbabilities?.get(TREND_COMBINER_STRATEGY)?.get(downTag.tagName)
+        Double upProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(upTag.tagName)
+        Double downProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(downTag.tagName)
 
         if (upReversalProbability && downReversalProbability && upProbability && downProbability) {
 

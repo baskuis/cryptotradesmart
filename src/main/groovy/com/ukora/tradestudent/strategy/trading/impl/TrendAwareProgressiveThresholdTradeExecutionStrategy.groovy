@@ -16,8 +16,6 @@ import org.springframework.stereotype.Component
 @Component
 class TrendAwareProgressiveThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
 
-    private final String TREND_COMBINER_STRATEGY = 'relevanceWeightedProbabilityCombinerStrategy'
-
     final static Double MAX_MULTIPLIER = 2
     final static Double MIN_MULTIPLIER = 0.2
 
@@ -72,8 +70,8 @@ class TrendAwareProgressiveThresholdTradeExecutionStrategy implements TradeExecu
             String combinerStrategy
     ) {
         TradeExecution tradeExecution = null
-        Double upProbability = correlationAssociation.tagProbabilities?.get(TREND_COMBINER_STRATEGY)?.get(upTag.tagName)
-        Double downProbability = correlationAssociation.tagProbabilities?.get(TREND_COMBINER_STRATEGY)?.get(downTag.tagName)
+        Double upProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(upTag.tagName)
+        Double downProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(downTag.tagName)
         if (upProbability && downProbability) {
             Double modifiedBuyThreshold
             Double modifiedSellThreshold

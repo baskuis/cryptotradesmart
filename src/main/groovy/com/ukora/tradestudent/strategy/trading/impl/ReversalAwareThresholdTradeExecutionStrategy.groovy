@@ -16,8 +16,6 @@ import org.springframework.stereotype.Component
 @Component
 class ReversalAwareThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
 
-    private final String TREND_COMBINER_STRATEGY = 'relevanceWeightedProbabilityCombinerStrategy'
-
     @Autowired
     BuyTag buyTag
 
@@ -69,8 +67,8 @@ class ReversalAwareThresholdTradeExecutionStrategy implements TradeExecutionStra
             String combinerStrategy
     ) {
         TradeExecution tradeExecution = null
-        Double upProbability = correlationAssociation.tagProbabilities?.get(TREND_COMBINER_STRATEGY)?.get(upReversalTag.tagName)
-        Double downProbability = correlationAssociation.tagProbabilities?.get(TREND_COMBINER_STRATEGY)?.get(downReversalTag.tagName)
+        Double upProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(upReversalTag.tagName)
+        Double downProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(downReversalTag.tagName)
         if (upProbability && downProbability) {
             Double modifiedBuyThreshold
             Double modifiedSellThreshold

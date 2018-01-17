@@ -34,7 +34,7 @@ class ReversalTrendAwareProgressiveV2TradeExecutionStrategySpec extends Specific
         setup:
         CorrelationAssociation correlationAssociation = new CorrelationAssociation(
                 tagProbabilities: [
-                        relevanceWeightedProbabilityCombinerStrategy: [
+                        averageProbabilityCombinerStrategy: [
                                 buy         : buyProbability,
                                 sell        : sellProbablity,
                                 up          : upProbability,
