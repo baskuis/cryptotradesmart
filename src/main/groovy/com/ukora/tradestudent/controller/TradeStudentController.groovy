@@ -75,16 +75,16 @@ class TradeStudentController {
 
     @RequestMapping(path = '/whiskeybender', method = RequestMethod.GET)
     String dropBrain(){
-        return "DISABLED"
-        //bytesFetcherService.whiskeyBender()
-        //"OK"
+        //return "DISABLED"
+        bytesFetcherService.whiskeyBender()
+        "OK"
     }
 
     @RequestMapping(path = '/relearn', method = RequestMethod.GET)
     String resetLessons(){
-        return "DISABLED"
-        //bytesFetcherService.resetLessons()
-        //"OK"
+        //return "DISABLED"
+        bytesFetcherService.resetLessons()
+        "OK"
     }
 
     @RequestMapping(path = '/flushcache', method = RequestMethod.GET)

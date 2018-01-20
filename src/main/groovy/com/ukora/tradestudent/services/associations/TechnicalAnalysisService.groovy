@@ -163,12 +163,37 @@ class TechnicalAnalysisService {
             return null
         }
 
+        Double normalizedTopTrendProjection = topTrendProjection / finalEntry.price
+        Double normalizedBottomTrendProjection = bottomTrendProjection / finalEntry.price
+        Double normalizedDeltaTrendProjection = deltaTrendProjection / finalEntry.price
+        Double normalizedTopDistance = (topTrendProjection - finalEntry.price) / finalEntry.price
+        Double normalizedBottomDistance = (finalEntry.price - bottomTrendProjection) / finalEntry.price
+
+        if(
+            normalizedTopTrendProjection < 0 || normalizedTopTrendProjection > 2 ||
+            normalizedBottomTrendProjection < 0 || normalizedBottomTrendProjection > 2 ||
+            normalizedDeltaTrendProjection < -1 || normalizedDeltaTrendProjection > 1 ||
+            normalizedTopDistance < -1 || normalizedTopDistance > 1 ||
+            normalizedBottomDistance < -1 || normalizedBottomDistance > 1
+        ){
+            Logger.log(String.format('Invalid values for technical analysis ' +
+                    'normalizedTopTrendProjection:%s normalizedBottomTrendProjection:%s ' +
+                    'normalizedDeltaTrendProjection:%s normalizedTopDistance:%s ' +
+                    'normalizedBottomDistance:%s',
+                    normalizedTopTrendProjection,
+                    normalizedBottomTrendProjection,
+                    normalizedDeltaTrendProjection,
+                    normalizedTopDistance,
+                    normalizedBottomDistance))
+            return null
+        }
+
         return [
-                'normalizedTopTrendProjection': topTrendProjection / finalEntry.price,
-                'normalizedBottomTrendProjection': bottomTrendProjection / finalEntry.price,
-                'normalizedDeltaTrendProjection': deltaTrendProjection / finalEntry.price,
-                'normalizedTopDistance': (topTrendProjection - finalEntry.price) / finalEntry.price,
-                'normalizedBottomDistance': (finalEntry.price - bottomTrendProjection) / finalEntry.price
+                'normalizedTopTrendProjection': normalizedTopTrendProjection,
+                'normalizedBottomTrendProjection': normalizedBottomTrendProjection,
+                'normalizedDeltaTrendProjection': normalizedDeltaTrendProjection,
+                'normalizedTopDistance': normalizedTopDistance,
+                'normalizedBottomDistance': normalizedBottomDistance
         ]
 
     }
