@@ -21,35 +21,48 @@ class SimulationResultServiceSpec extends Specification {
                     endDate: Date.from(now),
                     buyThreshold: 0.59,
                     sellThreshold: 0.58,
-                    differential: 1.10
+                    differential: 1.05,
+                    tradeCount: 20
             ),
             new SimulationResult(
                     startDate: Date.from(now.minus(1, ChronoUnit.DAYS)),
                     endDate: Date.from(now),
                     buyThreshold: 0.54,
                     sellThreshold: 0.50,
-                    differential: 1.04
+                    differential: 1.04,
+                    tradeCount: 20
             ),
             new SimulationResult(
                     startDate: Date.from(now.minus(1, ChronoUnit.DAYS)),
                     endDate: Date.from(now),
                     buyThreshold: 0.58,
                     sellThreshold: 0.62,
-                    differential: 1.04
+                    differential: 1.04,
+                    tradeCount: 20
             ),
             new SimulationResult(
                     startDate: Date.from(now.minus(1, ChronoUnit.DAYS)),
                     endDate: Date.from(now),
                     buyThreshold: 0.88,
                     sellThreshold: 0.52,
-                    differential: 1.04
+                    differential: 1.04,
+                    tradeCount: 20
             ),
             new SimulationResult(
                     startDate: Date.from(now.minus(1, ChronoUnit.DAYS)),
                     endDate: Date.from(now),
                     buyThreshold: 0.88,
                     sellThreshold: 0.90,
-                    differential: 1.03
+                    differential: 1.03,
+                    tradeCount: 20
+            ),
+            new SimulationResult(
+                    startDate: Date.from(now.minus(1, ChronoUnit.DAYS)),
+                    endDate: Date.from(now),
+                    buyThreshold: 0.88,
+                    sellThreshold: 0.90,
+                    differential: 1.025,
+                    tradeCount: 40
             )
     ]
 
@@ -65,7 +78,7 @@ class SimulationResultServiceSpec extends Specification {
         then:
         1 * bytesFetcherService.getSimulations() >> mockSimulations
         simulations != null
-        simulations.first().differential == 1.03
+        simulations.first().differential == 1.025
 
     }
 
@@ -77,7 +90,7 @@ class SimulationResultServiceSpec extends Specification {
         then:
         1 * bytesFetcherService.getSimulations() >> mockSimulations
         simulation != null
-        simulation.differential == 1.03
+        simulation.differential == 1.025
 
     }
 

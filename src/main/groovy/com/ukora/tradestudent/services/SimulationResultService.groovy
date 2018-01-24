@@ -19,6 +19,7 @@ class SimulationResultService {
     static final Integer DISTANCE_FROM_BINARY_SOFTENING_FACTOR = 10
     static final Integer THRESHOLD_BALANCE_SOFTENING_FACTOR = 5
     static final Double MINIMUM_DIFFERENTIAL = 1
+    static final Double TRADE_COUNT_DIMINISHER_POWER = 0.30
 
     final int SECONS_IN_HOUR = 3600
 
@@ -63,10 +64,8 @@ class SimulationResultService {
         }
         (1 - (distanceFromBinary / DISTANCE_FROM_BINARY_SOFTENING_FACTOR)) *
                 (1 - (thresholdBalance / THRESHOLD_BALANCE_SOFTENING_FACTOR)) *
-                Math.pow(
-                        simulationResult.differential /
-                                timeDeltaIn(simulationResult.startDate, simulationResult.endDate, ChronoUnit.DAYS)
-                        , 2)
+                Math.pow(1 + ((simulationResult.differential - 1) / timeDeltaIn(simulationResult.startDate, simulationResult.endDate, ChronoUnit.DAYS)),
+                        Math.pow(simulationResult.tradeCount, TRADE_COUNT_DIMINISHER_POWER))
     }
 
     /**
