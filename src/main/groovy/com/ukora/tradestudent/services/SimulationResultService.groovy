@@ -2,6 +2,7 @@ package com.ukora.tradestudent.services
 
 import com.ukora.tradestudent.entities.SimulationResult
 import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
+import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -55,6 +56,10 @@ class SimulationResultService {
      * @return
      */
     static getScore(SimulationResult simulationResult) {
+        if(!simulationResult || !simulationResult?.tradeCount) {
+            Logger.log(String.format('Unable to get score for %s', simulationResult))
+            return 0d
+        }
         Double thresholdBalance = Math.abs(simulationResult.buyThreshold - simulationResult.sellThreshold)
         Double distanceFromBinary
         if (simulationResult.buyThreshold < simulationResult.sellThreshold) {
@@ -62,7 +67,7 @@ class SimulationResultService {
         } else {
             distanceFromBinary = 1 - simulationResult.buyThreshold
         }
-        (1 - (distanceFromBinary / DISTANCE_FROM_BINARY_SOFTENING_FACTOR)) *
+        return (1 - (distanceFromBinary / DISTANCE_FROM_BINARY_SOFTENING_FACTOR)) *
                 (1 - (thresholdBalance / THRESHOLD_BALANCE_SOFTENING_FACTOR)) *
                 Math.pow(1 + ((simulationResult.differential - 1) / timeDeltaIn(simulationResult.startDate, simulationResult.endDate, ChronoUnit.DAYS)),
                         Math.pow(simulationResult.tradeCount, TRADE_COUNT_DIMINISHER_POWER))

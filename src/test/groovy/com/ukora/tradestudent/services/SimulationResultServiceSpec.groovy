@@ -70,6 +70,28 @@ class SimulationResultServiceSpec extends Specification {
         simulationResultService.bytesFetcherService = bytesFetcherService
     }
 
+    def "No exception is thrown when no simulations are found and an empty list is returned"() {
+
+        when:
+        simulationResultService.getTopPerformingSimulations()
+
+        then:
+        1 * bytesFetcherService.getSimulations() >> []
+        noExceptionThrown()
+
+    }
+
+    def "No exception is thrown when no simulations are found and a null list is returned"() {
+
+        when:
+        simulationResultService.getTopPerformingSimulations()
+
+        then:
+        1 * bytesFetcherService.getSimulations() >> null
+        noExceptionThrown()
+
+    }
+
     def "Test getTopPerformingSimulations"() {
 
         when:
