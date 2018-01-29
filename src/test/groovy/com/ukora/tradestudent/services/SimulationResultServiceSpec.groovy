@@ -37,7 +37,7 @@ class SimulationResultServiceSpec extends Specification {
                     endDate: Date.from(now),
                     buyThreshold: 0.58,
                     sellThreshold: 0.62,
-                    differential: 1.04,
+                    differential: 1.05,
                     tradeCount: 20
             ),
             new SimulationResult(
@@ -62,7 +62,7 @@ class SimulationResultServiceSpec extends Specification {
                     buyThreshold: 0.88,
                     sellThreshold: 0.90,
                     differential: 1.025,
-                    tradeCount: 40
+                    tradeCount: 400
             )
     ]
 

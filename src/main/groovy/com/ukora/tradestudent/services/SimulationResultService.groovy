@@ -17,12 +17,12 @@ class SimulationResultService {
     @Autowired
     BytesFetcherService bytesFetcherService
 
-    static final Integer DISTANCE_FROM_BINARY_SOFTENING_FACTOR = 10
-    static final Integer THRESHOLD_BALANCE_SOFTENING_FACTOR = 5
+    static final Integer DISTANCE_FROM_BINARY_SOFTENING_FACTOR = 20
+    static final Integer THRESHOLD_BALANCE_SOFTENING_FACTOR = 10
     static final Double MINIMUM_DIFFERENTIAL = 1
-    static final Double TRADE_COUNT_DIMINISHER_POWER = 0.30
+    static final Double TRADE_COUNT_DIMINISHING_POWER = 0.30
 
-    final int SECONS_IN_HOUR = 3600
+    final int SECONDS_IN_HOUR = 3600
 
     /**
      * Get top performing simulation
@@ -41,7 +41,7 @@ class SimulationResultService {
      */
     List<SimulationResult> getTopPerformingSimulations() {
         return bytesFetcherService.getSimulations()?.findAll({
-            it.endDate > Date.from(Instant.now().minusSeconds(MAX_AGE_IN_HOURS * SECONS_IN_HOUR)) && it.differential > MINIMUM_DIFFERENTIAL
+            it.endDate > Date.from(Instant.now().minusSeconds(MAX_AGE_IN_HOURS * SECONDS_IN_HOUR)) && it.differential > MINIMUM_DIFFERENTIAL
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
         })?.take(BuySellTradingHistoricalSimulatorService.STORE_NUMBER_OF_RESULTS)?.sort({ SimulationResult a, SimulationResult b ->
@@ -67,10 +67,9 @@ class SimulationResultService {
         } else {
             distanceFromBinary = 1 - simulationResult.buyThreshold
         }
-        return (1 - (distanceFromBinary / DISTANCE_FROM_BINARY_SOFTENING_FACTOR)) *
-                (1 - (thresholdBalance / THRESHOLD_BALANCE_SOFTENING_FACTOR)) *
-                Math.pow(1 + ((simulationResult.differential - 1) / timeDeltaIn(simulationResult.startDate, simulationResult.endDate, ChronoUnit.DAYS)),
-                        Math.pow(simulationResult.tradeCount, TRADE_COUNT_DIMINISHER_POWER))
+        Double modifiedDifferentialDelta = (simulationResult.differential - 1) * (1 - (distanceFromBinary / DISTANCE_FROM_BINARY_SOFTENING_FACTOR)) * (1 - (thresholdBalance / THRESHOLD_BALANCE_SOFTENING_FACTOR))
+        return Math.pow(1 + (modifiedDifferentialDelta / timeDeltaIn(simulationResult.startDate, simulationResult.endDate, ChronoUnit.DAYS)),
+                Math.pow(simulationResult.tradeCount, TRADE_COUNT_DIMINISHING_POWER))
     }
 
     /**
