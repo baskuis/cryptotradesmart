@@ -58,6 +58,11 @@ class ReversalTrendAwareProgressiveTradeExecutionStrategy implements TradeExecut
     DownReversalTag downReversalTag
 
     @Override
+    String getAlias() {
+        return "melany"
+    }
+
+    @Override
     boolean applies(String toTag) {
         return buySellTagGroup.applies(toTag)
     }

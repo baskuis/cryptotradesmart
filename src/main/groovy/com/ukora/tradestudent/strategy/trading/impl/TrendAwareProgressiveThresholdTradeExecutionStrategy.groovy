@@ -42,6 +42,11 @@ class TrendAwareProgressiveThresholdTradeExecutionStrategy implements TradeExecu
     private boolean enabled = true
 
     @Override
+    String getAlias() {
+        return "kenton"
+    }
+
+    @Override
     boolean isEnabled() {
         return enabled
     }

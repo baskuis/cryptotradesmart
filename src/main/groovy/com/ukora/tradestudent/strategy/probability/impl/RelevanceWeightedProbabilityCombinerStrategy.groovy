@@ -10,6 +10,11 @@ class RelevanceWeightedProbabilityCombinerStrategy implements ProbabilityCombine
     boolean enabled = true
 
     @Override
+    String getAlias() {
+        return "jen"
+    }
+
+    @Override
     boolean isEnabled() {
         return enabled
     }

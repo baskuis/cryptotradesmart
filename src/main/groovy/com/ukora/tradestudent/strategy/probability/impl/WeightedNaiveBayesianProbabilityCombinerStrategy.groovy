@@ -12,6 +12,11 @@ class WeightedNaiveBayesianProbabilityCombinerStrategy implements ProbabilityCom
     boolean enabled = true
 
     @Override
+    String getAlias() {
+        return "anna"
+    }
+
+    @Override
     boolean isEnabled() {
         return enabled
     }

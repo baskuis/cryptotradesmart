@@ -48,6 +48,11 @@ class ReversalAwareThresholdTradeExecutionStrategy implements TradeExecutionStra
         this.enabled = enabled
     }
 
+    @Override
+    String getAlias() {
+        return "erin"
+    }
+
     /**
      * Execute trades while taking reversal probabilities into account
      *

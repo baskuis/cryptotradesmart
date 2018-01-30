@@ -1,10 +1,12 @@
 package com.ukora.tradestudent.controller
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ukora.tradestudent.TradestudentApplication
 import com.ukora.tradestudent.entities.BrainNode
 import com.ukora.tradestudent.entities.CorrelationAssociation
 import com.ukora.tradestudent.entities.SimulatedTradeEntry
 import com.ukora.tradestudent.entities.SimulationResult
+import com.ukora.tradestudent.services.AliasService
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.associations.CaptureAssociationsService
 import com.ukora.tradestudent.services.MemoryLimitService
@@ -49,14 +51,23 @@ class TradeStudentController {
     @Autowired
     TechnicalAnalysisService technicalAnalysisService
 
+    @Autowired
+    AliasService aliasService
+
+    ObjectMapper objectMapper = new ObjectMapper()
+
     @RequestMapping(path = '/correlations', produces = 'application/json', method = RequestMethod.GET)
-    CorrelationAssociation getCorrelationAssociations(@RequestParam(value = 'date') Date date){
-        probabilityFigurerService.getCorrelationAssociations(date)
+    Object getCorrelationAssociations(@RequestParam(value = 'date') Date date){
+        aliasService.replaceAllWithAlias(
+                objectMapper.convertValue(probabilityFigurerService.getCorrelationAssociations(date), Object)
+        )
     }
 
     @RequestMapping(path = '/braindump', produces = 'application/json', method = RequestMethod.GET)
-    Map<String, BrainNode> getBrainNodes(){
-        probabilityFigurerService.getBrainNodes()
+    Object getBrainNodes(){
+        aliasService.replaceAllWithAlias(
+            objectMapper.convertValue(probabilityFigurerService.getBrainNodes(), Object)
+        )
     }
 
     @RequestMapping(path = '/brainon', method = RequestMethod.GET)
@@ -118,8 +129,10 @@ class TradeStudentController {
     }
 
     @RequestMapping(path = '/simulations', method = RequestMethod.GET)
-    List<SimulationResult> simulations(){
-        bytesFetcherService.getSimulations()
+    Object simulations(){
+        aliasService.replaceAllWithAlias(
+            objectMapper.convertValue(bytesFetcherService.getSimulations(), Object)
+        )
     }
 
     @RequestMapping(path = '/multion', method = RequestMethod.GET)
@@ -147,23 +160,31 @@ class TradeStudentController {
     }
 
     @RequestMapping(path = '/bestsimulation', method = RequestMethod.GET)
-    SimulationResult getBestSimulation(){
-        simulationResultService.getTopPerformingSimulation()
+    Object getBestSimulation(){
+        aliasService.replaceAllWithAlias(
+            objectMapper.convertValue(simulationResultService.getTopPerformingSimulation(), Object)
+        )
     }
 
     @RequestMapping(path = '/bestsimulations', method = RequestMethod.GET)
-    List<SimulationResult> getBestSimulations(){
-        simulationResultService.getTopPerformingSimulations()
+    Object getBestSimulations(){
+        aliasService.replaceAllWithAlias(
+            objectMapper.convertValue(simulationResultService.getTopPerformingSimulations(), Object)
+        )
     }
 
     @RequestMapping(path = '/latestentry', method = RequestMethod.GET)
-    SimulatedTradeEntry getLatestEntry(){
-        bytesFetcherService.getLatestSimulatedTradeEntry()
+    Object getLatestEntry(){
+        aliasService.replaceAllWithAlias(
+            objectMapper.convertValue(bytesFetcherService.getLatestSimulatedTradeEntry(), Object)
+        )
     }
 
     @RequestMapping(path = '/latestentries', method = RequestMethod.GET)
-    List<SimulatedTradeEntry> getLatestEntries(){
-        bytesFetcherService.getLatestSimulatedTradeEntries()
+    Object getLatestEntries(){
+        aliasService.replaceAllWithAlias(
+            objectMapper.convertValue(bytesFetcherService.getLatestSimulatedTradeEntries(), Object)
+        )
     }
 
     @RequestMapping(path = '/resetcounts', method = RequestMethod.GET)
@@ -173,8 +194,18 @@ class TradeStudentController {
     }
 
     @RequestMapping(path = '/technicalanalysis', method = RequestMethod.GET)
-    Map extractTechnicalAnalysis(@RequestParam(value = 'date') Date date){
-        technicalAnalysisService.extractTechnicalAnalysis(date)
+    Object extractTechnicalAnalysis(@RequestParam(value = 'date') Date date){
+        aliasService.replaceAllWithAlias(
+            objectMapper.convertValue(technicalAnalysisService.extractTechnicalAnalysis(date), Object)
+        )
+    }
+
+    @RequestMapping(path = '/aliases', method = RequestMethod.GET)
+    Map getAliases(){
+        [
+            aliases: aliasService.getBeanToAlias(),
+            beans: aliasService.getAliasToBean()
+        ]
     }
 
     @RequestMapping(path = '/log', method = RequestMethod.GET)

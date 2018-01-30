@@ -8,6 +8,11 @@ import org.springframework.stereotype.Component
 @Component
 class AverageProbabilityCombinerStrategy implements ProbabilityCombinerStrategy {
 
+    @Override
+    String getAlias() {
+        return "george"
+    }
+
     boolean enabled = true
 
     @Override

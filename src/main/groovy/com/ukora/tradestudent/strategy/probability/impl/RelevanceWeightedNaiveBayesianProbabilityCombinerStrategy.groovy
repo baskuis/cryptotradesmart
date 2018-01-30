@@ -16,6 +16,11 @@ class RelevanceWeightedNaiveBayesianProbabilityCombinerStrategy implements Proba
         return enabled
     }
 
+    @Override
+    String getAlias() {
+        return "dave"
+    }
+
     /**
      * This naive bayesian comparison calculates the tag vs baseline score (not probability)
      *

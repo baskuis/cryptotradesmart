@@ -41,6 +41,11 @@ class ThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubs
     }
 
     @Override
+    String getAlias() {
+        return "kelly"
+    }
+
+    @Override
     TradeExecution getTrade(
             CorrelationAssociation correlationAssociation,
             String tag,

@@ -15,6 +15,11 @@ class AvoidOutliersRelevanceWeightedNaiveBayesianProbablityCombinerStrategy impl
     boolean enabled = true
 
     @Override
+    String getAlias() {
+        return "paul"
+    }
+
+    @Override
     boolean isEnabled() {
         return enabled
     }

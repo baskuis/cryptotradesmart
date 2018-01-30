@@ -16,6 +16,11 @@ class NaiveBayesianProbabilityCombinerStrategy implements ProbabilityCombinerStr
         return enabled
     }
 
+    @Override
+    String getAlias() {
+        return "james"
+    }
+
     /**
      * This naive bayesian comparison calculates the tag vs baseline score (not probability)
      *

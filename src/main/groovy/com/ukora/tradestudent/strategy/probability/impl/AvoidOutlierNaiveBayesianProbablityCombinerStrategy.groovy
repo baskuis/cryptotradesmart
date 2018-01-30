@@ -15,6 +15,11 @@ class AvoidOutlierNaiveBayesianProbablityCombinerStrategy implements Probability
     boolean enabled = true
 
     @Override
+    String getAlias() {
+        return "peter"
+    }
+
+    @Override
     boolean isEnabled() {
         return enabled
     }

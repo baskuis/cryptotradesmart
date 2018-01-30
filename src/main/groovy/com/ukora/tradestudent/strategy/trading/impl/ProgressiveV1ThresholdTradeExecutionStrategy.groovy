@@ -28,6 +28,11 @@ class ProgressiveV1ThresholdTradeExecutionStrategy implements TradeExecutionStra
         return buySellTagGroup.applies(toTag)
     }
 
+    @Override
+    String getAlias() {
+        return "richard"
+    }
+
     final static Double MAX_MULTIPLIER = 4
     final static Double MIN_MULTIPLIER = 0.1
 

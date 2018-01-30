@@ -13,6 +13,13 @@ import com.ukora.tradestudent.services.simulator.Simulation
  */
 interface TradeExecutionStrategy {
 
+    /**
+     * Indicates alias for this algorithm
+     *
+     * @return
+     */
+    String getAlias()
+
     boolean isEnabled()
 
     void setEnabled(boolean enabled)

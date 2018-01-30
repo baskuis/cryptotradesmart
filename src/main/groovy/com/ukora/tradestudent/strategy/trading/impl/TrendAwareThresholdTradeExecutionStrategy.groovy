@@ -48,6 +48,11 @@ class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrateg
         this.enabled = enabled
     }
 
+    @Override
+    String getAlias() {
+        return "freeman"
+    }
+
     /**
      * Execute trades while taking trend probabilities into account
      *

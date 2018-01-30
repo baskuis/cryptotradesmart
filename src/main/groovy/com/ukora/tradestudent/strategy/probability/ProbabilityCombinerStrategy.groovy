@@ -4,6 +4,13 @@ import com.ukora.tradestudent.bayes.numbers.NumberAssociationProbability
 
 interface ProbabilityCombinerStrategy {
 
+    /**
+     * Indicates alias for this algorithm
+     *
+     * @return
+     */
+    String getAlias()
+
     void setEnabled(boolean enabled)
 
     boolean isEnabled()

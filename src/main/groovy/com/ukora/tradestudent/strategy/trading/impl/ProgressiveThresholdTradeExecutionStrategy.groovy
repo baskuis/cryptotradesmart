@@ -24,6 +24,11 @@ class ProgressiveThresholdTradeExecutionStrategy implements TradeExecutionStrate
     BuySellTagGroup buySellTagGroup
 
     @Override
+    String getAlias() {
+        return "jeremy"
+    }
+
+    @Override
     boolean applies(String toTag) {
         return buySellTagGroup.applies(toTag)
     }

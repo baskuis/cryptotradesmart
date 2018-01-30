@@ -19,6 +19,11 @@ class BuySellNaiveBayesianProbabilityCombinerStrategy implements ProbabilityComb
     BuySellTagGroup buySellTagGroup
 
     @Override
+    String getAlias() {
+        return "sharon"
+    }
+
+    @Override
     boolean applies(String toTag) {
         buySellTagGroup.applies(toTag)
     }

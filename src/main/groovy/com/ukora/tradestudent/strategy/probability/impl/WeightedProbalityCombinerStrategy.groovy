@@ -10,6 +10,11 @@ class WeightedProbalityCombinerStrategy implements ProbabilityCombinerStrategy {
     boolean enabled = true
 
     @Override
+    String getAlias() {
+        return "angie"
+    }
+
+    @Override
     boolean isEnabled() {
         return enabled
     }
