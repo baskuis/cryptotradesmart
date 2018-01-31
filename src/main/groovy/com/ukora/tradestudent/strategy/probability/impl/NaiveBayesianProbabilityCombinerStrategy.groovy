@@ -40,6 +40,7 @@ class NaiveBayesianProbabilityCombinerStrategy implements ProbabilityCombinerStr
         Double oppositeTagProbability
         numberAssociationProbabilities.each {
             tagProbability = it.value.get(tag)?.probability
+            if(!tagProbability) return
             oppositeTagProbability = -tagProbability
             if(assertRanges(tagProbability, oppositeTagProbability)){
                 tagProbability = (tagProbability + 1) / 2

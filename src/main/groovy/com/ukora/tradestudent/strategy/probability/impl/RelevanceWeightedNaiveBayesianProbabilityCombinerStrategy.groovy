@@ -40,6 +40,7 @@ class RelevanceWeightedNaiveBayesianProbabilityCombinerStrategy implements Proba
         Double oppositeTagProbability
         Double componentWeightFactor
         numberAssociationProbabilities.each {
+            if(!it.value.get(tag)?.probability) return
             tagProbability = (1 + it.value.get(tag)?.probability) / 2
             oppositeTagProbability = 1 - tagProbability
             componentWeightFactor = Math.abs(it.value.get(tag)?.relevance)

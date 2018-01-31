@@ -41,6 +41,7 @@ class WeightedNaiveBayesianProbabilityCombinerStrategy implements ProbabilityCom
         Double componentWeightFactor
         numberAssociationProbabilities.each {
             tagProbability = it.value.get(tag)?.probability
+            if(!tagProbability) return
             oppositeTagProbability = -tagProbability
             componentWeightFactor = Math.abs(it.value.get(tag)?.probability)
             if(assertRanges(tagProbability, oppositeTagProbability, componentWeightFactor)){

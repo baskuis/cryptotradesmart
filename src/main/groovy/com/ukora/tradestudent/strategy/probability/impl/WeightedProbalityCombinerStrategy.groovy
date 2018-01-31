@@ -35,7 +35,7 @@ class WeightedProbalityCombinerStrategy implements ProbabilityCombinerStrategy {
         Double probability
         Double weight
         numberAssociationProbabilities.each {
-            if(!it.value.get(tag).probability) return
+            if(!it.value.get(tag)?.probability) return
             weight = Math.abs(it.value.get(tag).probability)
             probability = (1 + it.value.get(tag).probability) / 2
             toplineProbability += weight * probability

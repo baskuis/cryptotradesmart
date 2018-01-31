@@ -59,25 +59,4 @@ class AliasService {
         return aliasToBean.getOrDefault(alias, NO_BEAN_NAME)
     }
 
-    Object replaceAllWithAlias(Object input){
-        if(input instanceof Map) {
-            Map newMap = [:]
-            (input as Map).each {
-                Object value = it.value
-                if(it.value instanceof Map){
-                    value = replaceAllWithAlias(it.value as Map)
-                }
-                try {
-                    value = beanToAlias.getOrDefault(it.value as String, it.value)
-                } catch (Exception e){ }
-                newMap.put(
-                        beanToAlias.getOrDefault(it.key as String, it.key as String),
-                        value
-                )
-            }
-            return newMap
-        }
-        return input
-    }
-
 }
