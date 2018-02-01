@@ -18,12 +18,14 @@ class NerdUtils {
 
     /**
      * Assert value is within expected range
+     * Added 0000000000000002 decimal to account for
+     * double decimal inaccuracies
      *
      * @param value
      * @return
      */
     static boolean assertRange(Double value) {
-        !(value == null || value.naN || value.infinite || value < -1 || value > 1)
+        !(value == null || value.naN || value.infinite || value < -1.0000000000000002 || value > 1.0000000000000002)
     }
 
     /**

@@ -88,6 +88,7 @@ class ReversalTrendAwareProgressiveV1TradeExecutionStrategy implements TradeExec
      * @param probability
      * @param simulation
      * @param combinerStrategy
+     * @param balanceProportion
      * @return
      */
     @Override
@@ -96,7 +97,8 @@ class ReversalTrendAwareProgressiveV1TradeExecutionStrategy implements TradeExec
             String tag,
             Double probability,
             Simulation simulation,
-            String combinerStrategy
+            String combinerStrategy,
+            Double balanceProportion
     ) {
         TradeExecution tradeExecution = null
 

@@ -61,6 +61,7 @@ class ReversalAwareThresholdTradeExecutionStrategy implements TradeExecutionStra
      * @param probability
      * @param simulation
      * @param combinerStrategy
+     * @param balanceProportion
      * @return
      */
     @Override
@@ -69,7 +70,8 @@ class ReversalAwareThresholdTradeExecutionStrategy implements TradeExecutionStra
             String tag,
             Double probability,
             Simulation simulation,
-            String combinerStrategy
+            String combinerStrategy,
+            Double balanceProportion
     ) {
         TradeExecution tradeExecution = null
         Double upProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(upReversalTag.tagName)

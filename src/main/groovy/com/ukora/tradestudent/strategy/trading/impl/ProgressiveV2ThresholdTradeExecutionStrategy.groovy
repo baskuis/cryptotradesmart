@@ -56,6 +56,8 @@ class ProgressiveV2ThresholdTradeExecutionStrategy implements TradeExecutionStra
      * @param tag
      * @param probability
      * @param simulation
+     * @param combinerStrategy
+     * @param balanceProportion
      * @return
      */
     @Override
@@ -64,7 +66,8 @@ class ProgressiveV2ThresholdTradeExecutionStrategy implements TradeExecutionStra
             String tag,
             Double probability,
             Simulation simulation,
-            String combinerStrategy
+            String combinerStrategy,
+            Double balanceProportion
     ) {
         TradeExecution tradeExecution = null
         if (tag == buyTag.getTagName() && probability > simulation.buyThreshold) {

@@ -45,13 +45,25 @@ class ThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubs
         return "kelly"
     }
 
+    /**
+     * Execute trades using only thresholds
+     *
+     * @param correlationAssociation
+     * @param tag
+     * @param probability
+     * @param simulation
+     * @param combinerStrategy
+     * @param balanceProportion
+     * @return
+     */
     @Override
     TradeExecution getTrade(
             CorrelationAssociation correlationAssociation,
             String tag,
             Double probability,
             Simulation simulation,
-            String combinerStrategy
+            String combinerStrategy,
+            Double balanceProportion
     ) {
         TradeExecution tradeExecution = null
         if (tag == buyTag.getTagName() && probability > simulation.buyThreshold) {

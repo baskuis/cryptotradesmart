@@ -1,5 +1,6 @@
 package com.ukora.tradestudent
 
+import com.ukora.tradestudent.services.AliasService
 import com.ukora.tradestudent.tags.TagGroup
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -17,6 +18,9 @@ class TradestudentApplicationTests {
 	@Autowired
 	ApplicationContext applicationContext
 
+	@Autowired
+	AliasService aliasService
+
 	@Test
 	void contextLoads() {
 	}
@@ -28,6 +32,11 @@ class TradestudentApplicationTests {
 		assert group != null
 		group = tagGroupMap.find { (it.value.tags().find { it.getTagName() == 'invalid' }) }?.key
 		assert group == null
+	}
+
+	@Test
+	void aliasesAreAllUnique(){
+		assert aliasService.beanToAlias.collect { it.value }.size() == aliasService.beanToAlias.collect { it.value }.unique().size()
 	}
 
 }

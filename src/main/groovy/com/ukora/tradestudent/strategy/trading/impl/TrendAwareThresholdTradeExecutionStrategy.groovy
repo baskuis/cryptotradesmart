@@ -61,6 +61,7 @@ class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrateg
      * @param probability
      * @param simulation
      * @param combinerStrategy
+     * @param balanceProportion
      * @return
      */
     @Override
@@ -69,7 +70,8 @@ class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrateg
             String tag,
             Double probability,
             Simulation simulation,
-            String combinerStrategy
+            String combinerStrategy,
+            Double balanceProportion
     ) {
         TradeExecution tradeExecution = null
         Double upProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(upTag.tagName)

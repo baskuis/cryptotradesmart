@@ -57,7 +57,8 @@ class ReversalTrendAwareProgressiveTradeExecutionStrategySpec extends Specificat
                 tag,
                 probability,
                 simulation,
-                combinerStrategy
+                combinerStrategy,
+                0.5
         )
 
         then:

@@ -4,15 +4,15 @@ import com.ukora.tradestudent.entities.CorrelationAssociation
 import com.ukora.tradestudent.services.simulator.Simulation
 import com.ukora.tradestudent.strategy.trading.TradeExecution
 import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
+import com.ukora.tradestudent.tags.TagSubset
 import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
 import com.ukora.tradestudent.tags.buysell.BuyTag
 import com.ukora.tradestudent.tags.buysell.SellTag
-import com.ukora.tradestudent.tags.TagSubset
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 @Component
-class ProgressiveV1ThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
+class BalanceAwareThresholdTradeExecutionStategy implements TradeExecutionStrategy, TagSubset {
 
     @Autowired
     BuyTag buyTag
@@ -28,14 +28,6 @@ class ProgressiveV1ThresholdTradeExecutionStrategy implements TradeExecutionStra
         return buySellTagGroup.applies(toTag)
     }
 
-    @Override
-    String getAlias() {
-        return "richard"
-    }
-
-    final static Double MAX_MULTIPLIER = 4
-    final static Double MIN_MULTIPLIER = 0.1
-
     private boolean enabled = true
 
     @Override
@@ -48,9 +40,13 @@ class ProgressiveV1ThresholdTradeExecutionStrategy implements TradeExecutionStra
         this.enabled = enabled
     }
 
+    @Override
+    String getAlias() {
+        return "sally"
+    }
+
     /**
-     * Multiplier on amount depending on distance from configured threshold
-     * configured with min/max value. This value modifies the amount which is traded
+     * Execute trades using only thresholds with progressive amounts based on balance
      *
      * @param correlationAssociation
      * @param tag
@@ -69,24 +65,19 @@ class ProgressiveV1ThresholdTradeExecutionStrategy implements TradeExecutionStra
             String combinerStrategy,
             Double balanceProportion
     ) {
+        Double amount = (2 * balanceProportion) * simulation.tradeIncrement
         TradeExecution tradeExecution = null
         if (tag == buyTag.getTagName() && probability > simulation.buyThreshold) {
-            Double buyThresholdDistance = 1 - simulation.buyThreshold
-            Double actualBuyThresholdDistance = probability - simulation.buyThreshold
-            Double buyMultiplier = MIN_MULTIPLIER + ((actualBuyThresholdDistance / buyThresholdDistance) * (MAX_MULTIPLIER - MIN_MULTIPLIER))
             tradeExecution = new TradeExecution(
                     tradeType: TradeExecution.TradeType.BUY,
-                    amount: buyMultiplier * simulation.tradeIncrement,
+                    amount: amount,
                     price: correlationAssociation.price,
                     date: correlationAssociation.date
             )
         } else if (tag == sellTag.getTagName() && probability > simulation.sellThreshold) {
-            Double sellThresholdDistance = 1 - simulation.sellThreshold
-            Double actualSellThresholdDistance = probability - simulation.sellThreshold
-            Double sellMultiplier = MIN_MULTIPLIER + ((actualSellThresholdDistance / sellThresholdDistance) * (MAX_MULTIPLIER - MIN_MULTIPLIER))
             tradeExecution = new TradeExecution(
                     tradeType: TradeExecution.TradeType.SELL,
-                    amount: sellMultiplier * simulation.tradeIncrement,
+                    amount: amount,
                     price: correlationAssociation.price,
                     date: correlationAssociation.date
             )

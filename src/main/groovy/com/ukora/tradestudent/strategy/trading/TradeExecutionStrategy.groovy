@@ -24,12 +24,27 @@ interface TradeExecutionStrategy {
 
     void setEnabled(boolean enabled)
 
+    /**
+     * This method will product a buy/sell trade order based on the following
+     * inputs. Each strategy which implements this interface can handle
+     * these values differently. In the buy/sell trading historical simulator service
+     * all combinations of implementations of this interface will be tested
+     *
+     * @param correlationAssociation The correlation association object
+     * @param tag The name of the correlation tag
+     * @param probability The tag probability
+     * @param simulation The winning simulation configuration
+     * @param combinerStrategy The bean name of the combiner strategy
+     * @param balanceProportion The proportion of balance A vs balance A + B priced in A
+     * @return
+     */
     TradeExecution getTrade(
             CorrelationAssociation correlationAssociation,
             String tag,
             Double probability,
             Simulation simulation,
-            String combinerStrategy
+            String combinerStrategy,
+            Double balanceProportion
     )
 
 }

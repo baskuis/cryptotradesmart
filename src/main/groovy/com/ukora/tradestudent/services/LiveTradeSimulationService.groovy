@@ -10,6 +10,7 @@ import com.ukora.tradestudent.strategy.trading.TradeExecution
 import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
 import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
 import com.ukora.tradestudent.utils.Logger
+import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.scheduling.annotation.Async
@@ -47,7 +48,7 @@ class LiveTradeSimulationService {
          * Insert initial simulation entry
          */
         SimulatedTradeEntry latestSimulatedTradeEntry = bytesFetcherService.getLatestSimulatedTradeEntry()
-        if(!latestSimulatedTradeEntry){
+        if (!latestSimulatedTradeEntry) {
             latestSimulatedTradeEntry = new SimulatedTradeEntry(
                     metadata: new Metadata(
                             datetime: new Date(),
@@ -66,19 +67,25 @@ class LiveTradeSimulationService {
 
     @Scheduled(cron = "5 * * * * *")
     @Async
-    void simulateTrade(){
+    void simulateTrade() {
         Date now = new Date()
         List<TradeExecution> tradeExecutions = []
         SimulationResult simulationResult = simulationResultService.getTopPerformingSimulation()
-        if(simulationResult) {
+        if (simulationResult) {
             CorrelationAssociation correlationAssociation = probabilityFigurerService.getCorrelationAssociations(now)
-            if(correlationAssociation) {
+            if (correlationAssociation) {
                 TradeExecutionStrategy tradeExecutionStrategy = applicationContext.getBean(simulationResult.tradeExecutionStrategy, TradeExecutionStrategy)
                 String probabilityCombinerStrategy = simulationResult.probabilityCombinerStrategy
                 buySellTagGroup.tags().each {
                     String tag = it.tagName
                     Double probability = correlationAssociation.tagProbabilities.get(probabilityCombinerStrategy).get(tag)
-                    if(probability) {
+                    if (probability) {
+                        SimulatedTradeEntry latestSimulatedTradeEntry = bytesFetcherService.getLatestSimulatedTradeEntry()
+                        Double balanceProportion = latestSimulatedTradeEntry ? latestSimulatedTradeEntry.balanceA / latestSimulatedTradeEntry.balanceA + (latestSimulatedTradeEntry.balanceB / correlationAssociation.price) : 1
+                        if (!NerdUtils.assertRange(balanceProportion)) {
+                            Logger.log(String.format('balanceProportion %s is not in range'))
+                            return
+                        }
                         TradeExecution tradeExecution = tradeExecutionStrategy.getTrade(
                                 correlationAssociation,
                                 tag,
@@ -89,15 +96,16 @@ class LiveTradeSimulationService {
                                         sellThreshold: simulationResult.sellThreshold,
                                         tradeIncrement: simulationResult.tradeIncrement
                                 ),
-                                probabilityCombinerStrategy
+                                probabilityCombinerStrategy,
+                                balanceProportion
                         )
                         if (tradeExecution) tradeExecutions << tradeExecution
                     }
                 }
-                if(tradeExecutions){
+                if (tradeExecutions) {
                     Logger.log(String.format("Simulating %s trades", tradeExecutions.size()))
                     simulateTrades(tradeExecutions)
-                }else{
+                } else {
                     Logger.log(String.format("Not simulating trades for %s", now))
                 }
                 return
@@ -111,21 +119,21 @@ class LiveTradeSimulationService {
      *
      * @param tradeExecutions
      */
-    private void simulateTrades(List<TradeExecution> tradeExecutions){
+    private void simulateTrades(List<TradeExecution> tradeExecutions) {
         tradeExecutions.each { TradeExecution tradeExecution ->
             Logger.log(String.format(
                     "Capturing simulated trade %s amount: %s, price: %s",
                     tradeExecution.tradeType,
                     tradeExecution.amount,
                     tradeExecution.price,
-                    ))
+            ))
             SimulatedTradeEntry latestSimulatedTradeEntry = bytesFetcherService.getLatestSimulatedTradeEntry()
-            if(latestSimulatedTradeEntry) {
+            if (latestSimulatedTradeEntry) {
                 SimulatedTradeEntry nextTradeEntry = getNextSimulatedTradeEntry(
                         latestSimulatedTradeEntry,
                         tradeExecution
                 )
-                if(nextTradeEntry){
+                if (nextTradeEntry) {
                     Logger.log(String.format(
                             "Inserting trade %s amount: %s, price: %s, balanceA: %s, balanceB: %s, totalValueA: %s, date: %s",
                             nextTradeEntry.tradeType,
@@ -149,13 +157,13 @@ class LiveTradeSimulationService {
      * @param tradeExecution
      * @return
      */
-    static SimulatedTradeEntry getNextSimulatedTradeEntry(SimulatedTradeEntry simulatedTradeEntry, TradeExecution tradeExecution){
-        switch (tradeExecution.tradeType){
+    static SimulatedTradeEntry getNextSimulatedTradeEntry(SimulatedTradeEntry simulatedTradeEntry, TradeExecution tradeExecution) {
+        switch (tradeExecution.tradeType) {
             case TradeExecution.TradeType.SELL:
                 Double amount
                 Double newBalanceA
                 Double newBalanceB
-                if(simulatedTradeEntry.balanceA > tradeExecution.amount) {
+                if (simulatedTradeEntry.balanceA > tradeExecution.amount) {
                     amount = tradeExecution.amount * (1 - TRANSACTION_COST)
                     newBalanceA = simulatedTradeEntry.balanceA - tradeExecution.amount
                     newBalanceB = simulatedTradeEntry.balanceB + (amount * tradeExecution.price)
@@ -164,9 +172,9 @@ class LiveTradeSimulationService {
                     newBalanceA = 0
                     newBalanceB = simulatedTradeEntry.balanceB + (amount * tradeExecution.price)
                 }
-                if(amount < MINIMUM_AMOUNT) return null
+                if (amount < MINIMUM_AMOUNT) return null
                 Metadata metadata = simulatedTradeEntry.metadata
-                if(!metadata) metadata = new Metadata()
+                if (!metadata) metadata = new Metadata()
                 metadata.datetime = new Date()
                 metadata.hostname = InetAddress.getLocalHost().getHostName()
                 return new SimulatedTradeEntry(
@@ -185,7 +193,7 @@ class LiveTradeSimulationService {
                 Double amount
                 Double newBalanceA
                 Double newBalanceB
-                if(simulatedTradeEntry.balanceB > (tradeExecution.amount * tradeExecution.price)){
+                if (simulatedTradeEntry.balanceB > (tradeExecution.amount * tradeExecution.price)) {
                     amount = tradeExecution.amount * (1 - TRANSACTION_COST)
                     newBalanceA = simulatedTradeEntry.balanceA + amount
                     newBalanceB = simulatedTradeEntry.balanceB - (tradeExecution.amount * tradeExecution.price)
@@ -194,9 +202,9 @@ class LiveTradeSimulationService {
                     newBalanceA = simulatedTradeEntry.balanceA + amount
                     newBalanceB = simulatedTradeEntry.balanceB - (maxAmount * tradeExecution.price)
                 }
-                if(amount < MINIMUM_AMOUNT) return null
+                if (amount < MINIMUM_AMOUNT) return null
                 Metadata metadata = simulatedTradeEntry.metadata
-                if(!metadata) metadata = new Metadata()
+                if (!metadata) metadata = new Metadata()
                 metadata.datetime = new Date()
                 metadata.hostname = InetAddress.getLocalHost().getHostName()
                 return new SimulatedTradeEntry(

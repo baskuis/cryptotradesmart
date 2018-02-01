@@ -51,7 +51,8 @@ class TrendAwareProgressiveThresholdTradeExecutionStrategySpec extends Specifica
                 tag,
                 probability,
                 simulation,
-                combinerStrategy
+                combinerStrategy,
+                0.5
         )
 
         then:

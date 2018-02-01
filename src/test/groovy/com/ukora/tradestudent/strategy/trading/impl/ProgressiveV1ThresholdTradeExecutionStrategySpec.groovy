@@ -44,7 +44,8 @@ class ProgressiveV1ThresholdTradeExecutionStrategySpec extends Specification {
                 tag,
                 probability,
                 simulation,
-                combinerStrategy
+                combinerStrategy,
+                0.5
         )
 
         then:
