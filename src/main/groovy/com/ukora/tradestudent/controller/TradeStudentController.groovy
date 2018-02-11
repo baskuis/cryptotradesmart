@@ -183,6 +183,16 @@ class TradeStudentController {
         ]
     }
 
+    @RequestMapping(path = '/probabilitycombiners', method = RequestMethod.GET)
+    List getTopPerformingProbabilityCombiners(){
+        simulationResultService.getTopPerformingProbabilityCombiners()
+    }
+
+    @RequestMapping(path = '/tradeexecutionstrategies', method = RequestMethod.GET)
+    List getTopPerformingTradeExecutionStrategies(){
+        simulationResultService.getTopPerformingTradeExecutionStrategies()
+    }
+
     @RequestMapping(path = '/log', method = RequestMethod.GET)
     String log() {
         Logger.tailLog()

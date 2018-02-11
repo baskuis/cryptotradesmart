@@ -35,6 +35,39 @@ class SimulationResultService {
     }
 
     /**
+     * Get top performing probability combiners
+     *
+     * @return
+     */
+    List<String> getTopPerformingProbabilityCombiners() {
+        List<String> performingProbabilityCombiners = []
+        Map<String, Integer> ref = [:]
+        bytesFetcherService.getSimulations()?.findAll({
+            ref.get(ref.getOrDefault(it.probabilityCombinerStrategy,
+                    ref.getOrDefault(it.probabilityCombinerStrategy, 0) + 1))
+        })
+        ref.sort({ -it.value }).each { performingProbabilityCombiners.add(it.key) }
+        performingProbabilityCombiners
+    }
+
+    /**
+     * Get top performing trade execution strategies
+     *
+     * @return
+     */
+    List<String> getTopPerformingTradeExecutionStrategies() {
+        List<String> performingTradeExecutionStrategies = []
+        Map<String, Integer> ref = [:]
+        bytesFetcherService.getSimulations()?.findAll({
+            ref.get(ref.getOrDefault(it.tradeExecutionStrategy,
+                    ref.getOrDefault(it.tradeExecutionStrategy, 0) + 1))
+        })
+        ref.sort({ -it.value })
+        ref.sort({ -it.value }).each { performingTradeExecutionStrategies.add(it.key) }
+        performingTradeExecutionStrategies
+    }
+
+    /**
      * Get top performing simulations
      *
      * @return
