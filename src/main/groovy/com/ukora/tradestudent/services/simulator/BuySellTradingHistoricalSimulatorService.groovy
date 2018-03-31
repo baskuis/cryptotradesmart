@@ -3,7 +3,7 @@ package com.ukora.tradestudent.services.simulator
 import com.ukora.tradestudent.entities.CorrelationAssociation
 import com.ukora.tradestudent.entities.SimulationResult
 import com.ukora.tradestudent.services.BytesFetcherService
-import com.ukora.tradestudent.services.ProbabilityFigurerService
+import com.ukora.tradestudent.services.ProbabilityCombinerService
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.strategy.trading.TradeExecution
 import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
@@ -24,7 +24,7 @@ class BuySellTradingHistoricalSimulatorService {
 
     /** For better performance - we'll stop losing/hyper simulation */
     private final static MAXIMUM_LOSS_TILL_QUIT = 0.6
-    private final static MAXIMUM_TRADES_TILL_QUIT = 10000
+    private final static MAXIMUM_TRADES_TILL_QUIT = 20000
 
     @Autowired
     BytesFetcherService bytesFetcherService
@@ -33,7 +33,7 @@ class BuySellTradingHistoricalSimulatorService {
     ApplicationContext applicationContext
 
     @Autowired
-    ProbabilityFigurerService probabilityFigurerService
+    ProbabilityCombinerService probabilityCombinerService
 
     Map<String, ProbabilityCombinerStrategy> probabilityCombinerStrategyMap
 
@@ -151,7 +151,7 @@ class BuySellTradingHistoricalSimulatorService {
             current = current + gap
 
             /** Get probabilities */
-            CorrelationAssociation correlationAssociation = probabilityFigurerService.getCorrelationAssociations(Date.from(current))
+            CorrelationAssociation correlationAssociation = probabilityCombinerService.getCorrelationAssociations(Date.from(current))
             correlationAssociation.tagProbabilities.each {
                 String strategy = it.key
                 it.value.each {
@@ -315,7 +315,7 @@ class BuySellTradingHistoricalSimulatorService {
                             balanceB,
                             newBalanceA,
                             newBalanceB))
-                    asserSimulationPurseIsHealthy(simulation, purseKey)
+                    assertSimulationPurseIsHealthy(simulation, purseKey)
                 }
                 break
             case TradeExecution.TradeType.SELL:
@@ -345,7 +345,7 @@ class BuySellTradingHistoricalSimulatorService {
                             balanceB,
                             newBalanceA,
                             newBalanceB))
-                    asserSimulationPurseIsHealthy(simulation, purseKey)
+                    assertSimulationPurseIsHealthy(simulation, purseKey)
 
                 }
                 break
@@ -358,7 +358,7 @@ class BuySellTradingHistoricalSimulatorService {
      * @param simulation
      * @param purseKey
      */
-    private static void asserSimulationPurseIsHealthy(Simulation simulation, String purseKey) {
+    private static void assertSimulationPurseIsHealthy(Simulation simulation, String purseKey) {
         if(simulation.totalBalances.get(purseKey) / STARTING_BALANCE < MAXIMUM_LOSS_TILL_QUIT){
             Logger.debug(String.format("Disabling no longer performing simulation purse %s, loss to great", purseKey))
             simulation.pursesEnabled.put(purseKey, false)

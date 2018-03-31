@@ -529,6 +529,41 @@ class BytesFetcherService {
      *
      * @return
      */
+    Lesson getNextTextLesson() {
+        BasicDBObject query = new BasicDBObject()
+        query.put("textProcessed", BasicDBObjectBuilder.start(NOT_EQUALS, true).get())
+        DBObject obj = lessons.findOne(query)
+        if (obj != null) {
+            obj["textProcessed"] = true
+            lessons.save(obj)
+            Lesson lesson = new Lesson()
+            def tag = tagService.getTagByName(obj['tag'] as String)
+            if(tag){
+                lesson.tag = tag
+            } else {
+                throw new RuntimeException(String.format('WTF! Tag %s cannot be mapped to a valid tag', obj['tag']))
+            }
+            lesson.setId(obj["_id"] as String)
+            try {
+                lesson.setDate(DatatypeConverter.parseDateTime(obj["date"] as String).getTime())
+            } catch (IllegalArgumentException e){
+                lesson.setDate(new Date(obj['date'] as String))
+            }
+            lesson.setPrice(obj["price"] as Double)
+            Exchange exchange = new Exchange()
+            exchange.setPlatform(obj["exchange"]["platform"] as String)
+            lesson.setExchange(exchange)
+            lesson.setDbObject(obj)
+            return lesson
+        }
+        return null
+    }
+
+    /**
+     * Get the next un-processed lesson
+     *
+     * @return
+     */
     Lesson getNextLesson() {
         BasicDBObject query = new BasicDBObject()
         query.put("processed", BasicDBObjectBuilder.start(NOT_EQUALS, true).get())

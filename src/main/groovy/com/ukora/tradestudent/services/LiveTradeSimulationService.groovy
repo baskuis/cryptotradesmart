@@ -30,7 +30,7 @@ class LiveTradeSimulationService {
     BytesFetcherService bytesFetcherService
 
     @Autowired
-    ProbabilityFigurerService probabilityFigurerService
+    ProbabilityCombinerService probabilityCombinerService
 
     @Autowired
     SimulationResultService simulationResultService
@@ -72,7 +72,7 @@ class LiveTradeSimulationService {
         List<TradeExecution> tradeExecutions = []
         SimulationResult simulationResult = simulationResultService.getTopPerformingSimulation()
         if (simulationResult) {
-            CorrelationAssociation correlationAssociation = probabilityFigurerService.getCorrelationAssociations(now)
+            CorrelationAssociation correlationAssociation = probabilityCombinerService.getCorrelationAssociations(now)
             if (correlationAssociation) {
                 TradeExecutionStrategy tradeExecutionStrategy = applicationContext.getBean(simulationResult.tradeExecutionStrategy, TradeExecutionStrategy)
                 String probabilityCombinerStrategy = simulationResult.probabilityCombinerStrategy

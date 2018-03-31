@@ -20,7 +20,7 @@ import javax.annotation.PostConstruct
 import java.util.concurrent.ConcurrentHashMap
 
 @Service
-class ProbabilityFigurerService {
+class ProbabilityCombinerService {
 
     @Autowired
     CaptureAssociationsService captureAssociationsService
@@ -80,7 +80,7 @@ class ProbabilityFigurerService {
         bytesFetcherService.hydrateAssociation(correlationAssociation)
 
         /** hydrate associations */
-        captureAssociationsService.hydrateAssocations(correlationAssociation)
+        captureAssociationsService.hydrateAssociations(correlationAssociation)
 
         /** hydrate probability reference for each numeric reference */
         hydrateProbabilities(correlationAssociation)

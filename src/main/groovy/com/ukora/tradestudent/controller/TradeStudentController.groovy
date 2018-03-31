@@ -8,6 +8,7 @@ import com.ukora.tradestudent.entities.SimulationResult
 import com.ukora.tradestudent.services.*
 import com.ukora.tradestudent.services.associations.CaptureAssociationsService
 import com.ukora.tradestudent.services.associations.TechnicalAnalysisService
+import com.ukora.tradestudent.services.associations.text.CaptureTextAssociationsService
 import com.ukora.tradestudent.services.learner.TraverseLessonsService
 import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.utils.Logger
@@ -22,7 +23,7 @@ import org.springframework.web.bind.annotation.*
 class TradeStudentController {
 
     @Autowired
-    ProbabilityFigurerService probabilityFigurerService
+    ProbabilityCombinerService probabilityCombinerService
 
     @Autowired
     BuySellTradingHistoricalSimulatorService tradingHistoricalSimulatorService
@@ -47,19 +48,21 @@ class TradeStudentController {
 
     @RequestMapping(path = '/correlations', produces = 'application/json', method = RequestMethod.GET)
     CorrelationAssociation getCorrelationAssociations(@RequestParam(value = 'date') Date date) {
-        probabilityFigurerService.getCorrelationAssociations(date)
+        probabilityCombinerService.getCorrelationAssociations(date)
     }
 
     @RequestMapping(path = '/braindump', produces = 'application/json', method = RequestMethod.GET)
     Map<String, BrainNode> getBrainNodes() {
-        probabilityFigurerService.getBrainNodes()
+        probabilityCombinerService.getBrainNodes()
     }
 
     @RequestMapping(path = '/brainon', method = RequestMethod.GET)
     String brainOn(@RequestParam(value = 'speed') Integer speed) {
-        if (!speed || speed > 50 || speed < 1) speed = 1
+        if (!speed || speed > 80 || speed < 1) speed = 1
         CaptureAssociationsService.leaningEnabled = true
         CaptureAssociationsService.learningSpeed = speed
+        CaptureTextAssociationsService.leaningEnabled = true
+        CaptureTextAssociationsService.learningSpeed = speed
         "ON"
     }
 

@@ -2,6 +2,7 @@ package com.ukora.tradestudent.services.associations
 
 import com.ukora.tradestudent.entities.*
 import com.ukora.tradestudent.services.BytesFetcherService
+import com.ukora.tradestudent.services.associations.text.CaptureTextAssociationsService
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,6 +33,9 @@ class CaptureAssociationsService {
 
     @Autowired
     TechnicalAnalysisService technicalAnalysisService
+
+    @Autowired
+    CaptureTextAssociationsService captureTextAssociationsService
 
     /**
      * Main schedule to digest lessons
@@ -73,7 +77,7 @@ class CaptureAssociationsService {
      *
      * @param correlationAssociation
      */
-    void hydrateAssocations(CorrelationAssociation correlationAssociation){
+    void hydrateAssociations(CorrelationAssociation correlationAssociation){
 
         /** Capture associations for normalized data for instance */
         brainItUpSimple(correlationAssociation.memory, correlationAssociation, INSTANT)

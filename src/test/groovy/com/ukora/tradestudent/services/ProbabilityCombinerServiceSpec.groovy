@@ -11,9 +11,9 @@ import com.ukora.tradestudent.tags.trend.UpTag
 import org.springframework.context.ApplicationContext
 import spock.lang.Specification
 
-class ProbabilityFigurerServiceSpec extends Specification {
+class ProbabilityCombinerServiceSpec extends Specification {
 
-    ProbabilityFigurerService probabilityFigurerService = new ProbabilityFigurerService()
+    ProbabilityCombinerService probabilityCombinerService = new ProbabilityCombinerService()
 
     ApplicationContext applicationContext = Mock(ApplicationContext)
 
@@ -28,7 +28,7 @@ class ProbabilityFigurerServiceSpec extends Specification {
 
         setup:
         String pCombiner = 'strategy1'
-        probabilityFigurerService.applicationContext = applicationContext
+        probabilityCombinerService.applicationContext = applicationContext
         CorrelationAssociation correlationAssociation = new CorrelationAssociation()
         correlationAssociation.tagScores = [
                 'buy' : [(pCombiner): 2.5d],
@@ -38,8 +38,8 @@ class ProbabilityFigurerServiceSpec extends Specification {
         ]
 
         when:
-        probabilityFigurerService.init()
-        probabilityFigurerService.hydrateTagProbabilities(correlationAssociation)
+        probabilityCombinerService.init()
+        probabilityCombinerService.hydrateTagProbabilities(correlationAssociation)
 
         then:
         1 * applicationContext.getBeansOfType(TagGroup) >> [
