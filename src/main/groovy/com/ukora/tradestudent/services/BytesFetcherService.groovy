@@ -36,6 +36,7 @@ class BytesFetcherService {
     final static String COLLECTION_TWITTER = "twitter"
     final static String COLLECTION_ASSOCIATIONS = "associations"
     final static String COLLECTION_BRAIN = "brain"
+    final static String COLLECTION_BRAIN_COUNT = "brainCount"
     final static String COLLECTION_SIMULATIONS = "simulations"
     final static String COLLECTION_PROPERTIES = "properties"
     final static String COLLECTION_SIMULATED_TRADES = "simulatedTrades"
@@ -57,6 +58,7 @@ class BytesFetcherService {
     DBCollection twitter
     DBCollection associations
     DBCollection brain
+    DBCollection brainCount
     DBCollection simulations
     DBCollection properties
     DBCollection simulatedTrades
@@ -69,6 +71,7 @@ class BytesFetcherService {
         this.twitter = mongoTemplate.getCollection(COLLECTION_TWITTER)
         this.associations = mongoTemplate.getCollection(COLLECTION_ASSOCIATIONS)
         this.brain = mongoTemplate.getCollection(COLLECTION_BRAIN)
+        this.brainCount = mongoTemplate.getCollection(COLLECTION_BRAIN_COUNT)
         this.simulations = mongoTemplate.getCollection(COLLECTION_SIMULATIONS)
         this.properties = mongoTemplate.getCollection(COLLECTION_PROPERTIES)
         this.simulatedTrades = mongoTemplate.getCollection(COLLECTION_SIMULATED_TRADES)
@@ -333,6 +336,40 @@ class BytesFetcherService {
         }
     }
 
+    @Cacheable("brainCount")
+    BrainCount getBrainCount(String reference, String tag, String source) {
+        BasicDBObject query = new BasicDBObject()
+        query.put('reference', reference)
+        DBObject obj = this.brainCount.findOne(query)
+        if (obj == null) return new BrainCount(
+                id: null,
+                tag: tag,
+                source: source,
+                reference: reference,
+                count: 0 as Integer
+        )
+        return new BrainCount(
+                id: obj['_id'] as String,
+                tag: obj['tag'] as String,
+                source: obj['source'] as String,
+                reference: obj['reference'] as String,
+                count: obj['count'] as Integer,
+        )
+    }
+
+    @CacheEvict(value = "brainCount", allEntries = true)
+    void saveBrainCount(BrainCount brainCount) {
+        DBObject obj = new BasicDBObject()
+        if (brainCount.id) {
+            obj['_id'] = new ObjectId(brainCount.id)
+        }
+        obj['tag'] = brainCount.tag as String
+        obj['source'] = brainCount.source as String
+        obj['reference'] = brainCount.reference as String
+        obj['count'] = brainCount.count
+        this.brainCount.save(obj)
+    }
+
     /**
      * Return existing or new number association object
      *
@@ -442,7 +479,6 @@ class BytesFetcherService {
         }
         if(TradestudentApplication.CONSIDER_TWITTER) {
             try {
-
                 someAssociation.twitter = getTwitter(someAssociation.date)
             } catch (Exception e) {
                 e.printStackTrace()

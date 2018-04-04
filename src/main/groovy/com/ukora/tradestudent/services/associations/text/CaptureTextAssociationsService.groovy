@@ -1,5 +1,6 @@
 package com.ukora.tradestudent.services.associations.text
 
+import com.ukora.tradestudent.entities.BrainCount
 import com.ukora.tradestudent.entities.Lesson
 import com.ukora.tradestudent.entities.News
 import com.ukora.tradestudent.entities.Twitter
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class CaptureTextAssociationsService {
+
+    enum TextSource {NEWS,TWITTER}
 
     public static final String SEP = "/"
     public static final String SPACE = " "
@@ -54,11 +57,72 @@ class CaptureTextAssociationsService {
                     List<String> twitter_text = TextUtils.splitText(
                             tweets.statuses.text
                     )
-                    println articles_text
-                    println twitter_text
 
-                    
+                    /** capture articles keywords general/tag associations */
+                    articles_text.each {
 
+                        /*******************************************************/
+                        /********************** TAG ****************************/
+                        /*******************************************************/
+                        BrainCount brainCount = bytesFetcherService.getBrainCount(
+                                generateReference(
+                                        it,
+                                        lesson.tag.getTagName(),
+                                        TextSource.NEWS as String),
+                                lesson.tag.getTagName(),
+                                TextSource.NEWS as String
+                        )
+                        brainCount.count++
+                        bytesFetcherService.saveBrainCount(brainCount)
+
+                        /*******************************************************/
+                        /********************** GENERAL ************************/
+                        /*******************************************************/
+                        BrainCount generalBrainCount = bytesFetcherService.getBrainCount(
+                                generateReference(
+                                        it,
+                                        GENERAL,
+                                        TextSource.NEWS as String),
+                                GENERAL,
+                                TextSource.NEWS as String
+                        )
+                        brainCount.count++
+                        bytesFetcherService.saveBrainCount(generalBrainCount)
+
+                    }
+
+                    /** capture twitter keywords tag associations */
+                    twitter_text.each {
+
+                        /*******************************************************/
+                        /********************** TAG ****************************/
+                        /*******************************************************/
+                        BrainCount brainCount = bytesFetcherService.getBrainCount(
+                                generateReference(
+                                        it,
+                                        lesson.tag.getTagName(),
+                                        TextSource.TWITTER as String),
+                                lesson.tag.getTagName(),
+                                TextSource.TWITTER as String
+                        )
+                        brainCount.count++
+                        bytesFetcherService.saveBrainCount(brainCount)
+
+                        /*******************************************************/
+                        /********************** GENERAL ************************/
+                        /*******************************************************/
+                        BrainCount generalBrainCount = bytesFetcherService.getBrainCount(
+                                generateReference(
+                                        it,
+                                        GENERAL,
+                                        TextSource.TWITTER as String),
+                                GENERAL,
+                                TextSource.TWITTER as String
+                        )
+                        brainCount.count++
+                        bytesFetcherService.saveBrainCount(generalBrainCount)
+
+                    }
 
 
                 } else {
@@ -68,6 +132,10 @@ class CaptureTextAssociationsService {
         }else{
             Logger.log("leaning disabled")
         }
+    }
+
+    static generateReference(String word, String tag, String source){
+        return source + SEP + tag + SEP + word
     }
 
 }
