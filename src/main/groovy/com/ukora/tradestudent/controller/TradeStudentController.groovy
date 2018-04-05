@@ -11,6 +11,7 @@ import com.ukora.tradestudent.services.associations.TechnicalAnalysisService
 import com.ukora.tradestudent.services.associations.text.CaptureTextAssociationsService
 import com.ukora.tradestudent.services.learner.TraverseLessonsService
 import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
+import com.ukora.tradestudent.services.text.TextAssociationProbabilityService
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,6 +46,9 @@ class TradeStudentController {
 
     @Autowired
     AliasService aliasService
+
+    @Autowired
+    TextAssociationProbabilityService textAssociationProbabilityService
 
     @RequestMapping(path = '/correlations', produces = 'application/json', method = RequestMethod.GET)
     CorrelationAssociation getCorrelationAssociations(@RequestParam(value = 'date') Date date) {
@@ -194,6 +198,11 @@ class TradeStudentController {
     @RequestMapping(path = '/tradeexecutionstrategies', method = RequestMethod.GET)
     List getTopPerformingTradeExecutionStrategies(){
         simulationResultService.getTopPerformingTradeExecutionStrategies()
+    }
+
+    @RequestMapping(path = '/textassociations', method = RequestMethod.GET)
+    def getTextAssociationProbabilityService(@RequestParam(value = 'date') Date date){
+        textAssociationProbabilityService.getTagCorrelationByText(date)
     }
 
     @RequestMapping(path = '/log', method = RequestMethod.GET)

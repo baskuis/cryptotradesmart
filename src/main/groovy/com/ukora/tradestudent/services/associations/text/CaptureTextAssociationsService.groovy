@@ -1,9 +1,8 @@
 package com.ukora.tradestudent.services.associations.text
 
 import com.ukora.tradestudent.entities.BrainCount
+import com.ukora.tradestudent.entities.ExtractedText
 import com.ukora.tradestudent.entities.Lesson
-import com.ukora.tradestudent.entities.News
-import com.ukora.tradestudent.entities.Twitter
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,20 +13,17 @@ import org.springframework.stereotype.Service
 @Service
 class CaptureTextAssociationsService {
 
-    enum TextSource {NEWS,TWITTER}
-
     public static final String SEP = "/"
-    public static final String SPACE = " "
     public static final String GENERAL = "general"
-    public static final String INSTANT = "instant"
 
     public static boolean leaningEnabled = true
     public static Integer learningSpeed = 15
 
-    public static Double PRACTICAL_ZERO = 0.000000001
-
     @Autowired
     BytesFetcherService bytesFetcherService
+
+    @Autowired
+    TextExtractorService textExtractorService
 
     /**
      * Main schedule to digest lessons
@@ -43,97 +39,88 @@ class CaptureTextAssociationsService {
                 Lesson lesson = bytesFetcherService.getNextTextLesson()
                 if (lesson) {
 
-                    /** get news */
-                    List<News> articles = bytesFetcherService.getNews(lesson.date)
-                    if(!articles) Logger.log(String.format('No articles found for date %s', lesson.date))
+                    /** Extract text for date */
+                    ExtractedText extractedText = textExtractorService.extractTextForDate(lesson.date)
 
-                    /** get twitter */
-                    Twitter tweets = bytesFetcherService.getTwitter(lesson.date)
-                    if(!tweets) Logger.log(String.format('No tweets found for date %s', lesson.date))
-
-                    List<String> articles_text = TextUtils.splitText(
-                            articles.collect({ it.article.title + SPACE + it.article.summary}).join(SPACE)
-                    )
-                    List<String> twitter_text = TextUtils.splitText(
-                            tweets.statuses.text
+                    /** Capture news */
+                    captureText(
+                        ExtractedText.TextSource.NEWS,
+                        extractedText.extract(ExtractedText.TextSource.NEWS),
+                        lesson
                     )
 
-                    /** capture articles keywords general/tag associations */
-                    articles_text.each {
-
-                        /*******************************************************/
-                        /********************** TAG ****************************/
-                        /*******************************************************/
-                        BrainCount brainCount = bytesFetcherService.getBrainCount(
-                                generateReference(
-                                        it,
-                                        lesson.tag.getTagName(),
-                                        TextSource.NEWS as String),
-                                lesson.tag.getTagName(),
-                                TextSource.NEWS as String
-                        )
-                        brainCount.count++
-                        bytesFetcherService.saveBrainCount(brainCount)
-
-                        /*******************************************************/
-                        /********************** GENERAL ************************/
-                        /*******************************************************/
-                        BrainCount generalBrainCount = bytesFetcherService.getBrainCount(
-                                generateReference(
-                                        it,
-                                        GENERAL,
-                                        TextSource.NEWS as String),
-                                GENERAL,
-                                TextSource.NEWS as String
-                        )
-                        brainCount.count++
-                        bytesFetcherService.saveBrainCount(generalBrainCount)
-
-                    }
-
-                    /** capture twitter keywords tag associations */
-                    twitter_text.each {
-
-                        /*******************************************************/
-                        /********************** TAG ****************************/
-                        /*******************************************************/
-                        BrainCount brainCount = bytesFetcherService.getBrainCount(
-                                generateReference(
-                                        it,
-                                        lesson.tag.getTagName(),
-                                        TextSource.TWITTER as String),
-                                lesson.tag.getTagName(),
-                                TextSource.TWITTER as String
-                        )
-                        brainCount.count++
-                        bytesFetcherService.saveBrainCount(brainCount)
-
-                        /*******************************************************/
-                        /********************** GENERAL ************************/
-                        /*******************************************************/
-                        BrainCount generalBrainCount = bytesFetcherService.getBrainCount(
-                                generateReference(
-                                        it,
-                                        GENERAL,
-                                        TextSource.TWITTER as String),
-                                GENERAL,
-                                TextSource.TWITTER as String
-                        )
-                        brainCount.count++
-                        bytesFetcherService.saveBrainCount(generalBrainCount)
-
-                    }
-
+                    /** Capture twitter */
+                    captureText(
+                            ExtractedText.TextSource.TWITTER,
+                            extractedText.extract(ExtractedText.TextSource.TWITTER),
+                            lesson
+                    )
 
                 } else {
-                    Logger.debug("no lesson")
+                    Logger.debug("no text lesson")
                 }
             }
         }else{
-            Logger.log("leaning disabled")
+            Logger.log("text leaning disabled")
         }
     }
 
+    /**
+     * Capture text
+     *
+     * @param source
+     * @param keywords
+     * @param lesson
+     */
+    void captureText(
+            ExtractedText.TextSource source,
+            List<String> keywords,
+            Lesson lesson
+    ){
+
+        /** capture articles keywords general/tag associations */
+        keywords.each {
+
+            /*******************************************************/
+            /********************** TAG ****************************/
+            /*******************************************************/
+            BrainCount brainCount = bytesFetcherService.getBrainCount(
+                    generateReference(
+                            it,
+                            lesson.tag.getTagName(),
+                            source as String),
+                    lesson.tag.getTagName(),
+                    source as String
+            )
+            brainCount.count++
+            bytesFetcherService.saveBrainCount(brainCount)
+
+            /*******************************************************/
+            /********************** GENERAL ************************/
+            /*******************************************************/
+            BrainCount generalBrainCount = bytesFetcherService.getBrainCount(
+                    generateReference(
+                            it,
+                            GENERAL,
+                            source as String),
+                    GENERAL,
+                    source as String
+            )
+            generalBrainCount.count++
+            bytesFetcherService.saveBrainCount(generalBrainCount)
+
+        }
+
+    }
+
+    /**
+     * Generate reference
+     *
+     * @param word
+     * @param tag
+     * @param source
+     * @return
+     */
     static generateReference(String word, String tag, String source){
         return source + SEP + tag + SEP + word
     }

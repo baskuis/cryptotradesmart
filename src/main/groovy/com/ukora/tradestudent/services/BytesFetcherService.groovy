@@ -336,7 +336,14 @@ class BytesFetcherService {
         }
     }
 
-    @Cacheable("brainCount")
+    /**
+     * Get brain count
+     *
+     * @param reference
+     * @param tag
+     * @param source
+     * @return
+     */
     BrainCount getBrainCount(String reference, String tag, String source) {
         BasicDBObject query = new BasicDBObject()
         query.put('reference', reference)
@@ -357,7 +364,11 @@ class BytesFetcherService {
         )
     }
 
-    @CacheEvict(value = "brainCount", allEntries = true)
+    /**
+     * Save brain count
+     *
+     * @param brainCount
+     */
     void saveBrainCount(BrainCount brainCount) {
         DBObject obj = new BasicDBObject()
         if (brainCount.id) {
