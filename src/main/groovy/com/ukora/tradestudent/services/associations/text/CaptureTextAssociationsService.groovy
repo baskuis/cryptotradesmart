@@ -4,6 +4,7 @@ import com.ukora.tradestudent.entities.BrainCount
 import com.ukora.tradestudent.entities.ExtractedText
 import com.ukora.tradestudent.entities.Lesson
 import com.ukora.tradestudent.services.BytesFetcherService
+import com.ukora.tradestudent.services.TagService
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
@@ -24,6 +25,9 @@ class CaptureTextAssociationsService {
 
     @Autowired
     TextExtractorService textExtractorService
+
+    @Autowired
+    TagService tagService
 
     /**
      * Main schedule to digest lessons
@@ -94,6 +98,20 @@ class CaptureTextAssociationsService {
             )
             brainCount.count++
             bytesFetcherService.saveBrainCount(brainCount)
+
+            /*******************************************************/
+            /********************** GROUP **************************/
+            /*******************************************************/
+            BrainCount groupBrainCount = bytesFetcherService.getBrainCount(
+                    generateReference(
+                            it,
+                            tagService.getTagGroupByTag(lesson.tag)?.getName(),
+                            source as String),
+                    tagService.getTagGroupByTag(lesson.tag)?.getName(),
+                    source as String
+            )
+            groupBrainCount.count++
+            bytesFetcherService.saveBrainCount(groupBrainCount)
 
             /*******************************************************/
             /********************** GENERAL ************************/
