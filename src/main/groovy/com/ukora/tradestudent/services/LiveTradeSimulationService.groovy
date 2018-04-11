@@ -71,8 +71,8 @@ class LiveTradeSimulationService {
         Date now = new Date()
         List<TradeExecution> tradeExecutions = []
         SimulationResult simulationResult = simulationResultService.getTopPerformingSimulation()
+        CorrelationAssociation correlationAssociation = probabilityCombinerService.getCorrelationAssociations(now)
         if (simulationResult) {
-            CorrelationAssociation correlationAssociation = probabilityCombinerService.getCorrelationAssociations(now)
             if (correlationAssociation) {
                 TradeExecutionStrategy tradeExecutionStrategy = applicationContext.getBean(simulationResult.tradeExecutionStrategy, TradeExecutionStrategy)
                 String probabilityCombinerStrategy = simulationResult.probabilityCombinerStrategy
@@ -110,6 +110,15 @@ class LiveTradeSimulationService {
                 }
                 return
             }
+        } else {
+            simulateTrades([new TradeExecution(
+                    date: now,
+                    tradeType: TradeExecution.TradeType.BUY,
+                    amount: 0.1,
+                    price: correlationAssociation.price
+            )])
+            Logger.log(String.format("Moving to safety", tradeExecutions.size()))
+            return
         }
         Logger.log(String.format("Unable to evaluate live trades for %s", now))
     }
