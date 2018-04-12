@@ -344,23 +344,21 @@ class BytesFetcherService {
      * @param source
      * @return
      */
-    BrainCount getBrainCount(String reference, String tag, String source) {
+    BrainCount getBrainCount(String reference, String source) {
         BasicDBObject query = new BasicDBObject()
         query.put('reference', reference)
         DBObject obj = this.brainCount.findOne(query)
         if (obj == null) return new BrainCount(
                 id: null,
-                tag: tag,
                 source: source,
                 reference: reference,
-                count: 0 as Integer
+                counters: [:]
         )
         return new BrainCount(
                 id: obj['_id'] as String,
-                tag: obj['tag'] as String,
                 source: obj['source'] as String,
                 reference: obj['reference'] as String,
-                count: obj['count'] as Integer,
+                counters: obj['counters'] as Map,
         )
     }
 
@@ -374,10 +372,9 @@ class BytesFetcherService {
         if (brainCount.id) {
             obj['_id'] = new ObjectId(brainCount.id)
         }
-        obj['tag'] = brainCount.tag as String
         obj['source'] = brainCount.source as String
         obj['reference'] = brainCount.reference as String
-        obj['count'] = brainCount.count
+        obj['counters'] = brainCount.counters
         this.brainCount.save(obj)
     }
 

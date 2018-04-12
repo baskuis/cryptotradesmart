@@ -84,51 +84,28 @@ class CaptureTextAssociationsService {
 
         /** capture articles keywords general/tag associations */
         keywords.each {
-
-            /*******************************************************/
-            /********************** TAG ****************************/
-            /*******************************************************/
             BrainCount brainCount = bytesFetcherService.getBrainCount(
                     generateReference(
                             it,
-                            lesson.tag.getTagName(),
                             source as String),
-                    lesson.tag.getTagName(),
                     source as String
             )
-            brainCount.count++
+            bumpCount(brainCount, lesson.tag.tagName)
+            bumpCount(brainCount, tagService.getTagGroupByTag(lesson.tag)?.name)
+            bumpCount(brainCount, GENERAL)
             bytesFetcherService.saveBrainCount(brainCount)
-
-            /*******************************************************/
-            /********************** GROUP **************************/
-            /*******************************************************/
-            BrainCount groupBrainCount = bytesFetcherService.getBrainCount(
-                    generateReference(
-                            it,
-                            tagService.getTagGroupByTag(lesson.tag)?.getName(),
-                            source as String),
-                    tagService.getTagGroupByTag(lesson.tag)?.getName(),
-                    source as String
-            )
-            groupBrainCount.count++
-            bytesFetcherService.saveBrainCount(groupBrainCount)
-
-            /*******************************************************/
-            /********************** GENERAL ************************/
-            /*******************************************************/
-            BrainCount generalBrainCount = bytesFetcherService.getBrainCount(
-                    generateReference(
-                            it,
-                            GENERAL,
-                            source as String),
-                    GENERAL,
-                    source as String
-            )
-            generalBrainCount.count++
-            bytesFetcherService.saveBrainCount(generalBrainCount)
-
         }
 
+    }
+
+    /**
+     * Bump count
+     *
+     * @param brainCount
+     * @param name
+     */
+    static void bumpCount(BrainCount brainCount, String name){
+        brainCount.counters.put(name, brainCount.counters.getOrDefault(name, 0) + 1)
     }
 
     /**
@@ -139,8 +116,8 @@ class CaptureTextAssociationsService {
      * @param source
      * @return
      */
-    static generateReference(String word, String tag, String source){
-        return source + SEP + tag + SEP + word
+    static generateReference(String word, String source){
+        return source + SEP + word
     }
 
 }

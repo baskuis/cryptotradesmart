@@ -54,44 +54,22 @@ class TextAssociationProbabilityService {
      * @return
      */
     def getTagCorrelationByText(Date eventDate) {
-
         Logger.log(String.format('Attempting to get association for %s', eventDate))
         ExtractedText extractedText = textExtractorService.extractTextForDate(eventDate)
-
         TextAssociations textAssociations = new TextAssociations()
         extractedText.extract(ExtractedText.TextSource.TWITTER).each { String word ->
-            tagMap.each { def tag ->
-                String source = ExtractedText.TextSource.TWITTER as String
-                BrainCount brainCount = bytesFetcherService.getBrainCount(
+            String source = ExtractedText.TextSource.TWITTER as String
+            BrainCount brainCount = bytesFetcherService.getBrainCount(
                     CaptureTextAssociationsService.generateReference(
-                        word,
-                        tag.value.tagName,
-                        source
+                            word,
+                            source
                     ),
-                    tag.value.tagName,
                     source
-                )
-                BrainCount generalBrainCount = bytesFetcherService.getBrainCount(
-                    CaptureTextAssociationsService.generateReference(
-                        word,
-                        CaptureTextAssociationsService.GENERAL,
-                        source
-                    ),
-                    tag.value.tagName,
-                    source
-                )
-                if (brainCount && generalBrainCount) {
-                    if (brainCount.count > 0) {
-                        List<BrainCount> list = textAssociations.tagAssociations.get(tag.value)
-                        if(!list) list = []
-                        list.add(brainCount)
-                        textAssociations.tagAssociations.put(tag.value, list)
-                    }
-                    if (generalBrainCount.count > 0) {
-                        textAssociations.generalAssociations.add(generalBrainCount)
-                    }
-                }
-            }
+            )
+            List<BrainCount> list = textAssociations.tagAssociations.get(ExtractedText.TextSource.TWITTER)
+            if(!list) list = []
+            list.add(brainCount)
+            textAssociations.tagAssociations.put(ExtractedText.TextSource.TWITTER, list)
         }
         extractedText.extract(ExtractedText.TextSource.NEWS).each { String word ->
             tagMap.each { def tag ->
@@ -99,30 +77,17 @@ class TextAssociationProbabilityService {
                 BrainCount brainCount = bytesFetcherService.getBrainCount(
                         CaptureTextAssociationsService.generateReference(
                                 word,
-                                tag.value.tagName,
                                 source
                         ),
-                        tag.value.tagName,
                         source
                 )
-                BrainCount generalBrainCount = bytesFetcherService.getBrainCount(
-                        CaptureTextAssociationsService.generateReference(
-                                word,
-                                CaptureTextAssociationsService.GENERAL,
-                                source
-                        ),
-                        tag.value.tagName,
-                        source
-                )
-                if (brainCount && generalBrainCount) {
-                    textAssociations.tagAssociations.getOrDefault(tag, []).add(brainCount)
-                    textAssociations.generalAssociations.add(generalBrainCount)
-                }
+                List<BrainCount> list = textAssociations.tagAssociations.get(ExtractedText.TextSource.NEWS)
+                if(!list) list = []
+                list.add(brainCount)
+                textAssociations.tagAssociations.put(ExtractedText.TextSource.NEWS, list)
             }
         }
-
         return textAssociations
-
     }
 
 }
