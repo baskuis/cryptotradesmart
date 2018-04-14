@@ -1,6 +1,8 @@
 package com.ukora.tradestudent.services.associations.text
 
 import com.ukora.tradestudent.entities.BrainCount
+import com.ukora.tradestudent.entities.ExtractedText
+import com.ukora.tradestudent.services.text.TextAssociationProbabilityService
 import spock.lang.Specification
 
 class CaptureTextAssociationsServiceSpec extends Specification {
@@ -16,14 +18,29 @@ class CaptureTextAssociationsServiceSpec extends Specification {
         )
 
         when:
-        CaptureTextAssociationsService.bumpCount(brainCount, tagName)
-        CaptureTextAssociationsService.bumpCount(brainCount, tagName)
-        CaptureTextAssociationsService.bumpCount(brainCount, tagName)
+        CaptureTextAssociationsService.bumpCount(brainCount, tagName, 1)
+        CaptureTextAssociationsService.bumpCount(brainCount, tagName, 2)
+        CaptureTextAssociationsService.bumpCount(brainCount, tagName, 3)
 
         then:
-        brainCount.counters.get(tagName) == 3
+        brainCount.counters.get(tagName) == 6
 
     }
 
+    def "test getWordCount"() {
+
+        setup:
+        ExtractedText extractedText = new ExtractedText(extract: [
+                (ExtractedText.TextSource.TWITTER): ['hi','hello','hi']
+        ])
+        ExtractedText.TextSource source = ExtractedText.TextSource.TWITTER
+
+        when:
+        Map r = CaptureTextAssociationsService.getWordCount(extractedText, source)
+
+        then:
+        r == ['hi': 2, 'hello': 1]
+
+    }
 
 }

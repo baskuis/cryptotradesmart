@@ -48,15 +48,15 @@ class CaptureTextAssociationsService {
 
                     /** Capture news */
                     captureText(
-                        ExtractedText.TextSource.NEWS,
-                        extractedText.extract(ExtractedText.TextSource.NEWS),
-                        lesson
+                            ExtractedText.TextSource.NEWS,
+                            getWordCount(extractedText, ExtractedText.TextSource.NEWS),
+                            lesson
                     )
 
                     /** Capture twitter */
                     captureText(
                             ExtractedText.TextSource.TWITTER,
-                            extractedText.extract(ExtractedText.TextSource.TWITTER),
+                            getWordCount(extractedText, ExtractedText.TextSource.TWITTER),
                             lesson
                     )
 
@@ -78,7 +78,7 @@ class CaptureTextAssociationsService {
      */
     void captureText(
             ExtractedText.TextSource source,
-            List<String> keywords,
+            Map<String, Integer> keywords,
             Lesson lesson
     ){
 
@@ -86,13 +86,13 @@ class CaptureTextAssociationsService {
         keywords.each {
             BrainCount brainCount = bytesFetcherService.getBrainCount(
                     generateReference(
-                            it,
+                            it.key,
                             source as String),
                     source as String
             )
-            bumpCount(brainCount, lesson.tag.tagName)
-            bumpCount(brainCount, tagService.getTagGroupByTag(lesson.tag)?.name)
-            bumpCount(brainCount, GENERAL)
+            bumpCount(brainCount, lesson.tag.tagName, it.value)
+            bumpCount(brainCount, tagService.getTagGroupByTag(lesson.tag)?.name, it.value)
+            bumpCount(brainCount, GENERAL, it.value)
             bytesFetcherService.saveBrainCount(brainCount)
         }
 
@@ -104,8 +104,21 @@ class CaptureTextAssociationsService {
      * @param brainCount
      * @param name
      */
-    static void bumpCount(BrainCount brainCount, String name){
-        brainCount.counters.put(name, brainCount.counters.getOrDefault(name, 0) + 1)
+    static void bumpCount(BrainCount brainCount, String name, Integer increment){
+        brainCount.counters.put(name, brainCount.counters.getOrDefault(name, 0) + increment)
+    }
+
+    /**
+     * Get word count
+     *
+     * @param extractedText
+     * @param source
+     * @return
+     */
+    static Map<String, Integer> getWordCount(ExtractedText extractedText, ExtractedText.TextSource source){
+        Map<String, Integer> words = [:]
+        extractedText.extract(source).each { words.put(it, words.getOrDefault(it, 0) + 1) }
+        return words
     }
 
     /**

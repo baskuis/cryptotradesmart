@@ -50,6 +50,9 @@ class TradeStudentController {
     @Autowired
     TextAssociationProbabilityService textAssociationProbabilityService
 
+    @Autowired
+    LessonTotalsService lessonTotalsService
+
     @RequestMapping(path = '/correlations', produces = 'application/json', method = RequestMethod.GET)
     CorrelationAssociation getCorrelationAssociations(@RequestParam(value = 'date') Date date) {
         probabilityCombinerService.getCorrelationAssociations(date)
@@ -203,6 +206,11 @@ class TradeStudentController {
     @RequestMapping(path = '/textassociations', method = RequestMethod.GET)
     def getTextAssociationProbabilityService(@RequestParam(value = 'date') Date date){
         textAssociationProbabilityService.getTagCorrelationByText(date)
+    }
+
+    @RequestMapping(path = '/lessontotals', method = RequestMethod.GET)
+    def getLessonTotals(){
+        lessonTotalsService.getTagCountSummary()
     }
 
     @RequestMapping(path = '/log', method = RequestMethod.GET)

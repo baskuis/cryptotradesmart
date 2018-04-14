@@ -569,6 +569,18 @@ class BytesFetcherService {
     }
 
     /**
+     * Get lesson count
+     *
+     * @param tag
+     * @return
+     */
+    Integer getLessonCount(String tag){
+        BasicDBObject query = new BasicDBObject()
+        query.put("tag", tag)
+        lessons.find(query).count()
+    }
+
+    /**
      * Get the next un-processed lesson
      *
      * @return
