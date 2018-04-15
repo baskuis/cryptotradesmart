@@ -2,6 +2,7 @@ package com.ukora.tradestudent.services.associations.text
 
 import com.ukora.tradestudent.entities.BrainCount
 import com.ukora.tradestudent.entities.ExtractedText
+import com.ukora.tradestudent.entities.KeywordAssociation
 import com.ukora.tradestudent.entities.Lesson
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.TagService

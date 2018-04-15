@@ -3,6 +3,7 @@ package com.ukora.tradestudent.controller
 import com.ukora.tradestudent.TradestudentApplication
 import com.ukora.tradestudent.entities.BrainNode
 import com.ukora.tradestudent.entities.CorrelationAssociation
+import com.ukora.tradestudent.entities.ExtractedText
 import com.ukora.tradestudent.entities.SimulatedTradeEntry
 import com.ukora.tradestudent.entities.SimulationResult
 import com.ukora.tradestudent.services.*
@@ -211,6 +212,14 @@ class TradeStudentController {
     @RequestMapping(path = '/lessontotals', method = RequestMethod.GET)
     def getLessonTotals(){
         lessonTotalsService.getTagCountSummary()
+    }
+
+    @RequestMapping(path = '/keyword', method = RequestMethod.GET)
+    def getKeywordAssociation(@RequestParam(value = 'keyword') String keyword){
+        [
+                (ExtractedText.TextSource.TWITTER): textAssociationProbabilityService.getKeywordAssociation(keyword, ExtractedText.TextSource.TWITTER),
+                (ExtractedText.TextSource.NEWS): textAssociationProbabilityService.getKeywordAssociation(keyword, ExtractedText.TextSource.NEWS)
+        ]
     }
 
     @RequestMapping(path = '/log', method = RequestMethod.GET)

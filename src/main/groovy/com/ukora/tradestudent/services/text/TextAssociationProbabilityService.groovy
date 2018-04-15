@@ -2,15 +2,20 @@ package com.ukora.tradestudent.services.text
 
 import com.ukora.tradestudent.entities.BrainCount
 import com.ukora.tradestudent.entities.ExtractedText
+import com.ukora.tradestudent.entities.KeywordAssociation
 import com.ukora.tradestudent.entities.TextAssociations
 import com.ukora.tradestudent.services.BytesFetcherService
+import com.ukora.tradestudent.services.TagService
 import com.ukora.tradestudent.services.associations.text.CaptureTextAssociationsService
 import com.ukora.tradestudent.services.associations.text.TextExtractorService
 import com.ukora.tradestudent.tags.AbstractCorrelationTag
 import com.ukora.tradestudent.tags.TagGroup
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.ApplicationContext
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 import javax.annotation.PostConstruct
@@ -27,8 +32,12 @@ class TextAssociationProbabilityService {
     @Autowired
     TextExtractorService textExtractorService
 
+    @Autowired
+    TagService tagService
+
     Map<String, TagGroup> tagGroupMap = [:]
     Map<String, AbstractCorrelationTag> tagMap = [:]
+    Map<String, Integer> tagCount = [:]
 
     @PostConstruct
     void init() {
@@ -45,6 +54,71 @@ class TextAssociationProbabilityService {
             tagGroupMap.put(it.key, it.value)
         }
 
+        refresh()
+
+    }
+
+    @Scheduled(initialDelay = 300000l, fixedRate = 300000l)
+    void refresh() {
+        tagMap.each {
+            Integer c = bytesFetcherService.getLessonCount(it.value.tagName)
+            if(c) tagCount.put(it.value.tagName, c)
+        }
+        evictKeywordAssociation()
+    }
+
+    @CacheEvict("keywordAssociation")
+    def evictKeywordAssociation(){ }
+
+    /**
+     * Get keyword association
+     *
+     * @param keyword
+     * @return
+     */
+    @Cacheable("keywordAssociation")
+    KeywordAssociation getKeywordAssociation(String keyword, ExtractedText.TextSource source){
+        BrainCount brainCount = bytesFetcherService.getBrainCount(
+                CaptureTextAssociationsService.generateReference(keyword, source as String),
+                source as String
+        )
+        if(brainCount) {
+            KeywordAssociation keywordAssociation = new KeywordAssociation()
+            keywordAssociation.source = source
+            tagMap.each {
+                AbstractCorrelationTag tag = it.value
+                TagGroup tagGroup = tagService.getTagGroupByTagName(it.value.tagName)
+                if(tag && tagGroup.tags().size() == 2){
+                    AbstractCorrelationTag counterTag = tagGroup.tags().find({
+                        it.tagName != tag.tagName
+                    })
+                    Double p = 1
+                    Integer tagKeywordAssociationCount = brainCount.counters.get(tag.tagName)
+                    Integer counterTagKeywordAssociationCount = brainCount.counters.get(counterTag.tagName)
+                    if(counterTag && tagKeywordAssociationCount && counterTagKeywordAssociationCount){
+                        p = (
+                                    tagCount.getOrDefault(tag.tagName, 1) /
+                                    tagCount.getOrDefault(counterTag.tagName, 1)
+                        ) * (
+                                tagKeywordAssociationCount / counterTagKeywordAssociationCount
+                        )
+                    }
+                    keywordAssociation.tagProbabilities.put(tag.tagName, p)
+
+                    /**
+                     *
+                     * lowerBound = abs( ( conversionRate + (pow(zValue, 2) / (2 * totalExposures)) - (zValue * sqrt((pow(zValue, 2)  / totalExposures)
+                     *
+                     * anyway - figure out how to get pValue
+                     *
+                     *
+                     */
+
+                }
+            }
+            return keywordAssociation
+        }
+        return null
     }
 
     /**
