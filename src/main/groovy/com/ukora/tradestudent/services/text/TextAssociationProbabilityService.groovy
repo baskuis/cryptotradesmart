@@ -96,24 +96,14 @@ class TextAssociationProbabilityService {
                     Integer tagKeywordAssociationCount = brainCount.counters.get(tag.tagName)
                     Integer counterTagKeywordAssociationCount = brainCount.counters.get(counterTag.tagName)
                     if(counterTag && tagKeywordAssociationCount && counterTagKeywordAssociationCount){
-                        p = (
-                                    tagCount.getOrDefault(tag.tagName, 1) /
-                                    tagCount.getOrDefault(counterTag.tagName, 1)
-                        ) * (
-                                tagKeywordAssociationCount / counterTagKeywordAssociationCount
+                        Double tagProportion = tagCount.getOrDefault(counterTag.tagName, 1) / (tagCount.getOrDefault(tag.tagName, 1) + tagCount.getOrDefault(counterTag.tagName, 1))
+                        Double counterTagProportion = 1 - tagProportion
+                        p = (tagProportion * tagKeywordAssociationCount) / (
+                                (tagProportion * tagKeywordAssociationCount) +
+                                        (counterTagProportion * counterTagKeywordAssociationCount)
                         )
                     }
                     keywordAssociation.tagProbabilities.put(tag.tagName, p)
-
-                    /**
-                     *
-                     * lowerBound = abs( ( conversionRate + (pow(zValue, 2) / (2 * totalExposures)) - (zValue * sqrt((pow(zValue, 2)  / totalExposures)
-                     *
-                     * anyway - figure out how to get pValue
-                     *
-                     *
-                     */
-
                 }
             }
             return keywordAssociation
