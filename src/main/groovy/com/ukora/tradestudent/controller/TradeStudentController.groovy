@@ -204,9 +204,9 @@ class TradeStudentController {
         simulationResultService.getTopPerformingTradeExecutionStrategies()
     }
 
-    @RequestMapping(path = '/textassociations', method = RequestMethod.GET)
+    @RequestMapping(path = '/keywords', method = RequestMethod.GET)
     def getTextAssociationProbabilityService(@RequestParam(value = 'date') Date date){
-        textAssociationProbabilityService.getTagCorrelationByText(date)
+        textAssociationProbabilityService.getTextKeywordsByDate(date)
     }
 
     @RequestMapping(path = '/lessontotals', method = RequestMethod.GET)
@@ -220,6 +220,11 @@ class TradeStudentController {
                 (ExtractedText.TextSource.TWITTER): textAssociationProbabilityService.getKeywordAssociation(keyword, ExtractedText.TextSource.TWITTER),
                 (ExtractedText.TextSource.NEWS): textAssociationProbabilityService.getKeywordAssociation(keyword, ExtractedText.TextSource.NEWS)
         ]
+    }
+
+    @RequestMapping(path = '/textassociations', method = RequestMethod.GET)
+    def getTextAssociations(@RequestParam(value = 'date') Date date){
+        textAssociationProbabilityService.tagCorrelationByText(date)
     }
 
     @RequestMapping(path = '/log', method = RequestMethod.GET)

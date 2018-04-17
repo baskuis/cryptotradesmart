@@ -252,7 +252,8 @@ class BytesFetcherService {
             "brainNodes",
             "simulations",
             "properties",
-            "associations"
+            "associations",
+            "brainCount"
     ], allEntries = true)
     void flushCache() {}
 
@@ -344,6 +345,7 @@ class BytesFetcherService {
      * @param source
      * @return
      */
+    @Cacheable("brainCount")
     BrainCount getBrainCount(String reference, String source) {
         BasicDBObject query = new BasicDBObject()
         query.put('reference', reference)
@@ -367,6 +369,7 @@ class BytesFetcherService {
      *
      * @param brainCount
      */
+    @CacheEvict(value = "brainCount", allEntries = true)
     void saveBrainCount(BrainCount brainCount) {
         DBObject obj = new BasicDBObject()
         if (brainCount.id) {
