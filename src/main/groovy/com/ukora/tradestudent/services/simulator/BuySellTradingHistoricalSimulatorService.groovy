@@ -136,6 +136,7 @@ class BuySellTradingHistoricalSimulatorService {
             Logger.log("There is already a simulation running")
             return
         }
+        def newSimulation = true
         def partitioned = multiThreadingEnabled ? (0..<numCores).collect {
             simulations[(it..<simulations.size()).step(numCores)]
         } : [simulations]
@@ -171,20 +172,37 @@ class BuySellTradingHistoricalSimulatorService {
                                 tradeExecutionStrategyMap.findAll { it.value.enabled }.each {
                                     String purseKey = String.format('%s:%s', strategy, it.key)
                                     boolean purseEnabled = simulation.pursesEnabled.get(purseKey, true)
-                                    if(purseEnabled) {
+                                    if (purseEnabled) {
                                         Double balanceProportion = (correlationAssociation.price) ? simulation.balancesA.getOrDefault(purseKey, STARTING_BALANCE) /
                                                 (simulation.balancesA.getOrDefault(purseKey, STARTING_BALANCE) + (simulation.balancesB.getOrDefault(purseKey, 0) / correlationAssociation.price)) : 1
-                                        if (!NerdUtils.assertRange(balanceProportion)){
+                                        if (!NerdUtils.assertRange(balanceProportion)) {
                                             Logger.log(String.format("balanceProportion %s is out of range", balanceProportion))
                                             return
                                         }
-                                        TradeExecution tradeExecution = it.value.getTrade(
-                                                correlationAssociation,
-                                                tag,
-                                                probability,
-                                                simulation,
-                                                strategy,
-                                                balanceProportion)
+                                        TradeExecution tradeExecution
+
+                                        /** balance purse - sell half of balance A for B at market price */
+                                        if(newSimulation) {
+                                            tradeExecution = new TradeExecution(
+                                                    date: correlationAssociation.date,
+                                                    price: correlationAssociation.price,
+                                                    tradeType: TradeExecution.TradeType.SELL,
+                                                    amount: STARTING_BALANCE / 2
+                                            )
+
+                                        /** otherwise check strategy */
+                                        } else {
+                                            tradeExecution = it.value.getTrade(
+                                                    correlationAssociation,
+                                                    tag,
+                                                    probability,
+                                                    simulation,
+                                                    strategy,
+                                                    balanceProportion)
+
+                                        }
+
+                                        /** execute trade */
                                         if (tradeExecution) {
                                             Logger.debug(String.format("key:%s,type:%s,probability:%s", purseKey, tradeExecution.tradeType, probability))
                                             simulateTrade(
@@ -193,11 +211,12 @@ class BuySellTradingHistoricalSimulatorService {
                                                     purseKey
                                             )
                                         }
+
                                     }
                                 }
 
                                 /** Disable simulation when all purses are disabled */
-                                if(simulation.pursesEnabled.collect { it.value }.size() == 0){
+                                if (simulation.pursesEnabled.collect { it.value }.size() == 0) {
                                     Logger.debug(String.format("Disabling on simulation %s all purses disabled", simulation))
                                     simulation.enabled = false
                                 }
@@ -206,8 +225,15 @@ class BuySellTradingHistoricalSimulatorService {
                         })
                     }
                     threads*.join()
+
+
+                    if (newSimulation) {
+                        newSimulation = false
+                    }
+
                 }
             }
+            newSimulation = false
             if (forceCompleteSimulation) break
         }
 
@@ -359,11 +385,11 @@ class BuySellTradingHistoricalSimulatorService {
      * @param purseKey
      */
     private static void assertSimulationPurseIsHealthy(Simulation simulation, String purseKey) {
-        if(simulation.totalBalances.get(purseKey) / STARTING_BALANCE < MAXIMUM_LOSS_TILL_QUIT){
+        if (simulation.totalBalances.get(purseKey) / STARTING_BALANCE < MAXIMUM_LOSS_TILL_QUIT) {
             Logger.debug(String.format("Disabling no longer performing simulation purse %s, loss to great", purseKey))
             simulation.pursesEnabled.put(purseKey, false)
         }
-        if(simulation.tradeCounts.get(purseKey) > MAXIMUM_TRADES_TILL_QUIT){
+        if (simulation.tradeCounts.get(purseKey) > MAXIMUM_TRADES_TILL_QUIT) {
             Logger.debug(String.format("Disabling no longer performing simulation purse %s, too many trades", purseKey))
             simulation.pursesEnabled.put(purseKey, false)
         }
