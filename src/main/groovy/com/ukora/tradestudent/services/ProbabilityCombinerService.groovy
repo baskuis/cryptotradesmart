@@ -129,7 +129,11 @@ class ProbabilityCombinerService {
                 }
             }
         }
-        return nodes
+        return nodes?.sort({
+            -(it.getValue().tagReference?.sort({ def numberAssociation ->
+                numberAssociation?.value?.relevance
+            })?.values()?.first()?.relevance)?:0
+        })
     }
 
     /**

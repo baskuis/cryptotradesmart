@@ -1,5 +1,7 @@
 package com.ukora.tradestudent.services
 
+import com.ukora.tradestudent.bayes.numbers.NumberAssociation
+import com.ukora.tradestudent.entities.BrainNode
 import com.ukora.tradestudent.entities.CorrelationAssociation
 import com.ukora.tradestudent.tags.TagGroup
 import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
@@ -16,6 +18,8 @@ class ProbabilityCombinerServiceSpec extends Specification {
     ProbabilityCombinerService probabilityCombinerService = new ProbabilityCombinerService()
 
     ApplicationContext applicationContext = Mock(ApplicationContext)
+
+    BytesFetcherService bytesFetcherService = Mock(BytesFetcherService)
 
     /**
      * This test makes sure that tag groups are correctly honored
@@ -51,6 +55,87 @@ class ProbabilityCombinerServiceSpec extends Specification {
         correlationAssociation.tagProbabilities[pCombiner]['sell'] == 0.16666666666666666d
         correlationAssociation.tagProbabilities[pCombiner]['up'] == 0.125d
         correlationAssociation.tagProbabilities[pCombiner]['down'] == 0.875d
+
+    }
+
+    //TODO: Test sorting
+    def "test getBrainNodes"() {
+
+        setup:
+        probabilityCombinerService.applicationContext = applicationContext
+        probabilityCombinerService.bytesFetcherService = bytesFetcherService
+
+        when:
+        probabilityCombinerService.init()
+        Map<String, BrainNode> nodes = probabilityCombinerService.getBrainNodes()
+
+        then:
+        1 * applicationContext.getBeansOfType(TagGroup) >> [
+                'buySellTagGroup': new BuySellTagGroup(buyTag: new BuyTag(), sellTag: new SellTag()),
+                'upDownTagGroup': new UpDownTagGroup(upTag: new UpTag(), downTag: new DownTag())
+        ]
+        1 * bytesFetcherService.getAllBrainNodes() >> ['low.relevance.example':
+                new BrainNode(
+                        tagReference: [
+                                'buy': new NumberAssociation(
+                                        count: 10,
+                                        relevance: 0.1,
+                                        mean: 0.5,
+                                        standard_deviation: 0.05
+                                ),
+                                'sell': new NumberAssociation(
+                                        count: 10,
+                                        relevance: 0.1,
+                                        mean: 0.5,
+                                        standard_deviation: 0.05
+                                ),
+                                'up': new NumberAssociation(
+                                        count: 10,
+                                        relevance: 0.1,
+                                        mean: 0.5,
+                                        standard_deviation: 0.05
+                                ),
+                                'down': new NumberAssociation(
+                                        count: 10,
+                                        relevance: 0.1,
+                                        mean: 0.5,
+                                        standard_deviation: 0.05
+                                )
+
+                        ]
+                ), 'high.relevance.example': new BrainNode(
+                        tagReference: [
+                                'buy': new NumberAssociation(
+                                        count: 10,
+                                        relevance: 0.3,
+                                        mean: 0.5,
+                                        standard_deviation: 0.05
+                                ),
+                                'sell': new NumberAssociation(
+                                        count: 10,
+                                        relevance: 0.1,
+                                        mean: 0.5,
+                                        standard_deviation: 0.05
+                                ),
+                                'up': new NumberAssociation(
+                                        count: 10,
+                                        relevance: 0.1,
+                                        mean: 0.5,
+                                        standard_deviation: 0.05
+                                ),
+                                'down': new NumberAssociation(
+                                        count: 10,
+                                        relevance: 0.1,
+                                        mean: 0.5,
+                                        standard_deviation: 0.05
+                                )
+
+                        ]
+                )
+        ]
+
+        expect:
+        nodes.values().first().tagReference.get('buy').relevance == 0.3
 
     }
 
