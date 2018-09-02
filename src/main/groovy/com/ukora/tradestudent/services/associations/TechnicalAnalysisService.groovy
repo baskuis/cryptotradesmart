@@ -207,9 +207,9 @@ class TechnicalAnalysisService {
      */
     private List<PriceEntry> getReferences(Date fromDate, Date toDate) {
         if (!fromDate) return null
-        Instant end = Instant.ofEpochMilli((Math.floor(toDate.time / 1000) * 1000) as Long)
+        Instant end = Instant.ofEpochMilli((Math.floor(toDate.time / 10000) * 10000) as Long)
         Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
-        Instant current = Instant.ofEpochMilli((Math.floor(fromDate.time / 1000) * 1000) as Long)
+        Instant current = Instant.ofEpochMilli((Math.floor(fromDate.time / 10000) * 10000) as Long)
         List<PriceEntry> priceEntries = []
         while (current.isBefore(end)) {
             current = current + gap
