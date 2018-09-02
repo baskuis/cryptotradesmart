@@ -57,7 +57,7 @@ class ProbabilityCombinerServiceSpec extends Specification {
         correlationAssociation.tagProbabilities[pCombiner]['down'] == 0.875d
 
     }
-    
+
     def "test getBrainNodes"() {
 
         setup:

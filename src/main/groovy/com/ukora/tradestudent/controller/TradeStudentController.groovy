@@ -64,6 +64,11 @@ class TradeStudentController {
         probabilityCombinerService.getBrainNodes()
     }
 
+    @RequestMapping(path = '/indicators', produces = 'application/json', method = RequestMethod.GET)
+    Set<String> getIndicators() {
+        probabilityCombinerService.getBrainNodes().keySet()
+    }
+
     @RequestMapping(path = '/brainon', method = RequestMethod.GET)
     String brainOn(@RequestParam(value = 'speed') Integer speed) {
         if (!speed || speed > 80 || speed < 1) speed = 1

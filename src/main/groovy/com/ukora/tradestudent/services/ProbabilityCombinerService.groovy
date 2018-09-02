@@ -34,6 +34,8 @@ class ProbabilityCombinerService {
     Map<String, TagGroup> tagGroupMap = [:]
     Map<String, AbstractCorrelationTag> tagMap = [:]
 
+    static final int MAX_CORRELATION_DATA_POINTS = 100
+
     static public boolean multiThreadingEnabled = true
 
     public final static int numCores = Runtime.getRuntime().availableProcessors()
@@ -151,6 +153,9 @@ class ProbabilityCombinerService {
         if (multiThreadingEnabled) Logger.debug(String.format("Delegating simulation to %s threads", numCores))
         if (multiThreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
         Map<String, BrainNode> brainNodes = getBrainNodes()
+        if (brainNodes.size() > MAX_CORRELATION_DATA_POINTS){
+           brainNodes = brainNodes.take(MAX_CORRELATION_DATA_POINTS)
+        }
         List<Thread> threads = []
         partitioned.collect { Map<String, Double> group ->
             threads << Thread.start({
