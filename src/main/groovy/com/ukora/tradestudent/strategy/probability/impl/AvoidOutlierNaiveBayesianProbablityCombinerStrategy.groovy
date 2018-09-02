@@ -12,7 +12,7 @@ class AvoidOutlierNaiveBayesianProbablityCombinerStrategy implements Probability
 
     public final static long MIN_RELEVANCE = 0.0075
 
-    boolean enabled = true
+    boolean enabled = false
 
     @Override
     String getAlias() {

@@ -30,7 +30,7 @@ class TechnicalAnalysisService {
 
     private static final int MIN_DISTANCE_FROM_PEAK = 20
 
-    private static Map<Date, Double> priceCache = new ConcurrentHashMap<>()
+    private static TreeMap<Long, Double> priceCache = [:]
 
     private static final List<Integer> analysisBoundaries = [
             30,
@@ -84,7 +84,7 @@ class TechnicalAnalysisService {
     /**
      * Drop price cache
      */
-    @Scheduled(fixedRate = 30000l)
+    @Scheduled(fixedRate = 300000l)
     static void dropPriceCache(){
         priceCache = new ConcurrentHashMap<>()
     }
@@ -213,7 +213,7 @@ class TechnicalAnalysisService {
         List<PriceEntry> priceEntries = []
         while (current.isBefore(end)) {
             current = current + gap
-            Double cachedPrice = priceCache.get(Date.from(current))
+            Double cachedPrice = priceCache.get(current.epochSecond)
             if(cachedPrice){
                 priceEntries << new PriceEntry(
                         date: Date.from(current),
@@ -226,7 +226,7 @@ class TechnicalAnalysisService {
                 if (!memory.metadata?.datetime || !memory.graph?.price) {
                     continue
                 }
-                priceCache.put(Date.from(current), memory.graph.price)
+                priceCache.put(current.epochSecond, memory.graph.price)
                 priceEntries << new PriceEntry(
                         date: memory.metadata.datetime,
                         price: memory.graph.price

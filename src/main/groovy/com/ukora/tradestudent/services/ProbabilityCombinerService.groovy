@@ -43,6 +43,8 @@ class ProbabilityCombinerService {
 
     public final static int numCores = Runtime.getRuntime().availableProcessors()
 
+    static Map<String, ProbabilityCombinerStrategy> enabledProbabilityCombiners = [:]
+
     /**
      * This is a factor by which the bell-curve proportion will be softened
      * and will determine at which point the threshold will cause P=0 with outliers
@@ -65,6 +67,9 @@ class ProbabilityCombinerService {
             Logger.log(String.format("Found tag group %s", it.key))
             tagGroupMap.put(it.key, it.value)
         }
+
+        /** Enabled probability combiners */
+        enabledProbabilityCombiners = applicationContext.getBeansOfType(ProbabilityCombinerStrategy).findAll { it.value.enabled }
 
         /** Setup relevant nodes */
         setRelevantNodes()
@@ -233,8 +238,7 @@ class ProbabilityCombinerService {
         tagGroupMap.each {
             it.value.tags().each {
                 String tag = it.getTagName()
-                Map<String, ProbabilityCombinerStrategy> probabilityCombinerStrategyMap = applicationContext.getBeansOfType(ProbabilityCombinerStrategy)
-                probabilityCombinerStrategyMap.findAll { it.value.enabled }.each {
+                enabledProbabilityCombiners.each {
                     if (it.value instanceof TagSubset && !(it.value as TagSubset).applies(tag)) {
                         Logger.debug(String.format("Skipping p combiner strategy: %s for tag: %s", it.key, tag))
                         return

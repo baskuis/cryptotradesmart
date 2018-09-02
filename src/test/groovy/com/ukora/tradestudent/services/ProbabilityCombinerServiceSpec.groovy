@@ -3,6 +3,8 @@ package com.ukora.tradestudent.services
 import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.entities.BrainNode
 import com.ukora.tradestudent.entities.CorrelationAssociation
+import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
+import com.ukora.tradestudent.strategy.probability.impl.AverageProbabilityCombinerStrategy
 import com.ukora.tradestudent.tags.TagGroup
 import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
 import com.ukora.tradestudent.tags.buysell.BuyTag
@@ -135,6 +137,9 @@ class ProbabilityCombinerServiceSpec extends Specification {
                 'buySellTagGroup': new BuySellTagGroup(buyTag: new BuyTag(), sellTag: new SellTag()),
                 'upDownTagGroup': new UpDownTagGroup(upTag: new UpTag(), downTag: new DownTag())
         ]
+        1 * applicationContext.getBeansOfType(ProbabilityCombinerStrategy) >> [
+                'averageStrategy': new AverageProbabilityCombinerStrategy()
+        ]
         1 * bytesFetcherService.getAllBrainNodes() >> bytesFetcherResponse
 
         expect:
@@ -160,6 +165,9 @@ class ProbabilityCombinerServiceSpec extends Specification {
         1 * applicationContext.getBeansOfType(TagGroup) >> [
                 'buySellTagGroup': new BuySellTagGroup(buyTag: new BuyTag(), sellTag: new SellTag()),
                 'upDownTagGroup': new UpDownTagGroup(upTag: new UpTag(), downTag: new DownTag())
+        ]
+        1 * applicationContext.getBeansOfType(ProbabilityCombinerStrategy) >> [
+                'averageStrategy': new AverageProbabilityCombinerStrategy()
         ]
         2 * bytesFetcherService.getAllBrainNodes() >> bytesFetcherResponse
 
@@ -193,6 +201,9 @@ class ProbabilityCombinerServiceSpec extends Specification {
         1 * applicationContext.getBeansOfType(TagGroup) >> [
                 'buySellTagGroup': new BuySellTagGroup(buyTag: new BuyTag(), sellTag: new SellTag()),
                 'upDownTagGroup': new UpDownTagGroup(upTag: new UpTag(), downTag: new DownTag())
+        ]
+        1 * applicationContext.getBeansOfType(ProbabilityCombinerStrategy) >> [
+                'averageStrategy': new AverageProbabilityCombinerStrategy()
         ]
         1 * bytesFetcherService.getAllBrainNodes() >> bytesFetcherResponse
 

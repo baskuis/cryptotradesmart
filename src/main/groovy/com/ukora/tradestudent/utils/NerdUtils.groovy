@@ -235,7 +235,7 @@ class NerdUtils {
         for (SimpleDateFormat pattern : knownPatterns) {
             try {
                 return new Date(pattern.parse(dateString).getTime())
-            } catch (ParseException e) { }
+            } catch (Exception e) { /** Ignore */ }
         }
         return null
     }

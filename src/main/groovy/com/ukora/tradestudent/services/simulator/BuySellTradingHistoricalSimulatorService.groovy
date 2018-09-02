@@ -144,6 +144,7 @@ class BuySellTradingHistoricalSimulatorService {
         if (multiThreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
         simulationRunning = true
         resetSimulations()
+        def enabledTradeStrategies = tradeExecutionStrategyMap.findAll { it.value.enabled }
         Instant end = Instant.now()
         Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
         Instant current = Instant.ofEpochMilli(fromDate.time)
@@ -169,7 +170,7 @@ class BuySellTradingHistoricalSimulatorService {
                                 /** Run simulation */
                                 Simulation simulation = it
                                 simulation.finalPrice = correlationAssociation.price
-                                tradeExecutionStrategyMap.findAll { it.value.enabled }.each {
+                                enabledTradeStrategies.each {
                                     String purseKey = String.format('%s:%s', strategy, it.key)
                                     boolean purseEnabled = simulation.pursesEnabled.get(purseKey, true)
                                     if (purseEnabled) {

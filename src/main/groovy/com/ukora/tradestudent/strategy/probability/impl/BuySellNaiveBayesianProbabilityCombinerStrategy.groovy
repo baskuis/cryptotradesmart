@@ -28,7 +28,7 @@ class BuySellNaiveBayesianProbabilityCombinerStrategy implements ProbabilityComb
         buySellTagGroup.applies(toTag)
     }
 
-    boolean enabled = true
+    boolean enabled = false
 
     @Override
     boolean isEnabled() {
