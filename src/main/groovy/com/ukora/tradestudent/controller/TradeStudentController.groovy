@@ -66,7 +66,7 @@ class TradeStudentController {
 
     @RequestMapping(path = '/indicators', produces = 'application/json', method = RequestMethod.GET)
     Set<String> getIndicators() {
-        probabilityCombinerService.getBrainNodes().keySet()
+        probabilityCombinerService.getRelevantBrainNodes().keySet()
     }
 
     @RequestMapping(path = '/brainon', method = RequestMethod.GET)

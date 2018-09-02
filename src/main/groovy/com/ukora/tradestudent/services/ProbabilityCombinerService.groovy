@@ -14,6 +14,7 @@ import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.ApplicationContext
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 import javax.annotation.PostConstruct
@@ -33,6 +34,8 @@ class ProbabilityCombinerService {
 
     Map<String, TagGroup> tagGroupMap = [:]
     Map<String, AbstractCorrelationTag> tagMap = [:]
+
+    public static Map<String, BrainNode> relevantNodes = [:]
 
     static final int MAX_CORRELATION_DATA_POINTS = 100
 
@@ -63,6 +66,14 @@ class ProbabilityCombinerService {
             tagGroupMap.put(it.key, it.value)
         }
 
+        /** Setup relevant nodes */
+        setRelevantNodes()
+
+    }
+
+    @Scheduled(initialDelay = 30000L, fixedRate = 600000L)
+    Map<String, BrainNode> setRelevantNodes() {
+        relevantNodes = getBrainNodes()?.take(MAX_CORRELATION_DATA_POINTS)
     }
 
     /**
@@ -142,6 +153,29 @@ class ProbabilityCombinerService {
     }
 
     /**
+     * Get relevant brain nodes
+     *
+     * @return
+     */
+    static Map<String, BrainNode> getRelevantBrainNodes(){
+        return relevantNodes
+    }
+
+    /**
+     * Filter out irrelevant brain
+     * nodes
+     *
+     * @param correlationAssociation
+     */
+    static void filterOutIrrelevantBrainNodes(CorrelationAssociation correlationAssociation) {
+        if(relevantNodes){
+            correlationAssociation.numericAssociations = correlationAssociation.numericAssociations.findAll {
+                return (relevantNodes?.keySet()?:[]).contains(it.key)
+            }
+        }
+    }
+
+    /**
      * Hydrate probabilities
      * comparing each tag to the 'general' collection for
      * this numeric association
@@ -149,19 +183,16 @@ class ProbabilityCombinerService {
      * @param correlationAssociation
      */
     void hydrateProbabilities(CorrelationAssociation correlationAssociation){
+        filterOutIrrelevantBrainNodes(correlationAssociation)
         def partitioned = multiThreadingEnabled ? NerdUtils.partitionMap(correlationAssociation.numericAssociations, numCores) : [correlationAssociation.numericAssociations]
         if (multiThreadingEnabled) Logger.debug(String.format("Delegating simulation to %s threads", numCores))
         if (multiThreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
-        Map<String, BrainNode> brainNodes = getBrainNodes()
-        if (brainNodes.size() > MAX_CORRELATION_DATA_POINTS){
-           brainNodes = brainNodes.take(MAX_CORRELATION_DATA_POINTS)
-        }
         List<Thread> threads = []
         partitioned.collect { Map<String, Double> group ->
             threads << Thread.start({
                 group.each {
                     String reference = it.key
-                    BrainNode brainNode = brainNodes.get(it.key)
+                    BrainNode brainNode = relevantNodes.get(it.key)
                     Double normalizedValue = it.value
                     tagGroupMap.each {
                         TagGroup tagGroup = it.value
