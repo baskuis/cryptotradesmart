@@ -57,8 +57,7 @@ class ProbabilityCombinerServiceSpec extends Specification {
         correlationAssociation.tagProbabilities[pCombiner]['down'] == 0.875d
 
     }
-
-    //TODO: Test sorting
+    
     def "test getBrainNodes"() {
 
         setup:
@@ -79,27 +78,27 @@ class ProbabilityCombinerServiceSpec extends Specification {
                         tagReference: [
                                 'buy': new NumberAssociation(
                                         count: 10,
-                                        relevance: 0.1,
-                                        mean: 0.5,
+                                        relevance: null,
+                                        mean: 0.4,
                                         standard_deviation: 0.05
                                 ),
                                 'sell': new NumberAssociation(
                                         count: 10,
-                                        relevance: 0.1,
+                                        relevance: null,
                                         mean: 0.5,
                                         standard_deviation: 0.05
                                 ),
                                 'up': new NumberAssociation(
                                         count: 10,
                                         relevance: 0.1,
-                                        mean: 0.5,
-                                        standard_deviation: 0.05
+                                        mean: 0.6,
+                                        standard_deviation: 0.06
                                 ),
                                 'down': new NumberAssociation(
                                         count: 10,
                                         relevance: 0.1,
                                         mean: 0.5,
-                                        standard_deviation: 0.05
+                                        standard_deviation: 0.06
                                 )
 
                         ]
@@ -107,20 +106,49 @@ class ProbabilityCombinerServiceSpec extends Specification {
                         tagReference: [
                                 'buy': new NumberAssociation(
                                         count: 10,
-                                        relevance: 0.3,
-                                        mean: 0.5,
-                                        standard_deviation: 0.05
+                                        relevance: null,
+                                        mean: 0.4,
+                                        standard_deviation: 0.02
                                 ),
                                 'sell': new NumberAssociation(
                                         count: 10,
-                                        relevance: 0.1,
+                                        relevance: null,
                                         mean: 0.5,
-                                        standard_deviation: 0.05
+                                        standard_deviation: 0.02
                                 ),
                                 'up': new NumberAssociation(
                                         count: 10,
                                         relevance: 0.1,
+                                        mean: 0.6,
+                                        standard_deviation: 0.03
+                                ),
+                                'down': new NumberAssociation(
+                                        count: 10,
+                                        relevance: 0.1,
                                         mean: 0.5,
+                                        standard_deviation: 0.03
+                                )
+
+                        ]
+                ), 'medium.relevance.example':
+                new BrainNode(
+                        tagReference: [
+                                'buy': new NumberAssociation(
+                                        count: 10,
+                                        relevance: null,
+                                        mean: 0.4,
+                                        standard_deviation: 0.04
+                                ),
+                                'sell': new NumberAssociation(
+                                        count: 10,
+                                        relevance: null,
+                                        mean: 0.5,
+                                        standard_deviation: 0.04
+                                ),
+                                'up': new NumberAssociation(
+                                        count: 10,
+                                        relevance: 0.1,
+                                        mean: 0.6,
                                         standard_deviation: 0.05
                                 ),
                                 'down': new NumberAssociation(
@@ -135,7 +163,9 @@ class ProbabilityCombinerServiceSpec extends Specification {
         ]
 
         expect:
-        nodes.values().first().tagReference.get('buy').relevance == 0.3
+        nodes.values()[0].tagReference.get('buy').relevance == 0.9149457826670966
+        nodes.values()[1].tagReference.get('buy').relevance == 0.37138805229168415
+        nodes.values()[2].tagReference.get('buy').relevance == 0.24453711745832485
 
     }
 

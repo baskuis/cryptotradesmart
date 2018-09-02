@@ -130,9 +130,12 @@ class ProbabilityCombinerService {
             }
         }
         return nodes?.sort({
-            -(it.getValue().tagReference?.sort({ def numberAssociation ->
-                numberAssociation?.value?.relevance
-            })?.values()?.first()?.relevance)?:0
+            def tags = it.getValue().tagReference.findAll({
+                !it.key.contains('general')
+            })
+            return -((tags?.values()?.sum({
+                it.relevance?:0
+            })?:0) / (tags?.values()?.size()?:1))
         })
     }
 
