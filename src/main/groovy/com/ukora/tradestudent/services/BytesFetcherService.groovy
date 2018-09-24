@@ -274,6 +274,7 @@ class BytesFetcherService {
                     simulation.id = obj['_id']
                 }
                 simulation.differential = obj['differential'] as Double
+                if(!obj['startDate']) continue
                 simulation.startDate = dateParser.parse(obj['startDate'] as String)
                 simulation.probabilityCombinerStrategy = obj['probabilityCombinerStrategy']
                 simulation.tradeExecutionStrategy = obj['tradeExecutionStrategy']
