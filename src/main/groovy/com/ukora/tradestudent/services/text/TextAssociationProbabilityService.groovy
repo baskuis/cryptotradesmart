@@ -143,7 +143,6 @@ class TextAssociationProbabilityService {
 
         Map<String, Map<String, Map<String, Double>>> strategyProbabilities = [:]
 
-
         textProbabilityCombinerStrategyMap.each {
             String strategy = it.key
             TextProbabilityCombinerStrategy textProbabilityCombinerStrategy = it.value
@@ -199,7 +198,7 @@ class TextAssociationProbabilityService {
         Logger.log(String.format('Attempting to get association for %s', eventDate))
         ExtractedText extractedText = textExtractorService.extractTextForDate(eventDate)
         TextAssociations textAssociations = new TextAssociations()
-        extractedText.extract(ExtractedText.TextSource.TWITTER).unique().each { String word ->
+        extractedText.extract(ExtractedText.TextSource.TWITTER)?.unique()?.each { String word ->
             String source = ExtractedText.TextSource.TWITTER as String
             BrainCount brainCount = bytesFetcherService.getBrainCount(
                     CaptureTextAssociationsService.generateReference(
@@ -213,7 +212,7 @@ class TextAssociationProbabilityService {
             list.add(brainCount)
             textAssociations.tagAssociations.put(ExtractedText.TextSource.TWITTER, list)
         }
-        extractedText.extract(ExtractedText.TextSource.NEWS).unique().each { String word ->
+        extractedText.extract(ExtractedText.TextSource.NEWS)?.unique()?.each { String word ->
             tagMap.each { def tag ->
                 String source = ExtractedText.TextSource.NEWS as String
                 BrainCount brainCount = bytesFetcherService.getBrainCount(
