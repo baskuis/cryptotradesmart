@@ -105,7 +105,7 @@ class NewsBalanceReversalTrendAwareProgressiveTradeExecutionStrategy implements 
     ) {
         TradeExecution tradeExecution = null
 
-        ExtractedText.TextSource textSource = ExtractedText.TextSource.NEWS
+        String textSource = ExtractedText.TextSource.NEWS.name()
         Double buyTextProbability
         Double sellTextProbability
         Double upTextProbability

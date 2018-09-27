@@ -253,7 +253,8 @@ class BytesFetcherService {
             "simulations",
             "properties",
             "associations",
-            "brainCount"
+            "brainCount",
+            "textTagCorrelations"
     ], allEntries = true)
     void flushCache() {}
 

@@ -74,7 +74,7 @@ class NewsBalanceReversalTrendAwareProgressiveTradeExecutionStrategySpec extends
         then:
         1 * mockTextAssociationProbabilityService.tagCorrelationByText(_) >> [
                 averageTextProbabilityCombinerStrategy: [
-                        (ExtractedText.TextSource.NEWS): [
+                        (ExtractedText.TextSource.NEWS.name()): [
                                 'buy'         : 0.60,
                                 'sell'        : 0.40,
                                 'up'          : 0.55,
