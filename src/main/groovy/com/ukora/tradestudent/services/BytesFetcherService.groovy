@@ -14,6 +14,7 @@ import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.ApplicationContext
 import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.util.StringUtils
 
@@ -340,6 +341,17 @@ class BytesFetcherService {
     }
 
     /**
+     * Evict brain count
+     *
+     * @return
+     */
+    @Scheduled(cron = "15 */20 * * * *")
+    @CacheEvict(value = "brainCount", allEntries = true)
+    static def evictBrainCount() {
+        Logger.log('evicting brainCount cache')
+    }
+
+    /**
      * Get brain count
      *
      * @param reference
@@ -371,7 +383,6 @@ class BytesFetcherService {
      *
      * @param brainCount
      */
-    @CacheEvict(value = "brainCount", allEntries = true)
     void saveBrainCount(BrainCount brainCount) {
         DBObject obj = new BasicDBObject()
         if (brainCount.id) {
