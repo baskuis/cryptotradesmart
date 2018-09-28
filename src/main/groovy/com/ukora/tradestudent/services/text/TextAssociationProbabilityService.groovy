@@ -35,7 +35,7 @@ class TextAssociationProbabilityService {
     TextExtractorService textExtractorService
 
     @Autowired
-    TagService tagService
+    KeywordAssociationService keywordAssociationService
 
     Map<String, TagGroup> tagGroupMap = [:]
     Map<String, AbstractCorrelationTag> tagMap = [:]
@@ -69,57 +69,12 @@ class TextAssociationProbabilityService {
     }
 
     @Scheduled(initialDelay = 300000l, fixedRate = 300000l)
+    @CacheEvict(value = "textTagCorrelations", allEntries = true)
     void refresh() {
         tagMap.each {
             Integer c = bytesFetcherService.getLessonCount(it.value.tagName)
             if(c) tagCount.put(it.value.tagName, c)
         }
-        evictKeywordAssociation()
-    }
-
-    @CacheEvict("keywordAssociation")
-    def evictKeywordAssociation(){ }
-
-    /**
-     * Get keyword association
-     *
-     * @param keyword
-     * @return
-     */
-    @Cacheable("keywordAssociation")
-    KeywordAssociation getKeywordAssociation(String keyword, ExtractedText.TextSource source){
-        BrainCount brainCount = bytesFetcherService.getBrainCount(
-                CaptureTextAssociationsService.generateReference(keyword, source as String),
-                source as String
-        )
-        if(brainCount) {
-            KeywordAssociation keywordAssociation = new KeywordAssociation()
-            keywordAssociation.source = source
-            tagMap.each {
-                AbstractCorrelationTag tag = it.value
-                TagGroup tagGroup = tagService.getTagGroupByTagName(it.value.tagName)
-                if(tag && tagGroup.tags().size() == 2){
-                    AbstractCorrelationTag counterTag = tagGroup.tags().find({
-                        it.tagName != tag.tagName
-                    })
-                    Double p = 1 / tagGroup.tags().size()
-                    Integer tagKeywordAssociationCount = brainCount.counters.get(tag.tagName)
-                    Integer counterTagKeywordAssociationCount = brainCount.counters.get(counterTag.tagName)
-                    if(counterTag && tagKeywordAssociationCount && counterTagKeywordAssociationCount){
-                        Double tagProportion = tagCount.getOrDefault(counterTag.tagName, 1) /
-                                (tagCount.getOrDefault(tag.tagName, 1) + tagCount.getOrDefault(counterTag.tagName, 1))
-                        Double counterTagProportion = 1 - tagProportion
-                        p = (tagProportion * tagKeywordAssociationCount) / (
-                                (tagProportion * tagKeywordAssociationCount) +
-                                        (counterTagProportion * counterTagKeywordAssociationCount)
-                        )
-                    }
-                    keywordAssociation.tagProbabilities.put(tag.tagName, p)
-                }
-            }
-            return keywordAssociation
-        }
-        return null
     }
 
     /**
@@ -129,17 +84,18 @@ class TextAssociationProbabilityService {
      */
     @Cacheable("textTagCorrelations")
     def tagCorrelationByText(Date eventDate){
+
         Logger.log(String.format('Attempting to get association for %s', eventDate))
         ExtractedText extractedText = textExtractorService.extractTextForDate(eventDate)
 
         Map<String, KeywordAssociation> keywordAssociationsNews = [:]
         extractedText.extract(ExtractedText.TextSource.NEWS).each {
-            keywordAssociationsNews.put(it, getKeywordAssociation(it, ExtractedText.TextSource.NEWS))
+            keywordAssociationsNews.put(it, keywordAssociationService.getKeywordAssociation(it, ExtractedText.TextSource.NEWS))
         }
 
         Map<String, KeywordAssociation> keywordAssociationsTwitter = [:]
         extractedText.extract(ExtractedText.TextSource.TWITTER).each {
-            keywordAssociationsTwitter.put(it, getKeywordAssociation(it, ExtractedText.TextSource.TWITTER))
+            keywordAssociationsTwitter.put(it, keywordAssociationService.getKeywordAssociation(it, ExtractedText.TextSource.TWITTER))
         }
 
         Map<String, Map<String, Map<String, Double>>> strategyProbabilities = [:]
@@ -157,8 +113,6 @@ class TextAssociationProbabilityService {
             }
             strategyProbabilities.put(strategy, getProportionedProbabilities(tagsMap))
         }
-
-
 
         return strategyProbabilities
     }
