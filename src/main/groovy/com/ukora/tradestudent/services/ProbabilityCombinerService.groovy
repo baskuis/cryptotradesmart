@@ -12,6 +12,7 @@ import com.ukora.tradestudent.tags.TagSubset
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.ApplicationContext
 import org.springframework.scheduling.annotation.Scheduled
@@ -77,6 +78,10 @@ class ProbabilityCombinerService {
     }
 
     @Scheduled(initialDelay = 30000L, fixedRate = 600000L)
+    @CacheEvict(value = [
+            "associations",
+            "brainNodes"
+    ], allEntries = true)
     Map<String, BrainNode> setRelevantNodes() {
         relevantNodes = getBrainNodes()?.take(MAX_CORRELATION_DATA_POINTS)
     }

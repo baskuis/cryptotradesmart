@@ -6,6 +6,7 @@ import com.ukora.tradestudent.entities.Twitter
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
 @Service
@@ -16,6 +17,7 @@ class TextExtractorService {
     @Autowired
     BytesFetcherService bytesFetcherService
 
+    @Cacheable("extractedText")
     ExtractedText extractTextForDate(Date date){
 
         /** get news */
