@@ -10,16 +10,18 @@ buildscript {
     }
 }
 
-allprojects {
-    repositories {
-        mavenLocal()
-        mavenCentral()
-    }
-}
-
 apply plugin: 'groovy'
 apply plugin: 'idea'
 
 group = 'com.ukora'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    compile project (':collect')
+}
