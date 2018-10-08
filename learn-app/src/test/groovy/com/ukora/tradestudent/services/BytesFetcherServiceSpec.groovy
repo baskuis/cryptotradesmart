@@ -6,31 +6,35 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.ApplicationContext
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.test.context.junit4.SpringRunner
 
 @RunWith(SpringRunner)
-@DataMongoTest
+@SpringBootTest
 class BytesFetcherServiceSpec {
 
-    BytesFetcherService bytesFetcherService = new BytesFetcherService()
-
     @Autowired
-    MongoTemplate mongoTemplate
+    BytesFetcherService bytesFetcherService
 
-    @Autowired
-    ApplicationContext applicationContext
+    @Test
+    void testInsertThenReadProperty() {
 
-    @Before
-    void before() {
-        bytesFetcherService.mongoTemplate = mongoTemplate
-        bytesFetcherService.applicationContext = applicationContext
-        bytesFetcherService.init()
+        Property p = new Property(
+                name: "foo",
+                value: "bar"
+        )
+
+
+        bytesFetcherService.saveProperty(p)
+
+
+
     }
 
     @Test
-    void "test insertMemory/getMemory"() {
+    void testInsertThenReadMemory() {
 
         Memory memory = new Memory(
                 metadata: new Metadata(

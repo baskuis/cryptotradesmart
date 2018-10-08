@@ -1,7 +1,12 @@
 package com.ukora.tradestudent.entities
 
+import org.springframework.data.annotation.Id
+
 class SimulationResult {
+
+    @Id
     String id
+
     Exchange exchange
     Metadata metadata = new Metadata(
             datetime: new Date(),

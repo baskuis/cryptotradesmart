@@ -4,6 +4,9 @@ import com.mongodb.*
 import com.ukora.tradestudent.TradestudentApplication
 import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.entities.*
+import com.ukora.tradestudent.repositories.LessonRepository
+import com.ukora.tradestudent.repositories.PropertyRepository
+import com.ukora.tradestudent.repositories.SimulationResultRepository
 import com.ukora.tradestudent.strategy.trading.TradeExecution
 import com.ukora.tradestudent.tags.TagGroup
 import com.ukora.tradestudent.utils.Logger
@@ -13,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.ApplicationContext
+import org.springframework.data.domain.Sort
+import org.springframework.data.mongodb.core.MongoOperations
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.stereotype.Service
 import org.springframework.util.StringUtils
@@ -50,31 +55,38 @@ class BytesFetcherService {
     Map<String, TagGroup> tagGroupMap
 
     @Autowired
-    MongoTemplate mongoTemplate
+    MongoClient mongoClient
 
-    DBCollection lessons
-    DBCollection memory
-    DBCollection news
-    DBCollection twitter
-    DBCollection associations
-    DBCollection brain
-    DBCollection brainCount
-    DBCollection simulations
-    DBCollection properties
-    DBCollection simulatedTrades
+    @Autowired
+    PropertyRepository propertyRepository
+    @Autowired
+    LessonRepository lessonRepository
+    @Autowired
+    SimulationResultRepository simulationResultRepository
+
+    MongoOperations lessons
+    MongoOperations memory
+    MongoOperations news
+    MongoOperations twitter
+    MongoOperations associations
+    MongoOperations brain
+    MongoOperations brainCount
+    MongoOperations simulations
+    MongoOperations properties
+    MongoOperations simulatedTrades
 
     @PostConstruct
     void init() {
-        this.lessons = mongoTemplate.getCollection(COLLECTION_LESSONS)
-        this.memory = mongoTemplate.getCollection(COLLECTION_MEMORY)
-        this.news = mongoTemplate.getCollection(COLLECTION_NEWS)
-        this.twitter = mongoTemplate.getCollection(COLLECTION_TWITTER)
-        this.associations = mongoTemplate.getCollection(COLLECTION_ASSOCIATIONS)
-        this.brain = mongoTemplate.getCollection(COLLECTION_BRAIN)
-        this.brainCount = mongoTemplate.getCollection(COLLECTION_BRAIN_COUNT)
-        this.simulations = mongoTemplate.getCollection(COLLECTION_SIMULATIONS)
-        this.properties = mongoTemplate.getCollection(COLLECTION_PROPERTIES)
-        this.simulatedTrades = mongoTemplate.getCollection(COLLECTION_SIMULATED_TRADES)
+        this.lessons = new MongoTemplate(mongoClient, COLLECTION_LESSONS)
+        this.memory = new MongoTemplate(mongoClient, COLLECTION_MEMORY)
+        this.news = new MongoTemplate(mongoClient, COLLECTION_NEWS)
+        this.twitter = new MongoTemplate(mongoClient, COLLECTION_TWITTER)
+        this.associations = new MongoTemplate(mongoClient, COLLECTION_ASSOCIATIONS)
+        this.brain = new MongoTemplate(mongoClient, COLLECTION_BRAIN)
+        this.brainCount = new MongoTemplate(mongoClient, COLLECTION_BRAIN_COUNT)
+        this.simulations = new MongoTemplate(mongoClient, COLLECTION_SIMULATIONS)
+        this.properties = new MongoTemplate(mongoClient, COLLECTION_PROPERTIES)
+        this.simulatedTrades = new MongoTemplate(mongoClient, COLLECTION_SIMULATED_TRADES)
         tagGroupMap = applicationContext.getBeansOfType(TagGroup)
     }
 
@@ -86,16 +98,7 @@ class BytesFetcherService {
      */
     @Cacheable("properties")
     Property getProperty(String name) {
-        BasicDBObject query = new BasicDBObject()
-        query.put('name', name)
-        DBObject obj = this.properties.findOne(query)
-        if(obj) {
-            return new Property(
-                    name: name,
-                    value: obj['value']
-            )
-        }
-        return null
+        return propertyRepository.findByName(name)
     }
 
     /**
@@ -105,7 +108,7 @@ class BytesFetcherService {
      */
     @CacheEvict(value = "properties", allEntries = true)
     void saveProperty(Property property) {
-        saveProperty(property.name, property.value)
+        propertyRepository.save(property)
     }
 
     /**
@@ -116,17 +119,10 @@ class BytesFetcherService {
      */
     @CacheEvict(value = "properties", allEntries = true)
     void saveProperty(String name, String value) {
-        try {
-            BasicDBObject query = new BasicDBObject()
-            query.put('name', name)
-            DBObject obj = this.properties.findOne(query)
-            if(!obj) obj = new BasicDBObject()
-            obj['name'] = name
-            obj['value'] = value
-            this.properties.save(obj)
-        } catch (Exception e) {
-            e.printStackTrace()
-        }
+        propertyRepository.save(new Property(
+                name: name,
+                value: value
+        ))
     }
 
     /**
@@ -134,11 +130,14 @@ class BytesFetcherService {
      *
      * @return
      */
-    List<SimulatedTradeEntry> getLatestSimulatedTradeEntries(){
+    List<SimulatedTradeEntry> getLatestSimulatedTradeEntries() {
         List<SimulatedTradeEntry> entries = []
         BasicDBObject sortByDateDesc = new BasicDBObject()
         sortByDateDesc.put('date', -1)
-        DBCursor cursor =  this.simulatedTrades.find().sort(sortByDateDesc).limit(2000)
+        DBCursor cursor = this.simulatedTrades.find().sort(sortByDateDesc).limit(2000)
+
+        simulationResultRepository.findAll(new Sort())
+
         while (cursor.hasNext()) {
             DBObject obj = cursor.next()
             Metadata metadata = new Metadata(
@@ -166,10 +165,10 @@ class BytesFetcherService {
      *
      * @return
      */
-    SimulatedTradeEntry getLatestSimulatedTradeEntry(){
+    SimulatedTradeEntry getLatestSimulatedTradeEntry() {
         BasicDBObject sortByDateDesc = new BasicDBObject()
         sortByDateDesc.put('date', -1)
-        DBCursor cursor =  this.simulatedTrades.find().sort(sortByDateDesc).limit(1)
+        DBCursor cursor = this.simulatedTrades.find().sort(sortByDateDesc).limit(1)
         while (cursor.hasNext()) {
             DBObject obj = cursor.next()
             Metadata metadata = new Metadata(
@@ -195,8 +194,8 @@ class BytesFetcherService {
      *
      * @param simulatedTradeEntry
      */
-    void insertSimulatedTradeEntry(SimulatedTradeEntry simulatedTradeEntry){
-        if(!simulatedTradeEntry) return
+    void insertSimulatedTradeEntry(SimulatedTradeEntry simulatedTradeEntry) {
+        if (!simulatedTradeEntry) return
         DBObject obj = new BasicDBObject()
         obj['tradeType'] = simulatedTradeEntry.getTradeType() as String
         obj['date'] = simulatedTradeEntry.getDate()
@@ -226,15 +225,15 @@ class BytesFetcherService {
      * @param maxCount
      */
     @CacheEvict(value = "brainNodes", allEntries = true)
-    void resetBrainNodesCount(TagGroup tagGroup, int maxCount){
+    void resetBrainNodesCount(TagGroup tagGroup, int maxCount) {
         DBCursor cursor = this.brain.find()
-        while(cursor.hasNext()){
+        while (cursor.hasNext()) {
             DBObject obj = cursor.next()
-            if(
-                obj['tag'] &&
-                tagGroup.tags().collect({ it.tagName }).contains(obj['tag']) &&
-                obj['count'] && obj['count'] > maxCount
-            ){
+            if (
+            obj['tag'] &&
+                    tagGroup.tags().collect({ it.tagName }).contains(obj['tag']) &&
+                    obj['count'] && obj['count'] > maxCount
+            ) {
                 obj['count'] = maxCount
                 this.brain.save(obj)
             }
@@ -393,20 +392,20 @@ class BytesFetcherService {
         query.put('tag', tag)
         DBObject obj = this.brain.findOne(query)
         if (obj == null) return new Brain(
-            id: null,
-            tag: tag,
-            reference: reference,
-            mean: 0 as Double,
-            count: 0 as Integer,
-            standard_deviation: 0 as Double
+                id: null,
+                tag: tag,
+                reference: reference,
+                mean: 0 as Double,
+                count: 0 as Integer,
+                standard_deviation: 0 as Double
         )
         return new Brain(
-            id: obj['_id'] as String,
-            tag: obj['tag'] as String,
-            reference: obj['reference'] as String,
-            mean: obj['mean'] as Double,
-            count: obj['count'] as Integer,
-            standard_deviation: obj['standard_deviation'] as Double
+                id: obj['_id'] as String,
+                tag: obj['tag'] as String,
+                reference: obj['reference'] as String,
+                mean: obj['mean'] as Double,
+                count: obj['count'] as Integer,
+                standard_deviation: obj['standard_deviation'] as Double
         )
     }
 
@@ -437,11 +436,9 @@ class BytesFetcherService {
      *
      */
     void resetLessons() {
-        DBCursor cursor = lessons.find()
-        while (cursor.hasNext()) {
-            DBObject obj = cursor.next()
-            obj.removeField('processed')
-            lessons.save(obj)
+        lessonRepository.findAll().each {
+            it.processed = false
+            lessonRepository.save(it)
         }
     }
 
@@ -457,12 +454,12 @@ class BytesFetcherService {
         while (cursor.hasNext()) {
             DBObject object = cursor.next()
             nodes.get(object['reference'] as String, new BrainNode(reference: object['reference'])).
-                tagReference.put(object['tag'] as String, new NumberAssociation(
-                tagGroup: tagGroupMap.find { (it.value.tags().find { it.getTagName() == object['tag'] }) }?.key,
-                tag: object['tag'],
-                mean: Double.parseDouble(object['mean'] as String),
-                count: Integer.parseInt(object['count'] as String),
-                standard_deviation: Double.parseDouble(object['standard_deviation'] as String)
+                    tagReference.put(object['tag'] as String, new NumberAssociation(
+                    tagGroup: tagGroupMap.find { (it.value.tags().find { it.getTagName() == object['tag'] }) }?.key,
+                    tag: object['tag'],
+                    mean: Double.parseDouble(object['mean'] as String),
+                    count: Integer.parseInt(object['count'] as String),
+                    standard_deviation: Double.parseDouble(object['standard_deviation'] as String)
             ))
         }
         return nodes
@@ -488,14 +485,14 @@ class BytesFetcherService {
         } catch (Exception e) {
             e.printStackTrace()
         }
-        if(TradestudentApplication.CONSIDER_TWITTER) {
+        if (TradestudentApplication.CONSIDER_TWITTER) {
             try {
                 someAssociation.twitter = getTwitter(someAssociation.date)
             } catch (Exception e) {
                 e.printStackTrace()
             }
         }
-        if(TradestudentApplication.CONSIDER_NEWS) {
+        if (TradestudentApplication.CONSIDER_NEWS) {
             try {
                 someAssociation.news = getNews(someAssociation.date)
             } catch (Exception e) {
@@ -577,7 +574,7 @@ class BytesFetcherService {
      * @param tag
      * @return
      */
-    Integer getLessonCount(String tag){
+    Integer getLessonCount(String tag) {
         BasicDBObject query = new BasicDBObject()
         query.put("tag", tag)
         lessons.find(query).count()
@@ -597,7 +594,7 @@ class BytesFetcherService {
             lessons.save(obj)
             Lesson lesson = new Lesson()
             def tag = tagService.getTagByName(obj['tag'] as String)
-            if(tag){
+            if (tag) {
                 lesson.tag = tag
             } else {
                 throw new RuntimeException(String.format('WTF! Tag %s cannot be mapped to a valid tag', obj['tag']))
@@ -605,7 +602,7 @@ class BytesFetcherService {
             lesson.setId(obj["_id"] as String)
             try {
                 lesson.setDate(DatatypeConverter.parseDateTime(obj["date"] as String).getTime())
-            } catch (IllegalArgumentException e){
+            } catch (IllegalArgumentException e) {
                 lesson.setDate(new Date(obj['date'] as String))
             }
             lesson.setPrice(obj["price"] as Double)
@@ -632,7 +629,7 @@ class BytesFetcherService {
             lessons.save(obj)
             Lesson lesson = new Lesson()
             def tag = tagService.getTagByName(obj['tag'] as String)
-            if(tag){
+            if (tag) {
                 lesson.tag = tag
             } else {
                 throw new RuntimeException(String.format('WTF! Tag %s cannot be mapped to a valid tag', obj['tag']))
@@ -640,7 +637,7 @@ class BytesFetcherService {
             lesson.setId(obj["_id"] as String)
             try {
                 lesson.setDate(DatatypeConverter.parseDateTime(obj["date"] as String).getTime())
-            } catch (IllegalArgumentException e){
+            } catch (IllegalArgumentException e) {
                 lesson.setDate(new Date(obj['date'] as String))
             }
             lesson.setPrice(obj["price"] as Double)
@@ -659,9 +656,9 @@ class BytesFetcherService {
      * @param lesson
      */
     void saveLesson(Lesson lesson) {
-        if(!lesson.tag) return
-        if(!lesson.date) return
-        if(!lesson.price) return
+        if (!lesson.tag) return
+        if (!lesson.date) return
+        if (!lesson.price) return
         try {
             DBObject obj = new BasicDBObject()
             if (lesson.id) {
@@ -715,7 +712,7 @@ class BytesFetcherService {
                 theNews.metadata = metadata
                 theNews.article = theArticle
                 response << theNews
-            } catch(Exception e){
+            } catch (Exception e) {
                 /** Ignore */
             }
         }
@@ -853,8 +850,8 @@ class BytesFetcherService {
      *
      * @param the_memory
      */
-    void insertMemory(Memory the_memory){
-        if(!the_memory) return
+    void insertMemory(Memory the_memory) {
+        if (!the_memory) return
         try {
             DBObject obj = new BasicDBObject()
             obj['ask'] = [:]
@@ -910,7 +907,7 @@ class BytesFetcherService {
             obj['graph']['price'] = the_memory.graph?.price
             obj['graph']['quantity'] = the_memory.graph?.quantity
             this.memory.insert(obj)
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace()
         }
     }
