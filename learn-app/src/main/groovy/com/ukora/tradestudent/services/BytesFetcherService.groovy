@@ -4,8 +4,10 @@ import com.mongodb.*
 import com.ukora.tradestudent.TradestudentApplication
 import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.entities.*
+import com.ukora.tradestudent.repositories.BrainNodeRepository
 import com.ukora.tradestudent.repositories.LessonRepository
 import com.ukora.tradestudent.repositories.PropertyRepository
+import com.ukora.tradestudent.repositories.SimulatedTradeEntryRepository
 import com.ukora.tradestudent.repositories.SimulationResultRepository
 import com.ukora.tradestudent.strategy.trading.TradeExecution
 import com.ukora.tradestudent.tags.TagGroup
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.ApplicationContext
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoOperations
 import org.springframework.data.mongodb.core.MongoTemplate
@@ -63,6 +66,10 @@ class BytesFetcherService {
     LessonRepository lessonRepository
     @Autowired
     SimulationResultRepository simulationResultRepository
+    @Autowired
+    SimulatedTradeEntryRepository simulatedTradeEntryRepository
+    @Autowired
+    BrainNodeRepository brainNodeRepository
 
     MongoOperations lessons
     MongoOperations memory
@@ -131,13 +138,17 @@ class BytesFetcherService {
      * @return
      */
     List<SimulatedTradeEntry> getLatestSimulatedTradeEntries() {
+
+        return simulatedTradeEntryRepository
+                .findAll(new Sort(Sort.Direction.DESC, "date"))[0..1999]
+                .sort({ SimulatedTradeEntry a, SimulatedTradeEntry b ->
+                    a.getDate() <=> b.getDate()
+                })
+        /**
         List<SimulatedTradeEntry> entries = []
         BasicDBObject sortByDateDesc = new BasicDBObject()
         sortByDateDesc.put('date', -1)
         DBCursor cursor = this.simulatedTrades.find().sort(sortByDateDesc).limit(2000)
-
-        simulationResultRepository.findAll(new Sort())
-
         while (cursor.hasNext()) {
             DBObject obj = cursor.next()
             Metadata metadata = new Metadata(
@@ -158,6 +169,7 @@ class BytesFetcherService {
         return entries.sort({ SimulatedTradeEntry a, SimulatedTradeEntry b ->
             a.getDate() <=> b.getDate()
         })
+         */
     }
 
     /**
@@ -166,6 +178,11 @@ class BytesFetcherService {
      * @return
      */
     SimulatedTradeEntry getLatestSimulatedTradeEntry() {
+        return simulatedTradeEntryRepository.findAll(
+                new PageRequest(0, 1, new Sort(Sort.Direction.DESC, "date"))
+        )?.first()
+
+        /**
         BasicDBObject sortByDateDesc = new BasicDBObject()
         sortByDateDesc.put('date', -1)
         DBCursor cursor = this.simulatedTrades.find().sort(sortByDateDesc).limit(1)
@@ -187,6 +204,7 @@ class BytesFetcherService {
             )
         }
         return null
+         **/
     }
 
     /**
@@ -195,6 +213,8 @@ class BytesFetcherService {
      * @param simulatedTradeEntry
      */
     void insertSimulatedTradeEntry(SimulatedTradeEntry simulatedTradeEntry) {
+        simulatedTradeEntryRepository.insert(simulatedTradeEntry)
+        /**
         if (!simulatedTradeEntry) return
         DBObject obj = new BasicDBObject()
         obj['tradeType'] = simulatedTradeEntry.getTradeType() as String
@@ -207,6 +227,7 @@ class BytesFetcherService {
         obj.get('metadata', [:])['datetime'] = simulatedTradeEntry.metadata?.datetime
         obj.get('metadata', [:])['hostname'] = simulatedTradeEntry.metadata?.hostname
         this.simulatedTrades.insert(obj)
+         **/
     }
 
     /**
@@ -215,7 +236,8 @@ class BytesFetcherService {
      */
     @CacheEvict(value = "brainNodes", allEntries = true)
     void whiskeyBender() {
-        this.brain.remove(new BasicDBObject())
+        brainNodeRepository.deleteAll()
+        //this.brain.remove(new BasicDBObject())
     }
 
     /**
@@ -226,6 +248,11 @@ class BytesFetcherService {
      */
     @CacheEvict(value = "brainNodes", allEntries = true)
     void resetBrainNodesCount(TagGroup tagGroup, int maxCount) {
+
+        brainNodeRepository.findAll().each {
+            it.tag && tagGroup.tags().collect({ it.tagName }).contains(it.tag.tagName)
+        }
+
         DBCursor cursor = this.brain.find()
         while (cursor.hasNext()) {
             DBObject obj = cursor.next()

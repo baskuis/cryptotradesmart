@@ -5,6 +5,6 @@ import org.springframework.data.mongodb.repository.MongoRepository
 
 interface PropertyRepository extends MongoRepository<Property, String> {
 
-    Property findByName(String name);
+    Property findByName(String name)
 
 }
