@@ -1,13 +1,17 @@
 package com.ukora.tradestudent.entities
 
-import com.mongodb.DBObject
+
+import org.springframework.data.annotation.Id
 
 class Brain {
+
+    @Id
     String id
+
     String reference
-    DBObject obj
     String tag
     Double mean
     Double standard_deviation
     Integer count
+
 }

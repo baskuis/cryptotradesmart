@@ -4,12 +4,12 @@ import com.mongodb.*
 import com.ukora.tradestudent.TradestudentApplication
 import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.entities.*
-import com.ukora.tradestudent.repositories.BrainNodeRepository
+import com.ukora.tradestudent.repositories.BrainCountRepository
+import com.ukora.tradestudent.repositories.BrainRepository
 import com.ukora.tradestudent.repositories.LessonRepository
 import com.ukora.tradestudent.repositories.PropertyRepository
 import com.ukora.tradestudent.repositories.SimulatedTradeEntryRepository
 import com.ukora.tradestudent.repositories.SimulationResultRepository
-import com.ukora.tradestudent.strategy.trading.TradeExecution
 import com.ukora.tradestudent.tags.TagGroup
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
@@ -69,7 +69,9 @@ class BytesFetcherService {
     @Autowired
     SimulatedTradeEntryRepository simulatedTradeEntryRepository
     @Autowired
-    BrainNodeRepository brainNodeRepository
+    BrainRepository brainRepository
+    @Autowired
+    BrainCountRepository brainCountRepository
 
     MongoOperations lessons
     MongoOperations memory
@@ -236,7 +238,7 @@ class BytesFetcherService {
      */
     @CacheEvict(value = "brainNodes", allEntries = true)
     void whiskeyBender() {
-        brainNodeRepository.deleteAll()
+        brainRepository.deleteAll()
         //this.brain.remove(new BasicDBObject())
     }
 
@@ -248,11 +250,13 @@ class BytesFetcherService {
      */
     @CacheEvict(value = "brainNodes", allEntries = true)
     void resetBrainNodesCount(TagGroup tagGroup, int maxCount) {
-
-        brainNodeRepository.findAll().each {
-            it.tag && tagGroup.tags().collect({ it.tagName }).contains(it.tag.tagName)
+        brainRepository.findAll().each {
+            if (it.tag && tagGroup.tags().collect({ it.tagName }).contains(it.tag.tagName)) {
+                it.count = maxCount
+                brainRepository.save(it)
+            }
         }
-
+        /**
         DBCursor cursor = this.brain.find()
         while (cursor.hasNext()) {
             DBObject obj = cursor.next()
@@ -264,7 +268,7 @@ class BytesFetcherService {
                 obj['count'] = maxCount
                 this.brain.save(obj)
             }
-        }
+        }*/
     }
 
     /**
@@ -290,6 +294,8 @@ class BytesFetcherService {
      */
     @Cacheable("simulations")
     List<SimulationResult> getSimulations() {
+        return simulationResultRepository.findAll()
+        /**
         List<SimulationResult> theSimulations = []
         DBCursor cursor = simulations.find()
         while (cursor.hasNext()) {
@@ -327,6 +333,7 @@ class BytesFetcherService {
             }
         }
         return theSimulations
+         */
     }
 
     /**
@@ -336,6 +343,8 @@ class BytesFetcherService {
      */
     @CacheEvict(value = "simulations", allEntries = true)
     void saveSimulation(SimulationResult simulation) {
+        simulationResultRepository.save(simulation)
+        /**
         try {
             DBObject obj = new BasicDBObject()
             if (simulation.id) {
@@ -361,6 +370,7 @@ class BytesFetcherService {
         } catch (Exception e) {
             e.printStackTrace()
         }
+         */
     }
 
     /**
@@ -373,6 +383,13 @@ class BytesFetcherService {
      */
     @Cacheable("brainCount")
     BrainCount getBrainCount(String reference, String source) {
+        return brainCountRepository.findByReference(reference) ?: new BrainCount(
+                id: null,
+                source: source,
+                reference: reference,
+                counters: [:]
+        )
+        /**
         BasicDBObject query = new BasicDBObject()
         query.put('reference', reference)
         DBObject obj = this.brainCount.findOne(query)
@@ -388,6 +405,7 @@ class BytesFetcherService {
                 reference: obj['reference'] as String,
                 counters: obj['counters'] as Map,
         )
+         */
     }
 
     /**
@@ -397,6 +415,8 @@ class BytesFetcherService {
      */
     @CacheEvict(value = "brainCount", allEntries = true)
     void saveBrainCount(BrainCount brainCount) {
+        brainCountRepository.save(brainCount)
+        /**
         DBObject obj = new BasicDBObject()
         if (brainCount.id) {
             obj['_id'] = new ObjectId(brainCount.id)
@@ -405,6 +425,7 @@ class BytesFetcherService {
         obj['reference'] = brainCount.reference as String
         obj['counters'] = brainCount.counters
         this.brainCount.save(obj)
+         **/
     }
 
     /**
@@ -414,6 +435,15 @@ class BytesFetcherService {
      * @return
      */
     Brain getBrain(String reference, String tag) {
+        return brainRepository.findByReferenceAndTag(reference, tag)?.first() ?: new Brain(
+                id: null,
+                tag: tag,
+                reference: reference,
+                mean: 0 as Double,
+                count: 0 as Integer,
+                standard_deviation: 0 as Double
+        )
+        /**
         BasicDBObject query = new BasicDBObject()
         query.put('reference', reference)
         query.put('tag', tag)
@@ -434,6 +464,7 @@ class BytesFetcherService {
                 count: obj['count'] as Integer,
                 standard_deviation: obj['standard_deviation'] as Double
         )
+         **/
     }
 
     /**
@@ -446,6 +477,8 @@ class BytesFetcherService {
             "associations"
     ], allEntries = true)
     void saveBrain(Brain brain) {
+        brainRepository.save(brain)
+        /**
         DBObject obj = new BasicDBObject()
         if (brain.id) {
             obj['_id'] = new ObjectId(brain.id)
@@ -456,6 +489,7 @@ class BytesFetcherService {
         obj['standard_deviation'] = String.format("%.16f", brain.standard_deviation)
         obj['count'] = brain.count
         this.brain.save(obj)
+         **/
     }
 
     /**
