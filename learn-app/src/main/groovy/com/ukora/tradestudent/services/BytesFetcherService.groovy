@@ -5,6 +5,7 @@ import com.ukora.tradestudent.TradestudentApplication
 import com.ukora.tradestudent.bayes.numbers.NumberAssociation
 import com.ukora.tradestudent.entities.*
 import com.ukora.tradestudent.repositories.BrainCountRepository
+import com.ukora.tradestudent.repositories.BrainNodeRepository
 import com.ukora.tradestudent.repositories.BrainRepository
 import com.ukora.tradestudent.repositories.LessonRepository
 import com.ukora.tradestudent.repositories.PropertyRepository
@@ -72,6 +73,8 @@ class BytesFetcherService {
     BrainRepository brainRepository
     @Autowired
     BrainCountRepository brainCountRepository
+    @Autowired
+    BrainNodeRepository brainNodeRepository
 
     MongoOperations lessons
     MongoOperations memory
@@ -511,6 +514,12 @@ class BytesFetcherService {
     @Cacheable("brainNodes")
     Map<String, BrainNode> getAllBrainNodes() {
         Map<String, BrainNode> nodes = [:]
+        brainNodeRepository.findAll().each {
+            nodes.put(it.reference, it)
+        }
+        return nodes
+        /**
+        Map<String, BrainNode> nodes = [:]
         DBCursor cursor = this.brain.find().limit(5000)
         while (cursor.hasNext()) {
             DBObject object = cursor.next()
@@ -524,6 +533,7 @@ class BytesFetcherService {
             ))
         }
         return nodes
+         */
     }
 
     /**
@@ -636,9 +646,12 @@ class BytesFetcherService {
      * @return
      */
     Integer getLessonCount(String tag) {
+        return lessonRepository.getCountByTag(tag) //TODO: Get count by ??
+        /**
         BasicDBObject query = new BasicDBObject()
         query.put("tag", tag)
         lessons.find(query).count()
+         */
     }
 
     /**

@@ -5,4 +5,6 @@ import org.springframework.data.mongodb.repository.MongoRepository
 
 interface LessonRepository extends MongoRepository<Lesson, String> {
 
+    Integer getCountByTag(String tag)
+
 }
