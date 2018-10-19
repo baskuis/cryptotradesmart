@@ -545,6 +545,7 @@ class BytesFetcherService {
     public <T extends AbstractAssociation> T hydrateAssociation(T someAssociation) {
         if (!someAssociation) return null
         try {
+            //TODO: Get memory .. other class (to caching works)
             someAssociation.memory = getMemory(someAssociation.date)
             if (someAssociation.memory == null) {
                 Logger.log("empty memory object")
