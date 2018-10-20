@@ -172,9 +172,10 @@ class BytesFetcherService {
      * @return
      */
     SimulatedTradeEntry getLatestSimulatedTradeEntry() {
-        return simulatedTradeEntryRepository.findAll(
+        List<SimulatedTradeEntry> tradeEntries = simulatedTradeEntryRepository.findAll(
                 new PageRequest(0, 1, new Sort(Sort.Direction.DESC, "date"))
-        )?.toList()?.first()
+        )?.getContent()
+        return (tradeEntries?.size() ? tradeEntries.first() : null)
 
         /**
          BasicDBObject sortByDateDesc = new BasicDBObject()
