@@ -1,6 +1,7 @@
 package com.ukora.tradestudent.services.associations
 
 import com.ukora.tradestudent.entities.*
+import com.ukora.tradestudent.services.AssociationService
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.associations.text.CaptureTextAssociationsService
 import com.ukora.tradestudent.utils.Logger
@@ -32,6 +33,9 @@ class CaptureAssociationsService {
     BytesFetcherService bytesFetcherService
 
     @Autowired
+    AssociationService associationService
+
+    @Autowired
     TechnicalAnalysisService technicalAnalysisService
 
     @Autowired
@@ -52,7 +56,7 @@ class CaptureAssociationsService {
                 if (lesson) {
 
                     /** Hydrate lesson */
-                    bytesFetcherService.hydrateAssociation(lesson)
+                    associationService.hydrateAssociation(lesson)
 
                     /** Hydrate association tags */
                     hydrateAssociationTags(lesson, lesson.tag?.tagName)

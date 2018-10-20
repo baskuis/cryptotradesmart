@@ -30,6 +30,9 @@ class ProbabilityCombinerService {
     BytesFetcherService bytesFetcherService
 
     @Autowired
+    AssociationService associationService
+
+    @Autowired
     ApplicationContext applicationContext
 
     Map<String, TagGroup> tagGroupMap = [:]
@@ -95,7 +98,7 @@ class ProbabilityCombinerService {
         correlationAssociation.setDate(eventDate)
 
         /** hydrate correlative data from memory */
-        bytesFetcherService.hydrateAssociation(correlationAssociation)
+        associationService.hydrateAssociation(correlationAssociation)
 
         /** hydrate associations */
         captureAssociationsService.hydrateAssociations(correlationAssociation)
