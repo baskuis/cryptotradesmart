@@ -1,49 +1,17 @@
 package com.ukora.tradestudent.services
 
-import com.mongodb.MongoClient
 import com.ukora.tradestudent.entities.*
 import com.ukora.tradestudent.repositories.*
 import com.ukora.tradestudent.tags.TagGroup
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
-import org.springframework.context.ApplicationContext
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
-import org.springframework.data.mongodb.core.MongoOperations
-import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.stereotype.Service
-
-import javax.annotation.PostConstruct
-import java.text.SimpleDateFormat
 
 @Service
 class BytesFetcherService {
-
-
-    SimpleDateFormat dateParser = new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH)
-
-    final static String COLLECTION_LESSONS = "lessons"
-    final static String COLLECTION_MEMORY = "memory"
-    final static String COLLECTION_NEWS = "news"
-    final static String COLLECTION_TWITTER = "twitter"
-    final static String COLLECTION_ASSOCIATIONS = "associations"
-    final static String COLLECTION_BRAIN = "brain"
-    final static String COLLECTION_BRAIN_COUNT = "brainCount"
-    final static String COLLECTION_SIMULATIONS = "simulations"
-    final static String COLLECTION_PROPERTIES = "properties"
-    final static String COLLECTION_SIMULATED_TRADES = "simulatedTrades"
-
-    @Autowired
-    ApplicationContext applicationContext
-
-    @Autowired
-    TagService tagService
-
-    Map<String, TagGroup> tagGroupMap
-
-    @Autowired
-    MongoClient mongoClient
 
     @Autowired
     PropertyRepository propertyRepository
@@ -65,32 +33,6 @@ class BytesFetcherService {
     TwitterRepository twitterRepository
     @Autowired
     MemoryRepository memoryRepository
-
-    MongoOperations lessons
-    MongoOperations memory
-    MongoOperations news
-    MongoOperations twitter
-    MongoOperations associations
-    MongoOperations brain
-    MongoOperations brainCount
-    MongoOperations simulations
-    MongoOperations properties
-    MongoOperations simulatedTrades
-
-    @PostConstruct
-    void init() {
-        this.lessons = new MongoTemplate(mongoClient, COLLECTION_LESSONS)
-        this.memory = new MongoTemplate(mongoClient, COLLECTION_MEMORY)
-        this.news = new MongoTemplate(mongoClient, COLLECTION_NEWS)
-        this.twitter = new MongoTemplate(mongoClient, COLLECTION_TWITTER)
-        this.associations = new MongoTemplate(mongoClient, COLLECTION_ASSOCIATIONS)
-        this.brain = new MongoTemplate(mongoClient, COLLECTION_BRAIN)
-        this.brainCount = new MongoTemplate(mongoClient, COLLECTION_BRAIN_COUNT)
-        this.simulations = new MongoTemplate(mongoClient, COLLECTION_SIMULATIONS)
-        this.properties = new MongoTemplate(mongoClient, COLLECTION_PROPERTIES)
-        this.simulatedTrades = new MongoTemplate(mongoClient, COLLECTION_SIMULATED_TRADES)
-        tagGroupMap = applicationContext.getBeansOfType(TagGroup)
-    }
 
     /**
      * Get property

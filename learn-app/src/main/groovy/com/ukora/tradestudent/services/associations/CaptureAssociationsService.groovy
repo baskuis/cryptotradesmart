@@ -38,9 +38,6 @@ class CaptureAssociationsService {
     @Autowired
     TechnicalAnalysisService technicalAnalysisService
 
-    @Autowired
-    CaptureTextAssociationsService captureTextAssociationsService
-
     /**
      * Main schedule to digest lessons
      * and create associations
