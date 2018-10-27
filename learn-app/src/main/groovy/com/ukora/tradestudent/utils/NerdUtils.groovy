@@ -218,11 +218,11 @@ class NerdUtils {
 
     static List<SimpleDateFormat> knownPatterns = new ArrayList<SimpleDateFormat>()
     static {
-        knownPatterns.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"))
-        knownPatterns.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm.ss'Z'"))
-        knownPatterns.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"))
-        knownPatterns.add(new SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss"))
-        knownPatterns.add(new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy"))
+        knownPatterns.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH))
+        knownPatterns.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm.ss'Z'", Locale.ENGLISH))
+        knownPatterns.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH))
+        knownPatterns.add(new SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss", Locale.ENGLISH))
+        knownPatterns.add(new SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH))
     }
 
     /**
