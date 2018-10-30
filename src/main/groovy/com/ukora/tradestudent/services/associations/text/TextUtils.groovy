@@ -7,7 +7,6 @@ class TextUtils {
 
     static List<String> splitText(String text){
         text?.split(WHITESPACE_SPLIT)
-
     }
 
 }
