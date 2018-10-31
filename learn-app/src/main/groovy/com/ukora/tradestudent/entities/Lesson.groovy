@@ -9,6 +9,7 @@ class Lesson extends AbstractAssociation {
     String id
 
     Boolean processed
+    Boolean textProcessed
     AbstractCorrelationTag tag
 
 }

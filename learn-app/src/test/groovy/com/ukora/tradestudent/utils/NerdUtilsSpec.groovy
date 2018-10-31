@@ -251,8 +251,7 @@ class NerdUtilsSpec extends Specification {
 
     }
 
-    @Ignore
-    def "modifying partioned map modifies origin map"() {
+    def "modifying partitioned map does not modify origin map"() {
 
         when:
         Map o = [a: 1, b: 2]
@@ -260,7 +259,7 @@ class NerdUtilsSpec extends Specification {
         (r.get(1) as Map).put('a', 3)
 
         then:
-        o.get('a') == 3
+        o.get('a') != 3
 
     }
 
