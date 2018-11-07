@@ -91,7 +91,7 @@ class BytesFetcherService {
         List<SimulatedTradeEntry> tradeEntries = simulatedTradeEntryRepository.findAll(
                 new PageRequest(0, 1, new Sort(Sort.Direction.DESC, "date"))
         )?.getContent()
-        return (tradeEntries?.size() ? tradeEntries.first() : null)
+        return (tradeEntries?.size() > 0 ? tradeEntries.first() : null)
     }
 
     /**
@@ -315,7 +315,9 @@ class BytesFetcherService {
         Date fromDate = calendar.time
         calendar.add(Calendar.SECOND, 90)
         Date toDate = calendar.time
-        return twitterRepository.findByMetadataDatetimeBetween(fromDate, toDate)?.first()
+        def r = twitterRepository.findByMetadataDatetimeBetween(fromDate, toDate)
+        if(r && r.size() > 0) return r.first()
+        return null
     }
 
     /**
@@ -333,7 +335,9 @@ class BytesFetcherService {
         Date fromDate = calendar.time
         calendar.add(Calendar.SECOND, 90)
         Date toDate = calendar.time
-        memoryRepository.findByMetadataDatetimeBetween(fromDate, toDate)?.first()
+        List<Memory> r = memoryRepository.findByMetadataDatetimeBetween(fromDate, toDate)
+        if(r && r.size() > 0) return r.first()
+        return null
     }
 
     /**
