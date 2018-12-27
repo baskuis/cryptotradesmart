@@ -1,10 +1,10 @@
 #Collection information
-* * * * * /usr/bin/python /var/local/btce.py
-* * * * * /usr/bin/python /var/local/coindesk.py
-* * * * * /usr/bin/python /var/local/read_twitter.py
+* * * * * /usr/bin/python /home/bas/Projects/tradestudent-learn/btce.py
+* * * * * /usr/bin/python /home/bas/Projects/tradestudent-learn/coindesk.py
+* * * * * /usr/bin/python /home/bas/Projects/tradestudent-learn/read_twitter.py
 
 #Respawn tradestudent if crashed
-*/5 * * * * /var/local/respawn.sh
+*/5 * * * * /home/bas/Projects/tradestudent-learn/respawn.sh
 
 #Respawn mongod if crashed
 * * * * * /usr/bin/mongod --config /etc/mongod.conf
@@ -16,4 +16,4 @@
 @reboot /var/www/trades.ukora.com/start_it.sh
 
 #Boot tradestudent on startup
-@reboot /var/local/start.sh
+@reboot /home/bas/Projects/tradestudent-learn/start.sh

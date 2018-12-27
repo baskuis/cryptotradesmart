@@ -19,6 +19,7 @@ import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.ApplicationContext
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import org.springframework.util.StringUtils
 
 import javax.annotation.PostConstruct
 
@@ -85,16 +86,18 @@ class TextAssociationProbabilityService {
     @Cacheable("textTagCorrelations")
     def tagCorrelationByText(Date eventDate){
 
-        Logger.log(String.format('Attempting to get association for %s', eventDate))
+        Logger.log(String.format('Attempting to get text association for %s', eventDate))
         ExtractedText extractedText = textExtractorService.extractTextForDate(eventDate)
 
         Map<String, KeywordAssociation> keywordAssociationsNews = [:]
-        extractedText.extract(ExtractedText.TextSource.NEWS).each {
+        extractedText.extract(ExtractedText.TextSource.NEWS).unique().each {
+            if(StringUtils.isEmpty(it)) return
             keywordAssociationsNews.put(it, keywordAssociationService.getKeywordAssociation(it, ExtractedText.TextSource.NEWS))
         }
 
         Map<String, KeywordAssociation> keywordAssociationsTwitter = [:]
         extractedText.extract(ExtractedText.TextSource.TWITTER).each {
+            if(StringUtils.isEmpty(it)) return
             keywordAssociationsTwitter.put(it, keywordAssociationService.getKeywordAssociation(it, ExtractedText.TextSource.TWITTER))
         }
 

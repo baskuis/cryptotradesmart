@@ -49,7 +49,7 @@ interface SourceIntegration {
 
     static class BitfinexIntegration extends AbstractIntegration {
         @Override
-        boolean enabled() { return true }
+        boolean enabled() { return false }
         Exchange bitfinexExchange = ExchangeFactory.INSTANCE.createExchange(BitfinexExchange)
 
         IntegrationType integrationType() { IntegrationType.BITFINEX }
@@ -60,7 +60,7 @@ interface SourceIntegration {
 
     static class BitstampIntegration extends AbstractIntegration {
         @Override
-        boolean enabled() { return true }
+        boolean enabled() { return false }
         Exchange bitstampExchange = ExchangeFactory.INSTANCE.createExchange(BitstampExchange)
 
         IntegrationType integrationType() { IntegrationType.BITSTAMP }
@@ -71,7 +71,7 @@ interface SourceIntegration {
 
     static class KrakenIntegration extends AbstractIntegration {
         @Override
-        boolean enabled() { return true }
+        boolean enabled() { return false }
         Exchange krakenExchange = ExchangeFactory.INSTANCE.createExchange(KrakenExchange)
 
         IntegrationType integrationType() { IntegrationType.KRAKEN }
@@ -82,7 +82,7 @@ interface SourceIntegration {
 
     static class BinanceIntegration extends AbstractIntegration {
         @Override
-        boolean enabled() { return true }
+        boolean enabled() { return false }
         Exchange binanceExchange = ExchangeFactory.INSTANCE.createExchange(BinanceExchange)
 
         IntegrationType integrationType() { IntegrationType.BINANCE }
