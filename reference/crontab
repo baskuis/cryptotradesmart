@@ -10,10 +10,10 @@
 * * * * * /usr/bin/mongod --config /etc/mongod.conf
 
 #Respawn node server if crashed
-*/5 * * * * /var/www/trades.ukora.com/start_it.sh
+*/5 * * * * /home/bas/Projects/trades.ukora.com/start_it.sh
 
 #Boot web services on startup
-@reboot /var/www/trades.ukora.com/start_it.sh
+@reboot /home/bas/Projects/trades.ukora.com/start_it.sh
 
 #Boot tradestudent on startup
 @reboot /home/bas/Projects/tradestudent-learn/learn-app/start.sh
