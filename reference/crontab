@@ -1,10 +1,10 @@
 #Collection information
-* * * * * /usr/bin/python /home/bas/Projects/tradestudent-learn/btce.py
-* * * * * /usr/bin/python /home/bas/Projects/tradestudent-learn/coindesk.py
-* * * * * /usr/bin/python /home/bas/Projects/tradestudent-learn/read_twitter.py
+* * * * * /usr/bin/python /home/bas/Projects/tradestudent/coindesk.py
+* * * * * /usr/bin/python /home/bas/Projects/tradestudent/read_twitter.py
 
 #Respawn tradestudent if crashed
-*/5 * * * * /home/bas/Projects/tradestudent-learn/respawn.sh
+*/5 * * * * /home/bas/Projects/tradestudent-learn/learn-app/respawn.sh
+*/5 * * * * /home/bas/Projects/tradestudent-learn/collect-app/respawn.sh
 
 #Respawn mongod if crashed
 * * * * * /usr/bin/mongod --config /etc/mongod.conf
@@ -16,4 +16,9 @@
 @reboot /var/www/trades.ukora.com/start_it.sh
 
 #Boot tradestudent on startup
-@reboot /home/bas/Projects/tradestudent-learn/start.sh
+@reboot /home/bas/Projects/tradestudent-learn/learn-app/start.sh
+@reboot /home/bas/Projects/tradestudent-learn/collect-app/start.sh
+
+#Trim log file
+*/20 * * * * echo > /home/bas/Projects/tradestudent-learn/learn-app/application.out
+*/20 * * * * echo > /home/bas/Projects/tradestudent-learn/collect-app/application.out
