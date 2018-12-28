@@ -1,6 +1,8 @@
 package com.ukora.collect
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Updates
 import org.bson.Document
 import org.knowm.xchange.currency.CurrencyPair
 import org.springframework.beans.factory.annotation.Autowired
@@ -107,7 +109,7 @@ class CollectApplication {
 
     @Scheduled(initialDelay = 10000l, fixedRate = 10000l)
     void digest() {
-        mongoTemplate.getCollection('books').find().each {
+        mongoTemplate.getCollection('books').find(Filters.ne('processed', '1')).limit(10).each {
 
             try {
 
@@ -239,14 +241,22 @@ class CollectApplication {
                         ],
                         "metadata"  : [
                                 "hostname": InetAddress.getLocalHost().getHostName(),
-                                "datetime": new Date()
+                                "datetime": new Date((it?.timestamp ?: 1) as Long)
                         ]
                 ]
 
                 //Update book record
-                //Insert into memory
+                mongoTemplate.getCollection('books').updateOne(
+                        Filters.eq('_id', it?._id),
+                        Updates.set('processed', '1')
+                )
 
-                println memory
+                //Insert into memory
+                mongoTemplate.getCollection('memory').insertOne(
+                        Document.parse(
+                                objectMapper.writeValueAsString(memory)
+                        )
+                )
 
             } catch(Exception e) {
                 println "Issue parsing order book"

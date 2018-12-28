@@ -1,5 +1,4 @@
-include 'learn'
 include 'collect'
+include 'learn'
 include 'collect-app'
 include 'learn-app'
-
