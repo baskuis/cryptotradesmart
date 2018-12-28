@@ -192,8 +192,8 @@ class CollectApplication {
                 Float normalized_total_ask_to_bid_ratio = normalized_total_ask_value / normalized_total_bid_value
 
                 Map memory = [
-                        "platform"  : [
-                                "exchange"    : it.integrationType,
+                        "exchange"  : [
+                                "platform"    : it.integrationType,
                                 "currencyPair": (((it?.orderBook as Map)?.asks as List)?.get(0) as Map)?.currencyPair
                         ],
                         "bid"       : [
@@ -258,7 +258,7 @@ class CollectApplication {
                         )
                 )
 
-            } catch(Exception e) {
+            } catch (Exception e) {
                 println "Issue parsing order book"
                 e.printStackTrace()
             }
