@@ -1,7 +1,7 @@
 package com.ukora.tradestudent.services
 
-import com.ukora.tradestudent.entities.SimulatedTradeEntry
-import com.ukora.tradestudent.strategy.trading.TradeExecution
+import com.ukora.domain.entities.SimulatedTradeEntry
+import com.ukora.domain.beans.trade.TradeExecution
 import spock.lang.Specification
 import spock.lang.Unroll
 

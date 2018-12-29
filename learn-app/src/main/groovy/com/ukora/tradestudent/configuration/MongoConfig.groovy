@@ -11,18 +11,18 @@ class MongoConfig extends AbstractMongoConfiguration {
 
     @Override
     protected String getDatabaseName() {
-        "tradestudent"
+        'tradestudent'
     }
 
     @Override
     protected String getMappingBasePackage() {
-        "com.ukora.tradestudent"
+        'com.ukora.domain'
     }
 
     @Bean
     @Override
     MongoClient mongoClient() {
-        return new MongoClient("127.0.0.1", 27017)
+        return new MongoClient('127.0.0.1', 27017)
     }
 
 }

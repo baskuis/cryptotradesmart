@@ -1,6 +1,6 @@
 package com.ukora.tradestudent.configuration
 
-import com.ukora.tradestudent.entities.SimulationResult
+import com.ukora.domain.entities.SimulationResult
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.utils.Logger

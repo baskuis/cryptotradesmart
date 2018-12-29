@@ -1,15 +1,15 @@
 package com.ukora.tradestudent.strategy.trading.impl
 
-import com.ukora.tradestudent.entities.CorrelationAssociation
+import com.ukora.domain.entities.CorrelationAssociation
 import com.ukora.tradestudent.services.simulator.Simulation
-import com.ukora.tradestudent.strategy.trading.TradeExecution
+import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
-import com.ukora.tradestudent.tags.TagSubset
-import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
-import com.ukora.tradestudent.tags.buysell.BuyTag
-import com.ukora.tradestudent.tags.buysell.SellTag
-import com.ukora.tradestudent.tags.reversal.DownReversalTag
-import com.ukora.tradestudent.tags.reversal.UpReversalTag
+import com.ukora.domain.beans.tags.TagSubset
+import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
+import com.ukora.domain.beans.tags.buysell.BuyTag
+import com.ukora.domain.beans.tags.buysell.SellTag
+import com.ukora.domain.beans.tags.reversal.DownReversalTag
+import com.ukora.domain.beans.tags.reversal.UpReversalTag
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 

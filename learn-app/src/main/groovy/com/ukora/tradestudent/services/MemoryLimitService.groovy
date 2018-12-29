@@ -1,8 +1,8 @@
 package com.ukora.tradestudent.services
 
-import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
-import com.ukora.tradestudent.tags.reversal.UpDownReversalTagGroup
-import com.ukora.tradestudent.tags.trend.UpDownTagGroup
+import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
+import com.ukora.domain.beans.tags.reversal.UpDownReversalTagGroup
+import com.ukora.domain.beans.tags.trend.UpDownTagGroup
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service

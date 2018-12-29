@@ -1,8 +1,8 @@
 package com.ukora.tradestudent.services
 
 import com.ukora.tradestudent.TradestudentApplication
-import com.ukora.tradestudent.entities.AbstractAssociation
-import com.ukora.tradestudent.entities.Memory
+import com.ukora.domain.entities.AbstractAssociation
+import com.ukora.domain.entities.Memory
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

@@ -1,7 +1,7 @@
 package com.ukora.tradestudent.strategy.text.probability.impl
 
-import com.ukora.tradestudent.entities.ExtractedText
-import com.ukora.tradestudent.entities.KeywordAssociation
+import com.ukora.domain.entities.ExtractedText
+import com.ukora.domain.entities.KeywordAssociation
 import com.ukora.tradestudent.strategy.text.probablitity.impl.AverageTextProbabilityCombinerStrategy
 import spock.lang.Specification
 import spock.lang.Unroll

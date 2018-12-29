@@ -1,9 +1,8 @@
 package com.ukora.tradestudent.services.associations
 
-import com.ukora.tradestudent.entities.*
+import com.ukora.domain.entities.*
 import com.ukora.tradestudent.services.AssociationService
 import com.ukora.tradestudent.services.BytesFetcherService
-import com.ukora.tradestudent.services.associations.text.CaptureTextAssociationsService
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired

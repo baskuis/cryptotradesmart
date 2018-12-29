@@ -1,0 +1,8 @@
+apply plugin: 'groovy'
+apply plugin: 'idea'
+
+dependencies {
+    compile('org.codehaus.groovy:groovy:' + groovyVersion)
+    compile('org.springframework.data:spring-data-jpa:' + springBootVersion)
+    compile('org.springframework.data:spring-data-mongodb:' + springBootVersion)
+}

@@ -2,12 +2,12 @@ package com.ukora.tradestudent.platform.gdax
 
 import com.ukora.tradestudent.currencies.pair.CurrencyPair
 import com.ukora.tradestudent.currencies.pair.impl.BtcUsdCurrencyPair
-import com.ukora.tradestudent.entities.Details
-import com.ukora.tradestudent.entities.Exchange
+import com.ukora.domain.entities.Details
+import com.ukora.domain.entities.Exchange
 import com.ukora.tradestudent.platform.OrderBook
 import com.ukora.tradestudent.platform.OrderBookEntry
 import com.ukora.tradestudent.platform.TradePlatform
-import com.ukora.tradestudent.strategy.trading.TradeExecution
+import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity

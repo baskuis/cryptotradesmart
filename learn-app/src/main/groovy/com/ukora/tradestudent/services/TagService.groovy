@@ -1,10 +1,10 @@
 package com.ukora.tradestudent.services
 
-import com.ukora.tradestudent.bayes.numbers.NumberAssociation
-import com.ukora.tradestudent.entities.BrainNode
+import com.ukora.domain.beans.bayes.numbers.NumberAssociation
+import com.ukora.domain.entities.BrainNode
 import com.ukora.tradestudent.services.associations.CaptureAssociationsService
-import com.ukora.tradestudent.tags.AbstractCorrelationTag
-import com.ukora.tradestudent.tags.TagGroup
+import com.ukora.domain.beans.tags.AbstractCorrelationTag
+import com.ukora.domain.beans.tags.TagGroup
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext

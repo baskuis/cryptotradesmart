@@ -1,10 +1,10 @@
 package com.ukora.tradestudent.strategy.trading.impl
 
-import com.ukora.tradestudent.entities.CorrelationAssociation
+import com.ukora.domain.entities.CorrelationAssociation
 import com.ukora.tradestudent.services.simulator.Simulation
-import com.ukora.tradestudent.strategy.trading.TradeExecution
-import com.ukora.tradestudent.tags.buysell.BuyTag
-import com.ukora.tradestudent.tags.buysell.SellTag
+import com.ukora.domain.beans.trade.TradeExecution
+import com.ukora.domain.beans.tags.buysell.BuyTag
+import com.ukora.domain.beans.tags.buysell.SellTag
 import spock.lang.Specification
 import spock.lang.Unroll
 

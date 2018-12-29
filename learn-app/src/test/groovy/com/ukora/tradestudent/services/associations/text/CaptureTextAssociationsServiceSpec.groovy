@@ -1,8 +1,7 @@
 package com.ukora.tradestudent.services.associations.text
 
-import com.ukora.tradestudent.entities.BrainCount
-import com.ukora.tradestudent.entities.ExtractedText
-import com.ukora.tradestudent.services.text.TextAssociationProbabilityService
+import com.ukora.domain.entities.BrainCount
+import com.ukora.domain.entities.ExtractedText
 import spock.lang.Specification
 
 class CaptureTextAssociationsServiceSpec extends Specification {

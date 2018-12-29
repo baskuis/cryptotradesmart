@@ -1,6 +1,6 @@
 package com.ukora.tradestudent.strategy.text.probablitity
 
-import com.ukora.tradestudent.entities.KeywordAssociation
+import com.ukora.domain.entities.KeywordAssociation
 
 interface TextProbabilityCombinerStrategy {
 

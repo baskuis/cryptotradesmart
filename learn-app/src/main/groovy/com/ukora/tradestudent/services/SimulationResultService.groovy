@@ -1,6 +1,6 @@
 package com.ukora.tradestudent.services
 
-import com.ukora.tradestudent.entities.SimulationResult
+import com.ukora.domain.entities.SimulationResult
 import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired

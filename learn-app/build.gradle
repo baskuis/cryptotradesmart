@@ -3,12 +3,9 @@ apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
-group = 'com.ukora'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = 1.8
-
 dependencies {
-	compile('javax.xml.bind:jaxb-api:2.3.0')
+
+	compile('javax.xml.bind:jaxb-api:2.3.1')
 	compile('org.apache.logging.log4j:log4j-api')
 	compile('org.apache.logging.log4j:log4j-core')
 	compile('commons-io:commons-io:2.6')
@@ -19,14 +16,15 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-security')
 	compile('org.springframework.boot:spring-boot-starter-web')
 	compile('org.codehaus.groovy:groovy')
-	compile('io.springfox:springfox-swagger2:2.8.0')
-	compile('io.springfox:springfox-swagger-ui:2.8.0')
+	compile('io.springfox:springfox-swagger2:2.9.2')
+	compile('io.springfox:springfox-swagger-ui:2.9.2')
 
-	compile project(':learn')
-	compile project(':collect')
+	compile project(':base-domain')
 
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 	testCompile('de.flapdoodle.embed:de.flapdoodle.embed.mongo')
 	testCompile('org.springframework.security:spring-security-test')
-	testCompile('org.spockframework:spock-core:1.1-groovy-2.4')
+	testCompile('org.spockframework:spock-core:1.2-groovy-2.5')
+	testCompile('org.spockframework:spock-spring:1.2-groovy-2.5')
+
 }

@@ -19,9 +19,9 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-aop')
 	compile('org.springframework.boot:spring-boot-starter-data-jpa')
 	compile('org.springframework.boot:spring-boot-starter-data-mongodb')
-	compile project(':collect')
+	compile project(':base-xchange')
 
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 	testCompile('de.flapdoodle.embed:de.flapdoodle.embed.mongo')
-	testCompile('org.spockframework:spock-core:1.1-groovy-2.4')
+	testCompile('org.spockframework:spock-core:1.2-groovy-2.5')
 }

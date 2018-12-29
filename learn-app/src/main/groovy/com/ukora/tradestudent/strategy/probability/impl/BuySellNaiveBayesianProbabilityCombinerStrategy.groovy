@@ -1,9 +1,9 @@
 package com.ukora.tradestudent.strategy.probability.impl
 
-import com.ukora.tradestudent.bayes.numbers.NumberAssociationProbability
+import com.ukora.domain.beans.bayes.numbers.NumberAssociationProbability
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
-import com.ukora.tradestudent.tags.TagSubset
-import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
+import com.ukora.domain.beans.tags.TagSubset
+import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 

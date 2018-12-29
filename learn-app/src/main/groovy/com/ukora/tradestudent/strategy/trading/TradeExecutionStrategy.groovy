@@ -1,6 +1,7 @@
 package com.ukora.tradestudent.strategy.trading
 
-import com.ukora.tradestudent.entities.CorrelationAssociation
+import com.ukora.domain.beans.trade.TradeExecution
+import com.ukora.domain.entities.CorrelationAssociation
 import com.ukora.tradestudent.services.simulator.Simulation
 
 /**

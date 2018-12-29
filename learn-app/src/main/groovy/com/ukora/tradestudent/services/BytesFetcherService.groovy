@@ -1,8 +1,8 @@
 package com.ukora.tradestudent.services
 
-import com.ukora.tradestudent.entities.*
-import com.ukora.tradestudent.repositories.*
-import com.ukora.tradestudent.tags.TagGroup
+import com.ukora.domain.entities.*
+import com.ukora.domain.repositories.*
+import com.ukora.domain.beans.tags.TagGroup
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
@@ -253,8 +253,8 @@ class BytesFetcherService {
      * @param tag
      * @return
      */
-    Integer getLessonCount(String tag) {
-        return lessonRepository.getCountByTag(tag) //TODO: Get count by ??
+    Long getLessonCount(String tag) {
+        return lessonRepository.countByTag(tag)
     }
 
     /**

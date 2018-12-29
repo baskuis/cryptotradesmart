@@ -1,6 +1,6 @@
 package com.ukora.tradestudent.strategy.probability
 
-import com.ukora.tradestudent.bayes.numbers.NumberAssociationProbability
+import com.ukora.domain.beans.bayes.numbers.NumberAssociationProbability
 
 interface ProbabilityCombinerStrategy {
 

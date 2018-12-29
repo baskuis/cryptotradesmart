@@ -1,13 +1,13 @@
 package com.ukora.tradestudent.services.text
 
-import com.ukora.tradestudent.entities.BrainCount
-import com.ukora.tradestudent.entities.ExtractedText
-import com.ukora.tradestudent.entities.KeywordAssociation
+import com.ukora.domain.entities.BrainCount
+import com.ukora.domain.entities.ExtractedText
+import com.ukora.domain.entities.KeywordAssociation
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.TagService
 import com.ukora.tradestudent.services.associations.text.CaptureTextAssociationsService
-import com.ukora.tradestudent.tags.AbstractCorrelationTag
-import com.ukora.tradestudent.tags.TagGroup
+import com.ukora.domain.beans.tags.AbstractCorrelationTag
+import com.ukora.domain.beans.tags.TagGroup
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CacheEvict
@@ -31,7 +31,7 @@ class KeywordAssociationService {
     BytesFetcherService bytesFetcherService
 
     Map<String, AbstractCorrelationTag> tagMap = [:]
-    Map<String, Integer> tagCount = [:]
+    Map<String, Long> tagCount = [:]
 
     @PostConstruct
     void init() {
@@ -50,7 +50,7 @@ class KeywordAssociationService {
     @CacheEvict(value = "keywordAssociation", allEntries = true)
     void refresh() {
         tagMap.each {
-            Integer c = bytesFetcherService.getLessonCount(it.value.tagName)
+            Long c = bytesFetcherService.getLessonCount(it.value.tagName)
             if(c) tagCount.put(it.value.tagName, c)
         }
     }

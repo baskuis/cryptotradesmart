@@ -1,6 +1,6 @@
 package com.ukora.tradestudent.services
 
-import com.ukora.tradestudent.entities.SimulationResult
+import com.ukora.domain.entities.SimulationResult
 import spock.lang.Specification
 import spock.lang.Unroll
 

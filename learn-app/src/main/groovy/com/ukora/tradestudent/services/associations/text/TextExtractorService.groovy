@@ -1,8 +1,8 @@
 package com.ukora.tradestudent.services.associations.text
 
-import com.ukora.tradestudent.entities.ExtractedText
-import com.ukora.tradestudent.entities.News
-import com.ukora.tradestudent.entities.Twitter
+import com.ukora.domain.entities.ExtractedText
+import com.ukora.domain.entities.News
+import com.ukora.domain.entities.Twitter
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired

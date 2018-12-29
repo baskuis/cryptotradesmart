@@ -1,6 +1,6 @@
 package com.ukora.tradestudent.services
 
-import com.ukora.tradestudent.tags.AbstractCorrelationTag
+import com.ukora.domain.beans.tags.AbstractCorrelationTag
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext

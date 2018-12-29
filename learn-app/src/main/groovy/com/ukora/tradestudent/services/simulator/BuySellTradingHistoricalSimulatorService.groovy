@@ -1,13 +1,13 @@
 package com.ukora.tradestudent.services.simulator
 
-import com.ukora.tradestudent.entities.CorrelationAssociation
-import com.ukora.tradestudent.entities.SimulationResult
+import com.ukora.domain.entities.CorrelationAssociation
+import com.ukora.domain.entities.SimulationResult
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.ProbabilityCombinerService
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
-import com.ukora.tradestudent.strategy.trading.TradeExecution
+import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
-import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
+import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired

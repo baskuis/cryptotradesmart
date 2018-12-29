@@ -1,7 +1,7 @@
 package com.ukora.tradestudent.services.associations
 
-import com.ukora.tradestudent.entities.Memory
-import com.ukora.tradestudent.entities.PriceEntry
+import com.ukora.domain.entities.Memory
+import com.ukora.domain.entities.PriceEntry
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired

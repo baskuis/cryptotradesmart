@@ -1,4 +1,4 @@
-include 'collect'
-include 'learn'
+include 'base-xchange'
+include 'base-domain'
 include 'collect-app'
 include 'learn-app'

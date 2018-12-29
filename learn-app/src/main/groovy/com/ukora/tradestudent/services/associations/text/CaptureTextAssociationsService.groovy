@@ -1,9 +1,8 @@
 package com.ukora.tradestudent.services.associations.text
 
-import com.ukora.tradestudent.entities.BrainCount
-import com.ukora.tradestudent.entities.ExtractedText
-import com.ukora.tradestudent.entities.KeywordAssociation
-import com.ukora.tradestudent.entities.Lesson
+import com.ukora.domain.entities.BrainCount
+import com.ukora.domain.entities.ExtractedText
+import com.ukora.domain.entities.Lesson
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.TagService
 import com.ukora.tradestudent.utils.Logger

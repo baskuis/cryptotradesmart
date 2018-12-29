@@ -1,6 +1,6 @@
 package com.ukora.tradestudent.strategy.text.probablitity.impl
 
-import com.ukora.tradestudent.entities.KeywordAssociation
+import com.ukora.domain.entities.KeywordAssociation
 import com.ukora.tradestudent.strategy.text.probablitity.TextProbabilityCombinerStrategy
 import org.springframework.stereotype.Component
 

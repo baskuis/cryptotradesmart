@@ -1,7 +1,7 @@
 package com.ukora.tradestudent
 
 import com.ukora.tradestudent.services.AliasService
-import com.ukora.tradestudent.tags.TagGroup
+import com.ukora.domain.beans.tags.TagGroup
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,6 +23,7 @@ class TradestudentApplicationTests {
 
 	@Test
 	void contextLoads() {
+		assert applicationContext != null
 	}
 
 	@Test

@@ -1,7 +1,7 @@
 package com.ukora.tradestudent.converters
 
 import com.ukora.tradestudent.services.TagService
-import com.ukora.tradestudent.tags.AbstractCorrelationTag
+import com.ukora.domain.beans.tags.AbstractCorrelationTag
 import org.springframework.beans.factory.annotation.Autowired
 
 import javax.persistence.AttributeConverter

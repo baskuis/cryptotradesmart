@@ -1,12 +1,12 @@
 package com.ukora.tradestudent.services.learner
 
-import com.ukora.tradestudent.entities.Lesson
-import com.ukora.tradestudent.entities.Memory
-import com.ukora.tradestudent.entities.Property
+import com.ukora.domain.entities.Lesson
+import com.ukora.domain.entities.Memory
+import com.ukora.domain.entities.Property
 import com.ukora.tradestudent.services.BytesFetcherService
-import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
-import com.ukora.tradestudent.tags.reversal.UpDownReversalTagGroup
-import com.ukora.tradestudent.tags.trend.UpDownTagGroup
+import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
+import com.ukora.domain.beans.tags.reversal.UpDownReversalTagGroup
+import com.ukora.domain.beans.tags.trend.UpDownTagGroup
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async

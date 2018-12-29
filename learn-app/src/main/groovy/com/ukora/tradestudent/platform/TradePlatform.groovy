@@ -1,7 +1,7 @@
 package com.ukora.tradestudent.platform
 
 import com.ukora.tradestudent.currencies.pair.CurrencyPair
-import com.ukora.tradestudent.strategy.trading.TradeExecution
+import com.ukora.domain.beans.trade.TradeExecution
 
 /**
  * Describes a trade platform

@@ -1,14 +1,10 @@
 package com.ukora.tradestudent.services
 
-import com.ukora.tradestudent.entities.*
-import org.junit.Before
+import com.ukora.domain.entities.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.ApplicationContext
-import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.test.context.junit4.SpringRunner
 
 @RunWith(SpringRunner)

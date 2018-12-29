@@ -1,16 +1,15 @@
 package com.ukora.tradestudent.services.text
 
-import com.ukora.tradestudent.entities.BrainCount
-import com.ukora.tradestudent.entities.ExtractedText
-import com.ukora.tradestudent.entities.KeywordAssociation
-import com.ukora.tradestudent.entities.TextAssociations
+import com.ukora.domain.entities.BrainCount
+import com.ukora.domain.entities.ExtractedText
+import com.ukora.domain.entities.KeywordAssociation
+import com.ukora.domain.entities.TextAssociations
 import com.ukora.tradestudent.services.BytesFetcherService
-import com.ukora.tradestudent.services.TagService
 import com.ukora.tradestudent.services.associations.text.CaptureTextAssociationsService
 import com.ukora.tradestudent.services.associations.text.TextExtractorService
 import com.ukora.tradestudent.strategy.text.probablitity.TextProbabilityCombinerStrategy
-import com.ukora.tradestudent.tags.AbstractCorrelationTag
-import com.ukora.tradestudent.tags.TagGroup
+import com.ukora.domain.beans.tags.AbstractCorrelationTag
+import com.ukora.domain.beans.tags.TagGroup
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired

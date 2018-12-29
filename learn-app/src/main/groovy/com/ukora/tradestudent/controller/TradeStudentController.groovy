@@ -1,11 +1,11 @@
 package com.ukora.tradestudent.controller
 
 import com.ukora.tradestudent.TradestudentApplication
-import com.ukora.tradestudent.entities.BrainNode
-import com.ukora.tradestudent.entities.CorrelationAssociation
-import com.ukora.tradestudent.entities.ExtractedText
-import com.ukora.tradestudent.entities.SimulatedTradeEntry
-import com.ukora.tradestudent.entities.SimulationResult
+import com.ukora.domain.entities.BrainNode
+import com.ukora.domain.entities.CorrelationAssociation
+import com.ukora.domain.entities.ExtractedText
+import com.ukora.domain.entities.SimulatedTradeEntry
+import com.ukora.domain.entities.SimulationResult
 import com.ukora.tradestudent.services.*
 import com.ukora.tradestudent.services.associations.CaptureAssociationsService
 import com.ukora.tradestudent.services.associations.TechnicalAnalysisService

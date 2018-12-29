@@ -1,17 +1,17 @@
 package com.ukora.tradestudent.strategy.trading.impl
 
-import com.ukora.tradestudent.entities.CorrelationAssociation
-import com.ukora.tradestudent.entities.ExtractedText
+import com.ukora.domain.entities.CorrelationAssociation
+import com.ukora.domain.entities.ExtractedText
 import com.ukora.tradestudent.services.simulator.Simulation
 import com.ukora.tradestudent.services.text.TextAssociationProbabilityService
-import com.ukora.tradestudent.strategy.trading.TradeExecution
+import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
-import com.ukora.tradestudent.tags.buysell.BuyTag
-import com.ukora.tradestudent.tags.buysell.SellTag
-import com.ukora.tradestudent.tags.reversal.DownReversalTag
-import com.ukora.tradestudent.tags.reversal.UpReversalTag
-import com.ukora.tradestudent.tags.trend.DownTag
-import com.ukora.tradestudent.tags.trend.UpTag
+import com.ukora.domain.beans.tags.buysell.BuyTag
+import com.ukora.domain.beans.tags.buysell.SellTag
+import com.ukora.domain.beans.tags.reversal.DownReversalTag
+import com.ukora.domain.beans.tags.reversal.UpReversalTag
+import com.ukora.domain.beans.tags.trend.DownTag
+import com.ukora.domain.beans.tags.trend.UpTag
 import spock.lang.Specification
 import spock.lang.Unroll
 

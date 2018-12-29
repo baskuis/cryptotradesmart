@@ -1,6 +1,6 @@
 package com.ukora.tradestudent.platform
 
-import com.ukora.tradestudent.entities.Exchange
+import com.ukora.domain.entities.Exchange
 
 class OrderBook {
     Exchange exchange

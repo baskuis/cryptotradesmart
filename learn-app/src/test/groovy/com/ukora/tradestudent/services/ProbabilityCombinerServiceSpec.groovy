@@ -1,17 +1,17 @@
 package com.ukora.tradestudent.services
 
-import com.ukora.tradestudent.bayes.numbers.NumberAssociation
-import com.ukora.tradestudent.entities.BrainNode
-import com.ukora.tradestudent.entities.CorrelationAssociation
+import com.ukora.domain.beans.bayes.numbers.NumberAssociation
+import com.ukora.domain.entities.BrainNode
+import com.ukora.domain.entities.CorrelationAssociation
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.strategy.probability.impl.AverageProbabilityCombinerStrategy
-import com.ukora.tradestudent.tags.TagGroup
-import com.ukora.tradestudent.tags.buysell.BuySellTagGroup
-import com.ukora.tradestudent.tags.buysell.BuyTag
-import com.ukora.tradestudent.tags.buysell.SellTag
-import com.ukora.tradestudent.tags.trend.DownTag
-import com.ukora.tradestudent.tags.trend.UpDownTagGroup
-import com.ukora.tradestudent.tags.trend.UpTag
+import com.ukora.domain.beans.tags.TagGroup
+import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
+import com.ukora.domain.beans.tags.buysell.BuyTag
+import com.ukora.domain.beans.tags.buysell.SellTag
+import com.ukora.domain.beans.tags.trend.DownTag
+import com.ukora.domain.beans.tags.trend.UpDownTagGroup
+import com.ukora.domain.beans.tags.trend.UpTag
 import org.springframework.context.ApplicationContext
 import spock.lang.Specification
 

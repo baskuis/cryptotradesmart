@@ -1,6 +1,6 @@
 package com.ukora.tradestudent.strategy.probability.impl
 
-import com.ukora.tradestudent.bayes.numbers.NumberAssociationProbability
+import com.ukora.domain.beans.bayes.numbers.NumberAssociationProbability
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import org.springframework.stereotype.Component
 

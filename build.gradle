@@ -1,6 +1,7 @@
 buildscript {
     ext {
-        springBootVersion = '2.0.4.RELEASE'
+        springBootVersion = '2.1.1.RELEASE'
+        groovyVersion = '2.5.5'
     }
     repositories {
         mavenCentral()
@@ -21,7 +22,7 @@ apply plugin: 'groovy'
 apply plugin: 'idea'
 
 dependencies {
-    implementation('org.codehaus.groovy:groovy-all:2.4.14')
+    implementation('org.codehaus.groovy:groovy-all:' + groovyVersion)
 }
 
 group = 'com.ukora'
