@@ -63,8 +63,7 @@ class CollectApplication {
         objectMapper = new ObjectMapper()
     }
 
-    //@Scheduled(cron = "0 * * * * *")
-    @Scheduled(initialDelay = 10000l, fixedRate = 10000l)
+    @Scheduled(cron = "0 * * * * *")
     void crawl() {
         List<Thread> threads = []
         integrations.each { SourceIntegration sourceIntegration ->
