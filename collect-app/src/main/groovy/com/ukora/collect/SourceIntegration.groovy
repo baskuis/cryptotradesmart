@@ -1,6 +1,7 @@
 package com.ukora.collect
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ukora.domain.entities.Book
 import org.bson.Document
 import org.knowm.xchange.Exchange
 import org.knowm.xchange.ExchangeFactory
@@ -34,14 +35,6 @@ interface SourceIntegration {
 
     ObjectMapper objectMapper = new ObjectMapper()
 
-    static class Book {
-        Document orderBook
-        String integrationType
-        Date timestamp
-        String baseCode
-        String counterCode
-        boolean processed = false
-    }
 
     static class Health {
         Health(Status s) { status = s }

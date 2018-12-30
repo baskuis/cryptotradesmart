@@ -1,13 +1,10 @@
 package com.ukora.collect
 
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
-import org.springframework.data.jpa.repository.Query
+import com.ukora.domain.entities.Book
 import org.springframework.data.mongodb.repository.MongoRepository
 
-interface OrderBookRepository extends MongoRepository<SourceIntegration.Book, String> {
+interface OrderBookRepository extends MongoRepository<Book, String> {
 
-    @Query('{ "processed" : { $ne : true }}')
-    Page<SourceIntegration.Book> processedNot(Pageable pageable, boolean value)
+    List<Book> findByProcessed(boolean processed)
 
 }

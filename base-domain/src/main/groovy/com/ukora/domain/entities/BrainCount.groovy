@@ -1,10 +1,12 @@
 package com.ukora.domain.entities
 
-import com.mongodb.DBObject
+import org.springframework.data.annotation.Id
 
 class BrainCount {
 
+    @Id
     String id
+
     String reference
     String source
 
@@ -12,7 +14,5 @@ class BrainCount {
      * Tag -> Count
      */
     Map<String, Integer> counters = [:]
-
-    DBObject obj
 
 }

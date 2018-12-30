@@ -5,6 +5,7 @@ import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
 import com.ukora.domain.entities.Ask
 import com.ukora.domain.entities.Bid
+import com.ukora.domain.entities.Book
 import com.ukora.domain.entities.Details
 import com.ukora.domain.entities.Exchange
 import com.ukora.domain.entities.Graph
@@ -70,27 +71,27 @@ class CollectApplication {
             if (sourceIntegration.enabled()) {
                 threads.push(Thread.start {
                     if (sourceIntegration.exchange().exchangeMetaData.getCurrencyPairs().get(CurrencyPair.BTC_USD)) {
-                        SourceIntegration.Book book = sourceIntegration.capture(CurrencyPair.BTC_USD)
-                        if (book) {
-                            capture(book)
+                        Book b = sourceIntegration.capture(CurrencyPair.BTC_USD)
+                        if (b) {
+                            capture(b)
                         }
                     }
                     if (sourceIntegration.exchange().exchangeMetaData.getCurrencyPairs().get(CurrencyPair.BTC_USDT)) {
-                        SourceIntegration.Book book = sourceIntegration.capture(CurrencyPair.BTC_USDT)
-                        if (book) {
-                            capture(book)
+                        Book b = sourceIntegration.capture(CurrencyPair.BTC_USDT)
+                        if (b) {
+                            capture(b)
                         }
                     }
                     if (sourceIntegration.exchange().exchangeMetaData.getCurrencyPairs().get(CurrencyPair.ETH_USD)) {
-                        SourceIntegration.Book book = sourceIntegration.capture(CurrencyPair.ETH_USD)
-                        if (book) {
-                            capture(book)
+                        Book b = sourceIntegration.capture(CurrencyPair.ETH_USD)
+                        if (b) {
+                            capture(b)
                         }
                     }
                     if (sourceIntegration.exchange().exchangeMetaData.getCurrencyPairs().get(CurrencyPair.ETH_USDT)) {
-                        SourceIntegration.Book book = sourceIntegration.capture(CurrencyPair.ETH_USDT)
-                        if (book) {
-                            capture(book)
+                        Book b = sourceIntegration.capture(CurrencyPair.ETH_USDT)
+                        if (b) {
+                            capture(b)
                         }
                     }
                 })
@@ -99,10 +100,10 @@ class CollectApplication {
         threads*.join()
     }
 
-    void capture(SourceIntegration.Book book) {
-        if (!book) return
+    void capture(Book b) {
+        if (!b) return
         try {
-            orderBookRepository.insert(book)
+            orderBookRepository.insert(b)
         } catch(Exception e) {
             e.printStackTrace()
         }
@@ -132,7 +133,7 @@ class CollectApplication {
 
     @Scheduled(initialDelay = 10000l, fixedRate = 10000l)
     void digest() {
-        orderBookRepository.processedNot(new PageRequest(0, 10), true)?.content?.each {
+        orderBookRepository.findByProcessed(false)?.each {
             try {
 
                 Double maximum_ask_price = 0
@@ -277,13 +278,13 @@ class CollectApplication {
                 )
 
                 //mark processed
+                if( it.processed ) throw new Exception('Already processed')
                 it.processed = true
                 orderBookRepository.save(it)
 
                 //Insert memory
                 Memory i = memoryRepository.insert(memory)
                 println 'memory inserted: ' + i.id + ' ts:' + i.metadata.datetime
-
 
             } catch (Exception e) {
                 println "Issue parsing order book"
