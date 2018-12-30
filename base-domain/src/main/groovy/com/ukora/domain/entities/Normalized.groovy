@@ -23,4 +23,5 @@ class Normalized {
     Double normalized_total_bid_value
     Double normalized_total_ask_value
     Double normalized_volume_bid_price
+    Double normalized_total_ask_to_bid_ratio
 }

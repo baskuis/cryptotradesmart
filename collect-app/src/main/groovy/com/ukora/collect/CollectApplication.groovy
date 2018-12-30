@@ -3,6 +3,15 @@ package com.ukora.collect
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Updates
+import com.ukora.domain.entities.Ask
+import com.ukora.domain.entities.Bid
+import com.ukora.domain.entities.Details
+import com.ukora.domain.entities.Exchange
+import com.ukora.domain.entities.Graph
+import com.ukora.domain.entities.Memory
+import com.ukora.domain.entities.Metadata
+import com.ukora.domain.entities.Normalized
+import com.ukora.domain.repositories.MemoryRepository
 import org.bson.Document
 import org.knowm.xchange.currency.CurrencyPair
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,17 +20,20 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
 import org.springframework.context.ApplicationContext
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 
 import javax.annotation.PostConstruct
 
+@EnableScheduling
+@EnableMongoRepositories(basePackages = ['com.ukora.domain.repositories', 'com.ukora.collect'])
 @SpringBootApplication(exclude = [
         DataSourceAutoConfiguration.class,
         HibernateJpaAutoConfiguration.class
 ])
-@EnableScheduling
 class CollectApplication {
 
     static void main(String[] args) {
@@ -30,6 +42,12 @@ class CollectApplication {
 
     @Autowired
     MongoTemplate mongoTemplate
+
+    @Autowired
+    OrderBookRepository orderBookRepository
+
+    @Autowired
+    MemoryRepository memoryRepository
 
     @Autowired
     ApplicationContext applicationContext
@@ -44,7 +62,8 @@ class CollectApplication {
         objectMapper = new ObjectMapper()
     }
 
-    @Scheduled(cron = "0 * * * * *")
+    //@Scheduled(cron = "0 * * * * *")
+    @Scheduled(initialDelay = 10000l, fixedRate = 10000l)
     void crawl() {
         List<Thread> threads = []
         integrations.each { SourceIntegration sourceIntegration ->
@@ -82,7 +101,11 @@ class CollectApplication {
 
     void capture(SourceIntegration.Book book) {
         if (!book) return
-        mongoTemplate.getCollection('books').insertOne(Document.parse(objectMapper.writeValueAsString(book)))
+        try {
+            orderBookRepository.insert(book)
+        } catch(Exception e) {
+            e.printStackTrace()
+        }
     }
 
     @Scheduled(initialDelay = 10000l, fixedRate = 10000l)
@@ -109,160 +132,163 @@ class CollectApplication {
 
     @Scheduled(initialDelay = 10000l, fixedRate = 10000l)
     void digest() {
-        mongoTemplate.getCollection('books').find(Filters.ne('processed', '1')).limit(10).each {
-
+        orderBookRepository.processedNot(new PageRequest(0, 10), true)?.content?.each {
             try {
 
-                Float maximum_ask_price = 0
-                Float minimum_ask_price = (((it?.orderBook as Map)?.asks as List)[0] as Map).limitPrice as Float
-                Float asks_total_price = 0
-                Float asks_total_quantity = 0
-                Float asks_total_value = 0
-                Float quantity = 0
+                Double maximum_ask_price = 0
+                Double minimum_ask_price = (((it?.orderBook as Map)?.asks as List)[0] as Map).limitPrice as Double
+                Double asks_total_price = 0
+                Double asks_total_quantity = 0
+                Double asks_total_value = 0
+                Double quantity = 0
 
                 ((it?.orderBook as Map)?.asks as List)?.each { Map ask ->
-                    minimum_ask_price = ask.limitPrice < minimum_ask_price ? ask.limitPrice : minimum_ask_price
-                    maximum_ask_price = ask.limitPrice > maximum_ask_price ? ask.limitPrice : maximum_ask_price
-                    asks_total_price += ask.limitPrice
-                    asks_total_quantity += ask.originalAmount
-                    asks_total_value += ask.limitPrice * ask.originalAmount
-                    quantity += ask.originalAmount
+                    minimum_ask_price = (ask.limitPrice as Double) < minimum_ask_price ? (ask.limitPrice as Double) : minimum_ask_price
+                    maximum_ask_price = (ask.limitPrice as Double) > maximum_ask_price ? (ask.limitPrice as Double) : maximum_ask_price
+                    asks_total_price += (ask.limitPrice as Double)
+                    asks_total_quantity += (ask.originalAmount as Double)
+                    asks_total_value += (ask.limitPrice as Double) * (ask.originalAmount as Double)
+                    quantity += (ask.originalAmount as Double)
                 }
 
-                Float median_ask_price = (((it?.orderBook as Map)?.asks as List).get(Math.ceil(((it?.orderBook as Map)?.asks as List).size() / 2) as int) as Map).limitPrice
-                Float medium_ask_price = asks_total_price / ((it?.orderBook as Map)?.asks as List).size()
-                Float volume_ask_price = asks_total_price
-                Float volume_ask_quantity = asks_total_quantity
-                Float total_ask_value = asks_total_value
-                Float medium_per_unit_ask_price = total_ask_value / asks_total_quantity
-                Float ask_medium_median_delta = medium_ask_price - median_ask_price
+                Double median_ask_price = (((it?.orderBook as Map)?.asks as List).get(Math.ceil(((it?.orderBook as Map)?.asks as List).size() / 2) as int) as Map).limitPrice as Double
+                Double medium_ask_price = asks_total_price / ((it?.orderBook as Map)?.asks as List).size()
+                Double volume_ask_price = asks_total_price
+                Double volume_ask_quantity = asks_total_quantity
+                Double total_ask_value = asks_total_value
+                Double medium_per_unit_ask_price = total_ask_value / asks_total_quantity
+                Double ask_medium_median_delta = medium_ask_price - median_ask_price
 
-                Float maximum_bid_price = 0L
-                Float minimum_bid_price = (((it?.orderBook as Map)?.bids as List)[0] as Map).limitPrice as Float
-                Float bids_total_price = 0L
-                Float bids_total_quantity = 0L
-                Float bids_total_value = 0L
-                Float spread_ask_price = maximum_ask_price - minimum_ask_price
+                Double maximum_bid_price = 0L
+                Double minimum_bid_price = (((it?.orderBook as Map)?.bids as List)[0] as Map).limitPrice as Double
+                Double bids_total_price = 0L
+                Double bids_total_quantity = 0L
+                Double bids_total_value = 0L
+                Double spread_ask_price = maximum_ask_price - minimum_ask_price
 
                 ((it?.orderBook as Map)?.bids as List)?.each { Map bid ->
-                    minimum_bid_price = bid.limitPrice < minimum_bid_price ? bid.limitPrice : minimum_bid_price
-                    maximum_bid_price = bid.limitPrice > maximum_bid_price ? bid.limitPrice : maximum_bid_price
-                    bids_total_price += bid.limitPrice
-                    bids_total_quantity += bid.originalAmount
-                    bids_total_value += bid.limitPrice * bid.originalAmount
-                    quantity += bid.originalAmount
+                    minimum_bid_price = (bid.limitPrice as Double) < minimum_bid_price ? (bid.limitPrice as Double) : minimum_bid_price
+                    maximum_bid_price = (bid.limitPrice as Double) > maximum_bid_price ? (bid.limitPrice as Double) : maximum_bid_price
+                    bids_total_price += (bid.limitPrice as Double)
+                    bids_total_quantity += (bid.originalAmount as Double)
+                    bids_total_value += (bid.limitPrice as Double) * (bid.originalAmount as Double)
+                    quantity += (bid.originalAmount as Double)
                 }
 
-                Float median_bid_price = (((it?.orderBook as Map)?.bids as List).get(Math.ceil(((it?.orderBook as Map)?.bids as List).size() / 2) as int) as Map).limitPrice
-                Float medium_bid_price = bids_total_price / ((it?.orderBook as Map)?.bids as List).size()
-                Float volume_bid_price = bids_total_price
-                Float volume_bid_quantity = bids_total_quantity
-                Float total_bid_value = bids_total_value
-                Float medium_per_unit_bid_price = total_bid_value / bids_total_quantity
-                Float bid_medium_median_delta = medium_bid_price - median_bid_price
-                Float spread_bid_price = maximum_bid_price - minimum_bid_price
+                Double median_bid_price = (((it?.orderBook as Map)?.bids as List).get(Math.ceil(((it?.orderBook as Map)?.bids as List).size() / 2) as int) as Map).limitPrice as Double
+                Double medium_bid_price = bids_total_price / ((it?.orderBook as Map)?.bids as List).size()
+                Double volume_bid_price = bids_total_price
+                Double volume_bid_quantity = bids_total_quantity
+                Double total_bid_value = bids_total_value
+                Double medium_per_unit_bid_price = total_bid_value / bids_total_quantity
+                Double bid_medium_median_delta = medium_bid_price - median_bid_price
+                Double spread_bid_price = maximum_bid_price - minimum_bid_price
 
-                Float price = (maximum_bid_price + minimum_ask_price) / 2
-                Float spread = minimum_ask_price - maximum_bid_price
+                Double price = (maximum_bid_price + minimum_ask_price) / 2D
+                Double spread = minimum_ask_price - maximum_bid_price
 
-                Float normalized_spread = spread / price
+                Double normalized_spread = spread / price
 
-                Float normalized_maximum_ask_price = maximum_ask_price / price
-                Float normalized_minimum_ask_price = minimum_ask_price / price
-                Float normalized_medium_ask_price = medium_ask_price / price
-                Float normalized_medium_per_unit_ask_price = medium_per_unit_ask_price / price
-                Float normalized_median_ask_price = median_ask_price / price
-                Float normalized_volume_ask_price = volume_ask_price / price
-                Float normalized_volume_ask_quantity = volume_ask_quantity / quantity
-                Float normalized_spread_ask_price = spread_ask_price / price
-                Float normalized_total_ask_value = total_ask_value / price
-                Float normalized_ask_medium_median_delta = ask_medium_median_delta / price
+                Double normalized_maximum_ask_price = maximum_ask_price / price
+                Double normalized_minimum_ask_price = minimum_ask_price / price
+                Double normalized_medium_ask_price = medium_ask_price / price
+                Double normalized_medium_per_unit_ask_price = medium_per_unit_ask_price / price
+                Double normalized_median_ask_price = median_ask_price / price
+                Double normalized_volume_ask_price = volume_ask_price / price
+                Double normalized_volume_ask_quantity = volume_ask_quantity / quantity
+                Double normalized_spread_ask_price = spread_ask_price / price
+                Double normalized_total_ask_value = total_ask_value / price
+                Double normalized_ask_medium_median_delta = ask_medium_median_delta / price
 
-                Float normalized_maximum_bid_price = maximum_bid_price / price
-                Float normalized_minimum_bid_price = minimum_bid_price / price
-                Float normalized_medium_bid_price = medium_bid_price / price
-                Float normalized_medium_per_unit_bid_price = medium_per_unit_bid_price / price
-                Float normalized_median_bid_price = median_bid_price / price
-                Float normalized_volume_bid_price = volume_bid_price / price
-                Float normalized_volume_bid_quantity = volume_bid_quantity / quantity
-                Float normalized_spread_bid_price = spread_bid_price / price
-                Float normalized_total_bid_value = total_bid_value / price
-                Float normalized_bid_medium_median_delta = bid_medium_median_delta / price
+                Double normalized_maximum_bid_price = maximum_bid_price / price
+                Double normalized_minimum_bid_price = minimum_bid_price / price
+                Double normalized_medium_bid_price = medium_bid_price / price
+                Double normalized_medium_per_unit_bid_price = medium_per_unit_bid_price / price
+                Double normalized_median_bid_price = median_bid_price / price
+                Double normalized_volume_bid_price = volume_bid_price / price
+                Double normalized_volume_bid_quantity = volume_bid_quantity / quantity
+                Double normalized_spread_bid_price = spread_bid_price / price
+                Double normalized_total_bid_value = total_bid_value / price
+                Double normalized_bid_medium_median_delta = bid_medium_median_delta / price
 
-                Float normalized_total_ask_to_bid_ratio = normalized_total_ask_value / normalized_total_bid_value
+                Double normalized_total_ask_to_bid_ratio = normalized_total_ask_value / normalized_total_bid_value
 
-                Map memory = [
-                        "exchange"  : [
-                                "platform"    : it.integrationType,
-                                "currencyPair": (((it?.orderBook as Map)?.asks as List)?.get(0) as Map)?.currencyPair
-                        ],
-                        "bid"       : [
-                                "volume_bid_quantity"      : volume_bid_quantity,
-                                "bid_medium_median_delta"  : bid_medium_median_delta,
-                                "minimum_bid_price"        : minimum_bid_price,
-                                "maximum_bid_price"        : maximum_bid_price,
-                                "total_bid_value"          : total_bid_value,
-                                "medium_bid_price"         : medium_bid_price,
-                                "medium_per_unit_bid_price": medium_per_unit_bid_price
-                        ],
-                        "normalized": [
-                                "normalized_spread_bid_price"         : normalized_spread_bid_price,
-                                "normalized_medium_per_unit_bid_price": normalized_medium_per_unit_bid_price,
-                                "normalized_volume_ask_price"         : normalized_volume_ask_price,
-                                "normalized_maximum_ask_price"        : normalized_maximum_ask_price,
-                                "normalized_bid_medium_median_delta"  : normalized_bid_medium_median_delta,
-                                "normalized_minimum_bid_price"        : normalized_minimum_bid_price,
-                                "normalized_volume_ask_quantity"      : normalized_volume_ask_quantity,
-                                "normalized_medium_bid_price"         : normalized_medium_bid_price,
-                                "normalized_spread"                   : normalized_spread,
-                                "normalized_median_bid_price"         : normalized_median_bid_price,
-                                "normalized_spread_ask_price"         : normalized_spread_ask_price,
-                                "normalized_maximum_bid_price"        : normalized_maximum_bid_price,
-                                "normalized_volume_bid_quantity"      : normalized_volume_bid_quantity,
-                                "normalized_ask_medium_median_delta"  : normalized_ask_medium_median_delta,
-                                "normalized_medium_ask_price"         : normalized_medium_ask_price,
-                                "normalized_medium_per_unit_ask_price": normalized_medium_per_unit_ask_price,
-                                "normalized_minimum_ask_price"        : normalized_minimum_ask_price,
-                                "normalized_median_ask_price"         : normalized_median_ask_price,
-                                "normalized_total_bid_value"          : normalized_total_bid_value,
-                                "normalized_total_ask_value"          : normalized_total_ask_value,
-                                "normalized_volume_bid_price"         : normalized_volume_bid_price,
-                                "normalized_total_ask_to_bid_ratio"   : normalized_total_ask_to_bid_ratio
-                        ],
-                        "ask"       : [
-                                "ask_medium_median_delta"  : ask_medium_median_delta,
-                                "volume_ask_quantity"      : volume_ask_quantity,
-                                "minimum_ask_price"        : minimum_ask_price,
-                                "medium_ask_price"         : medium_ask_price,
-                                "total_ask_value"          : total_ask_value,
-                                "median_ask_price"         : median_ask_price,
-                                "maximum_ask_price"        : maximum_ask_price,
-                                "medium_per_unit_ask_price": medium_per_unit_ask_price
-                        ],
-                        "metadata"  : [
-                                "hostname": InetAddress.getLocalHost().getHostName(),
-                                "datetime": new Date((it?.timestamp ?: 1) as Long)
-                        ]
-                ]
-
-                //Update book record
-                mongoTemplate.getCollection('books').updateOne(
-                        Filters.eq('_id', it?._id),
-                        Updates.set('processed', '1')
-                )
-
-                //Insert into memory
-                mongoTemplate.getCollection('memory').insertOne(
-                        Document.parse(
-                                objectMapper.writeValueAsString(memory)
+                Memory memory = new Memory(
+                        metadata: new Metadata(
+                                hostname: InetAddress.getLocalHost().getHostName(),
+                                datetime: it.timestamp as Date
+                        ),
+                        bid: new Bid(
+                                volume_bid_quantity: volume_bid_quantity,
+                                bid_medium_median_delta: bid_medium_median_delta,
+                                minimum_bid_price: minimum_bid_price,
+                                median_bid_price: median_bid_price,
+                                maximum_bid_price: maximum_bid_price,
+                                total_bid_value: total_bid_value,
+                                medium_bid_price: medium_bid_price,
+                                medium_per_unit_bid_price: medium_per_unit_bid_price
+                        ),
+                        ask: new Ask(
+                                ask_medium_median_delta: ask_medium_median_delta,
+                                volume_ask_quantity: volume_ask_quantity,
+                                minimum_ask_price: minimum_ask_price,
+                                medium_ask_price: medium_ask_price,
+                                total_ask_value: total_ask_value,
+                                maximum_ask_price: maximum_ask_price,
+                                medium_per_unit_ask_price: medium_per_unit_ask_price,
+                                median_ask_price: median_ask_price,
+                        ),
+                        normalized: new Normalized(
+                                normalized_spread_bid_price: normalized_spread_bid_price,
+                                normalized_medium_per_unit_bid_price: normalized_medium_per_unit_bid_price,
+                                normalized_volume_ask_price: normalized_volume_ask_price,
+                                normalized_maximum_ask_price: normalized_maximum_ask_price,
+                                normalized_bid_medium_median_delta: normalized_bid_medium_median_delta,
+                                normalized_minimum_bid_price: normalized_minimum_bid_price,
+                                normalized_volume_ask_quantity: normalized_volume_ask_quantity,
+                                normalized_medium_bid_price: normalized_medium_bid_price,
+                                normalized_spread: normalized_spread,
+                                normalized_median_bid_price: normalized_median_bid_price,
+                                normalized_spread_ask_price: normalized_spread_ask_price,
+                                normalized_maximum_bid_price: normalized_maximum_bid_price,
+                                normalized_volume_bid_quantity: normalized_volume_bid_quantity,
+                                normalized_ask_medium_median_delta: normalized_ask_medium_median_delta,
+                                normalized_medium_ask_price: normalized_medium_ask_price,
+                                normalized_medium_per_unit_ask_price: normalized_medium_per_unit_ask_price,
+                                normalized_minimum_ask_price: normalized_minimum_ask_price,
+                                normalized_median_ask_price: normalized_median_ask_price,
+                                normalized_total_bid_value: normalized_total_bid_value,
+                                normalized_total_ask_value: normalized_total_ask_value,
+                                normalized_volume_bid_price: normalized_volume_bid_price,
+                                normalized_total_ask_to_bid_ratio: normalized_total_ask_to_bid_ratio
+                        ),
+                        exchange: new Exchange(
+                                details: new Details(
+                                        tradecurrency: it.baseCode,
+                                        pricecurrency: it.counterCode,
+                                ),
+                                platform: it.integrationType,
+                                exchange: it.integrationType
+                        ),
+                        graph: new Graph(
+                                price: price,
+                                quantity: quantity
                         )
                 )
+
+                //mark processed
+                it.processed = true
+                orderBookRepository.save(it)
+
+                //Insert memory
+                Memory i = memoryRepository.insert(memory)
+                println 'memory inserted: ' + i.id + ' ts:' + i.metadata.datetime
+
 
             } catch (Exception e) {
                 println "Issue parsing order book"
                 e.printStackTrace()
             }
-
         }
     }
 

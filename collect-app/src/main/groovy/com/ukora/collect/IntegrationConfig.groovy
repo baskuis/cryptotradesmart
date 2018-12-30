@@ -6,10 +6,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class IntegrationConfig {
 
-    @Bean
-    static SourceIntegration.KrakenIntegration getKrakenIntegration(){
-        new SourceIntegration.KrakenIntegration()
-    }
+
 
     @Bean
     static SourceIntegration.BinanceIntegration getBinanceIntegration(){

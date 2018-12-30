@@ -1,5 +1,7 @@
 package com.ukora.collect
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.bson.Document
 import org.knowm.xchange.Exchange
 import org.knowm.xchange.ExchangeFactory
 import org.knowm.xchange.binance.BinanceExchange
@@ -30,11 +32,15 @@ interface SourceIntegration {
 
     long lastSuccess()
 
+    ObjectMapper objectMapper = new ObjectMapper()
+
     static class Book {
-        OrderBook orderBook
-        IntegrationType integrationType
+        Document orderBook
+        String integrationType
         Date timestamp
-        CurrencyPair currencyPair
+        String baseCode
+        String counterCode
+        boolean processed = false
     }
 
     static class Health {
@@ -121,16 +127,18 @@ interface SourceIntegration {
                 lastAttempted = System.currentTimeMillis()
                 OrderBook orderBook = getOrderBook(currencyPair)
                 Book book = new Book()
-                book.orderBook = orderBook
-                book.integrationType = integrationType()
+                book.orderBook = Document.parse(objectMapper.writeValueAsString(orderBook))
+                book.integrationType = integrationType().name()
                 book.timestamp = new Date()
-                book.currencyPair = currencyPair
+                book.baseCode = currencyPair.base.currencyCode
+                book.counterCode = currencyPair.counter.currencyCode
                 lastSuccess = System.currentTimeMillis()
                 health.status = Health.Status.UP
                 return book
             } catch (Exception e) {
                 health.status = Health.Status.DOWN
                 health.message = e.message
+                e.printStackTrace()
             }
             return null
         }
