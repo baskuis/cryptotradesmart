@@ -1,4 +1,4 @@
-ps aux | grep [t]radestudent | grep [c]ollect-app
+ps aux | grep [j]ava | grep [t]radestudent | grep [c]ollect-app
 if [ $? -eq 1 ]; then
     echo "respawning collector" | tee -a /home/bas/Projects/tradestudent-learn/respawn.out
     /home/bas/Projects/tradestudent-learn/collect-app/start.sh
