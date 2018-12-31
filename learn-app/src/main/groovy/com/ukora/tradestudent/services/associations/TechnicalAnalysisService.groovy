@@ -170,11 +170,11 @@ class TechnicalAnalysisService {
         Double normalizedBottomDistance = (finalEntry.price - bottomTrendProjection) / finalEntry.price
 
         if(
-            normalizedTopTrendProjection < 0 || normalizedTopTrendProjection > 2 ||
-            normalizedBottomTrendProjection < 0 || normalizedBottomTrendProjection > 2 ||
-            normalizedDeltaTrendProjection < -1 || normalizedDeltaTrendProjection > 1 ||
-            normalizedTopDistance < -1 || normalizedTopDistance > 1 ||
-            normalizedBottomDistance < -1 || normalizedBottomDistance > 1
+            normalizedTopTrendProjection < -1 || normalizedTopTrendProjection > 3 ||
+            normalizedBottomTrendProjection < -1 || normalizedBottomTrendProjection > 3 ||
+            normalizedDeltaTrendProjection < -2 || normalizedDeltaTrendProjection > 2 ||
+            normalizedTopDistance < -2 || normalizedTopDistance > 2 ||
+            normalizedBottomDistance < -2 || normalizedBottomDistance > 2
         ){
             Logger.log(String.format('Invalid values for technical analysis ' +
                     'normalizedTopTrendProjection:%s normalizedBottomTrendProjection:%s ' +
