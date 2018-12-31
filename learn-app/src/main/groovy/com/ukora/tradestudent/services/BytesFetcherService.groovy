@@ -98,7 +98,7 @@ class BytesFetcherService {
         List<SimulatedTradeEntry> tradeEntries = simulatedTradeEntryRepository.findAll(
                 new PageRequest(0, 1, new Sort(Sort.Direction.DESC, "date"))
         )?.getContent()
-        return (tradeEntries?.size() > 0 ? tradeEntries.first() : null)
+        return (tradeEntries && tradeEntries?.size() > 0 ? tradeEntries.first() : null)
     }
 
     /**
