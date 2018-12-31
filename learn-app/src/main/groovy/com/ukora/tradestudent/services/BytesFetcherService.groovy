@@ -42,7 +42,11 @@ class BytesFetcherService {
      */
     @Cacheable("properties")
     Property getProperty(String name) {
-        return propertyRepository.findByName(name)?.get(0)
+        List<Property> properties = propertyRepository.findByName(name)
+        if(properties.size() > 0) {
+            return properties.get(0)
+        }
+        null
     }
 
     /**
@@ -52,7 +56,10 @@ class BytesFetcherService {
      */
     @CacheEvict(value = "properties", allEntries = true)
     void saveProperty(Property property) {
-        propertyRepository.save(property)
+        Property p = this.getProperty(property.name)
+        if(!p) { p = property }
+        p.value = property.value
+        propertyRepository.save(p)
     }
 
     /**
@@ -64,11 +71,7 @@ class BytesFetcherService {
     @CacheEvict(value = "properties", allEntries = true)
     void saveProperty(String name, String value) {
         Property p = this.getProperty(name)
-        if(!p) {
-            p = new Property(
-                    name: name
-            )
-        }
+        if(!p) { p = new Property(name: name) }
         p.value = value
         propertyRepository.save(p)
     }

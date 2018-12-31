@@ -22,7 +22,6 @@ class BytesFetcherServiceSpec {
                 value: "bar"
         )
 
-
         bytesFetcherService.saveProperty(p)
 
         Property r = bytesFetcherService.getProperty('foo')
@@ -37,6 +36,14 @@ class BytesFetcherServiceSpec {
         assert f.name == 'foo'
         assert f.value == 'fizz'
         assert f.id == r.id
+
+        bytesFetcherService.saveProperty(p)
+        r = bytesFetcherService.getProperty('foo')
+
+        assert r.id == f.id
+        assert r.value == 'bar'
+        assert r.name == 'foo'
+
     }
 
 
