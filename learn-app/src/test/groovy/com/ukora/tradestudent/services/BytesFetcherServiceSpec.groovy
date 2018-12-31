@@ -25,9 +25,20 @@ class BytesFetcherServiceSpec {
 
         bytesFetcherService.saveProperty(p)
 
+        Property r = bytesFetcherService.getProperty('foo')
 
+        assert p.name == r.name
+        assert p.value == r.value
+        assert r.id != null
 
+        bytesFetcherService.saveProperty('foo', 'fizz')
+        Property f = bytesFetcherService.getProperty('foo')
+
+        assert f.name == 'foo'
+        assert f.value == 'fizz'
+        assert f.id == r.id
     }
+
 
     @Test
     void testInsertThenReadMemory() {

@@ -42,7 +42,7 @@ class BytesFetcherService {
      */
     @Cacheable("properties")
     Property getProperty(String name) {
-        return propertyRepository.findByName(name)
+        return propertyRepository.findByName(name)?.get(0)
     }
 
     /**
@@ -63,10 +63,14 @@ class BytesFetcherService {
      */
     @CacheEvict(value = "properties", allEntries = true)
     void saveProperty(String name, String value) {
-        propertyRepository.save(new Property(
-                name: name,
-                value: value
-        ))
+        Property p = this.getProperty(name)
+        if(!p) {
+            p = new Property(
+                    name: name
+            )
+        }
+        p.value = value
+        propertyRepository.save(p)
     }
 
     /**
