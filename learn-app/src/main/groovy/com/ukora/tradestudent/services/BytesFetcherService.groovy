@@ -206,7 +206,11 @@ class BytesFetcherService {
      * @return
      */
     Brain getBrain(String reference, String tag) {
-        return brainRepository.findByReferenceAndTag(reference, tag)?.first() ?: new Brain(
+        List<Brain> brainList = brainRepository.findByReferenceAndTag(reference, tag)
+        if(brainList && brainList.size() > 0) {
+            return brainList.first()
+        }
+        return new Brain(
                 id: null,
                 tag: tag,
                 reference: reference,
