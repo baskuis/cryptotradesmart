@@ -1,5 +1,6 @@
 package com.ukora.tradestudent.services
 
+import com.ukora.domain.beans.tags.buysell.BuyTag
 import com.ukora.domain.entities.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -43,6 +44,25 @@ class BytesFetcherServiceSpec {
         assert r.id == f.id
         assert r.value == 'bar'
         assert r.name == 'foo'
+
+    }
+
+    @Test
+    void testInsertThenReadLesson() {
+
+        Date lessonDate = new Date()
+
+        Lesson lesson = new Lesson(
+                date: lessonDate,
+                tag: new BuyTag(),
+                processed: false
+        )
+
+        bytesFetcherService.saveLesson(lesson)
+
+        Lesson nextLesson = bytesFetcherService.getNextLesson()
+
+        println nextLesson
 
     }
 

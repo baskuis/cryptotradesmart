@@ -270,7 +270,11 @@ class BytesFetcherService {
      * @return
      */
     Lesson getNextTextLesson() {
-        return lessonRepository.findByTextProcessedNot(true)
+         List<Lesson> unprocessedLessons =  lessonRepository.findByTextProcessedNot(true)
+        if(unprocessedLessons && unprocessedLessons.size() > 0) {
+            return unprocessedLessons.get(0)
+        }
+        return null
     }
 
     /**
@@ -279,7 +283,11 @@ class BytesFetcherService {
      * @return
      */
     Lesson getNextLesson() {
-        return lessonRepository.findByProcessedNot(true)
+        List<Lesson> unprocessedLessons =  lessonRepository.findByProcessedNot(true)
+        if(unprocessedLessons && unprocessedLessons.size() > 0) {
+            return unprocessedLessons.get(0)
+        }
+        return null
     }
 
     /**

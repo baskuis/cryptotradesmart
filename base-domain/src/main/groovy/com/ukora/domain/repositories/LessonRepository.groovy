@@ -7,8 +7,8 @@ interface LessonRepository extends MongoRepository<Lesson, String> {
 
     Long countByTag(String tag)
 
-    Lesson findByTextProcessedNot(Boolean textProcessed)
+    List<Lesson> findByTextProcessedNot(Boolean textProcessed)
 
-    Lesson findByProcessedNot(Boolean processed)
+    List<Lesson> findByProcessedNot(Boolean processed)
 
 }
