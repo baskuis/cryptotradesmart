@@ -155,10 +155,10 @@ class NerdUtils {
     static Double applyValueGetNewDeviation(Double value, Double mean, Double count, Double deviation) {
         return (Double) Math.sqrt(
                 (
-                        (count * (Math.pow(value, 2) + (
-                                (count - 1.0) * (Math.pow(deviation, 2) + Math.pow(mean, 2))
-                        ))) - Math.pow(value + ((count - 1.0) * mean), 2)
-                ) / Math.pow(count, 2))
+                        (count * (Math.pow(value, 2.0) + (
+                                (count - 1.0) * (Math.pow(deviation, 2.0) + Math.pow(mean, 2.0))
+                        ))) - Math.pow(value + ((count - 1.0) * mean), 2.0)
+                ) / Math.pow(count, 2.0))
     }
 
     /**
