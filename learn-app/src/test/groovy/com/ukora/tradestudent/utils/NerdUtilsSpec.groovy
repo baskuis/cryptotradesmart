@@ -126,7 +126,7 @@ class NerdUtilsSpec extends Specification {
     }
 
     @Unroll
-    def "Applying new value gets correct new standard deviation #expectedValue"() {
+    def "Applying new value[#value], mean[#mean], count[#count] gets correct new standard deviation #expectedValue"() {
 
         when:
         def d = NerdUtils.applyValueGetNewDeviation(
@@ -150,6 +150,7 @@ class NerdUtilsSpec extends Specification {
         1.1                     | 1.2                    | 3     | 0.879     | 0.719246982768939
         343.5625743637561       | 0.0                    | 1.0   | 0.0       | 0
         0.002410952215149232555 | 0.00241095221514986515 | 100   | 0.0       | 2.634178031930877E-11
+        0.002410952215149232555 | 1.00241095221514986515 | 2 + 1 | 0.0       | 0.4714045207910319
 
     }
 

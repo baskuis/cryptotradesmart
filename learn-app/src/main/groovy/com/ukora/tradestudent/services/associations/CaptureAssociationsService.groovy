@@ -278,14 +278,14 @@ class CaptureAssociationsService {
         if (!value) return
         if (!brain) return
         Double newDeviation = NerdUtils.applyValueGetNewDeviation(
-                value,
-                brain.mean,
-                brain.count + 1,
-                brain.standard_deviation)
+                value as double,
+                brain.mean as double,
+                (brain.count + 1) as double,
+                brain.standard_deviation as double)
         Double newMean = NerdUtils.applyValueGetNewMean(
-                value,
-                brain.mean,
-                brain.count)
+                value as double,
+                brain.mean as double,
+                brain.count as double)
         if (newDeviation == null || newDeviation.naN || newMean == null || newMean.naN) {
             Logger.log(String.format("Brain.mean: %s, Brain.count + 1: %s, brain.standard_deviation: %s, value: %s, newMean: %s, newDeviation: %s",
                     brain.mean, brain.count + 1, brain.standard_deviation, value, newMean, newDeviation
