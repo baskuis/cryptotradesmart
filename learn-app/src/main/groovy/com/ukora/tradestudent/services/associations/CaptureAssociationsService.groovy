@@ -287,8 +287,8 @@ class CaptureAssociationsService {
                 brain.mean,
                 brain.count)
         if (newDeviation == null || newDeviation.naN || newMean == null || newMean.naN) {
-            Logger.log(String.format("Brain.mean: %s, Brain.count: %s, brain.standard_deviation: %s, value: %s, newMean: %s, newDeviation: %s",
-                    brain.mean, brain.count, brain.standard_deviation, value, newMean, newDeviation
+            Logger.log(String.format("Brain.mean: %s, Brain.count + 1: %s, brain.standard_deviation: %s, value: %s, newMean: %s, newDeviation: %s",
+                    brain.mean, brain.count + 1, brain.standard_deviation, value, newMean, newDeviation
             ))
             Logger.log(String.format("Not capturing new value mean %s deviation %s", newMean, newDeviation))
             return
