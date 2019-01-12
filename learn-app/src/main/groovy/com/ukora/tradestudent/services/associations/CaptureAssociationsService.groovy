@@ -44,8 +44,8 @@ class CaptureAssociationsService {
      */
     @Scheduled(cron = "*/10 * * * * *")
     @Async
-    void learn(){
-        if(leaningEnabled) {
+    void learn() {
+        if (leaningEnabled) {
             learningSpeed.times {
                 Logger.debug(String.format("capturing lesson %s", it))
                 Lesson lesson = bytesFetcherService.getNextLesson()
@@ -67,7 +67,7 @@ class CaptureAssociationsService {
                     Logger.debug("no lesson")
                 }
             }
-        }else{
+        } else {
             Logger.log("leaning disabled")
         }
     }
@@ -77,7 +77,7 @@ class CaptureAssociationsService {
      *
      * @param correlationAssociation
      */
-    void hydrateAssociations(CorrelationAssociation correlationAssociation){
+    void hydrateAssociations(CorrelationAssociation correlationAssociation) {
 
         /** Capture associations for normalized data for instance */
         brainItUpSimple(correlationAssociation.memory, correlationAssociation, INSTANT)
@@ -85,7 +85,9 @@ class CaptureAssociationsService {
         /** Capture associations for normalized data at other time deltas */
         correlationAssociation.intervals.each { String timeDelta ->
             Memory memory = correlationAssociation.previousMemory.get(timeDelta)
-            if(memory){ brainItUpSimple(memory, correlationAssociation, timeDelta) }
+            if (memory) {
+                brainItUpSimple(memory, correlationAssociation, timeDelta)
+            }
         }
 
         /**
@@ -103,9 +105,9 @@ class CaptureAssociationsService {
          * Store emotional boundary associations
          *
          */
-        if(correlationAssociation.price) {
+        if (correlationAssociation.price) {
             NerdUtils.extractBoundaryDistances(correlationAssociation.price).each {
-                if(it.value == 0) it.value = PRACTICAL_ZERO
+                if (it.value == 0) it.value = PRACTICAL_ZERO
                 correlationAssociation.numericAssociations.put(INSTANT + SEP + it.key, it.value)
             }
         }
@@ -115,7 +117,7 @@ class CaptureAssociationsService {
          *
          */
         Map<String, Double> technicalAnalysis = technicalAnalysisService.extractTechnicalAnalysis(correlationAssociation.date)
-        if(technicalAnalysis) {
+        if (technicalAnalysis) {
             technicalAnalysis.each {
                 correlationAssociation.numericAssociations.put(it.key, it.value)
             }
@@ -130,21 +132,21 @@ class CaptureAssociationsService {
      * @param correlationAssociation
      * @param timeDelta
      */
-    static void brainItUpSimple(Memory memory, CorrelationAssociation correlationAssociation, String timeDelta){
+    static void brainItUpSimple(Memory memory, CorrelationAssociation correlationAssociation, String timeDelta) {
 
-        if(!memory) return
-        if(!correlationAssociation) return
+        if (!memory) return
+        if (!correlationAssociation) return
 
         /** Normalized properties */
         memory.normalized.properties.each { prop, val ->
-            if(val instanceof Double) {
+            if (val instanceof Double) {
                 correlationAssociation.numericAssociations.put(timeDelta + SEP + prop, val)
             }
         }
 
         /** Previous price proportions */
         Double previousPriceProportion = correlationAssociation.previousPrices.get(timeDelta)
-        if(previousPriceProportion && !previousPriceProportion.naN) {
+        if (previousPriceProportion && !previousPriceProportion.naN) {
             correlationAssociation.numericAssociations.put(timeDelta + SEP + PRICE_DELTA, previousPriceProportion)
         }
 
@@ -156,11 +158,11 @@ class CaptureAssociationsService {
      * @param associations
      * @param tagName
      */
-    void hydrateSpecializedAssociationTags(AbstractAssociation associations, String tagName){
+    void hydrateSpecializedAssociationTags(AbstractAssociation associations, String tagName) {
 
-        if(!associations) return
-        if(!tagName) return
-        if(!associations.date) return
+        if (!associations) return
+        if (!tagName) return
+        if (!associations.date) return
 
         /**
          * Store time based associations
@@ -177,9 +179,9 @@ class CaptureAssociationsService {
          * Store emotional boundary associations
          *
          */
-        if(associations.price) {
+        if (associations.price) {
             NerdUtils.extractBoundaryDistances(associations.price).each {
-                if(it.value == 0) it.value = PRACTICAL_ZERO
+                if (it.value == 0) it.value = PRACTICAL_ZERO
                 associations.associations.get(INSTANT + SEP + it.key, [:]).put(tagName, it.value)
             }
         }
@@ -189,7 +191,7 @@ class CaptureAssociationsService {
          *
          */
         Map<String, Double> technicalAnalysis = technicalAnalysisService.extractTechnicalAnalysis(associations.date)
-        if(technicalAnalysis) {
+        if (technicalAnalysis) {
             technicalAnalysis.each {
                 associations.associations.get(it.key, [:]).put(tagName, it.value)
             }
@@ -203,10 +205,10 @@ class CaptureAssociationsService {
      * @param associations
      * @param tagName
      */
-    static void hydrateAssociationTags(AbstractAssociation associations, String tagName){
+    static void hydrateAssociationTags(AbstractAssociation associations, String tagName) {
 
-        if(!associations) return
-        if(!tagName) return
+        if (!associations) return
+        if (!tagName) return
 
         /** Capture associations for normalized data for instance */
         brainItUp(associations.memory, associations, INSTANT, tagName)
@@ -214,7 +216,9 @@ class CaptureAssociationsService {
         /** Capture associations for normalized data at other time deltas */
         associations.intervals.each { String key ->
             Memory memory = associations.previousMemory.get(key)
-            if(memory){ brainItUp(memory, associations, key, tagName) }
+            if (memory) {
+                brainItUp(memory, associations, key, tagName)
+            }
         }
 
     }
@@ -226,20 +230,20 @@ class CaptureAssociationsService {
      * @param tagName
      * @param timeDelta
      */
-    static void brainItUp(Memory memory, AbstractAssociation lesson, String timeDelta, String tagName){
-        if(!memory) return
-        if(!lesson) return
+    static void brainItUp(Memory memory, AbstractAssociation lesson, String timeDelta, String tagName) {
+        if (!memory) return
+        if (!lesson) return
 
         /** Normalized properties */
         memory.normalized.properties.each { prop, val ->
-            if(val instanceof Double) {
+            if (val instanceof Double) {
                 (lesson.associations.get(timeDelta + SEP + prop, [:]) as Map).put(tagName, val)
             }
         }
 
         /** Previous price proportions */
         Double previousPriceProportion = lesson.previousPrices.get(timeDelta)
-        if(previousPriceProportion) {
+        if (previousPriceProportion) {
             (lesson.associations.get(timeDelta + SEP + PRICE_DELTA, [:]) as Map).put(tagName, previousPriceProportion)
         }
 
@@ -252,15 +256,15 @@ class CaptureAssociationsService {
      *
      * @param associations
      */
-    void rememberAllThat(Lesson lesson){
-        if(!lesson) return
+    void rememberAllThat(Lesson lesson) {
+        if (!lesson) return
         lesson.associations?.each {
             Map.Entry<String, Map<String, Double>> entry ->
-            entry.value.each {
-                Map.Entry<String, Double> tagEntry ->
-                Brain brain = bytesFetcherService.getBrain(entry.key, tagEntry.key)
-                captureNewValue(brain, tagEntry.value)
-            }
+                entry.value.each {
+                    Map.Entry<String, Double> tagEntry ->
+                        Brain brain = bytesFetcherService.getBrain(entry.key, tagEntry.key)
+                        captureNewValue(brain, tagEntry.value)
+                }
         }
     }
 
@@ -270,9 +274,9 @@ class CaptureAssociationsService {
      * @param brain
      * @param value
      */
-    void captureNewValue(Brain brain, Double value){
-        if(!value) return
-        if(!brain) return
+    void captureNewValue(Brain brain, Double value) {
+        if (!value) return
+        if (!brain) return
         Double newDeviation = NerdUtils.applyValueGetNewDeviation(
                 value,
                 brain.mean,
@@ -282,7 +286,10 @@ class CaptureAssociationsService {
                 value,
                 brain.mean,
                 brain.count)
-        if(newDeviation == null || newDeviation.naN || newMean == null || newMean.naN){
+        if (newDeviation == null || newDeviation.naN || newMean == null || newMean.naN) {
+            Logger.log(String.format("Brain.mean: %s, Brain.count: %s, brain.standard_deviation: %s, value: %s, newMean: %s, newDeviation: %s",
+                    brain.mean, brain.count, brain.standard_deviation, value, newMean, newDeviation
+            ))
             Logger.log(String.format("Not capturing new value mean %s deviation %s", newMean, newDeviation))
             return
         }
