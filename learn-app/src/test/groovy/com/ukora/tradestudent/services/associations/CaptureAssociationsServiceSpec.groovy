@@ -26,10 +26,10 @@ class CaptureAssociationsServiceSpec extends Specification {
         )
 
         when:
-        captureAssociationsService.captureNewValue(brain, value)
+        captureAssociationsService.captureNewValue(brain, value as double)
 
         then:
-        bytesFetcherService.saveBrain(_ as Brain) >> { List args ->
+        1 * bytesFetcherService.saveBrain(_ as Brain) >> { List args ->
             final Brain b = args.first() as Brain
             assert b.count == expected_new_count
             assert b.mean == expected_new_mean
@@ -37,10 +37,21 @@ class CaptureAssociationsServiceSpec extends Specification {
         }
 
         where:
-        mean                     | standard_deviation           | count     | value                 | expected_new_count | expected_new_mean      | expexted_new_deviation
-        0.00002555432165464654   | 0.000000023216551684851355   | 12315     | 0.000025448462321651D | 12316              | 2.5554313059377544E-5D | 2.3235195774940466E-8D
-        "0.00002555432165464654" | "0.000000023216551684851355" | 12315 + 1 | 0.000025448462321651D | 12316 + 1          | 2.555431306007538E-5D  | 2.323519426300147E-8D
-        5                        | 0.0                          | 0         | 5                     | 1                  | 5                      | 0
+        mean                        | standard_deviation           | count     | value                       | expected_new_count | expected_new_mean      | expexted_new_deviation
+        0.00002555432165464654      | 0.000000023216551684851355   | 12315     | 0.000025448462321651D       | 12316              | 2.5554313059377544E-5D | 2.3235195774940466E-8D
+        "0.00002555432165464654"    | "0.000000023216551684851355" | 12315 + 1 | 0.000025448462321651D       | 12316 + 1          | 2.555431306007538E-5D  | 2.323519426300147E-8D
+        5                           | 0.0                          | 0         | 5                           | 1                  | 5                      | 0
+        1.0407202987930506          | 0.0                          | 5         | 1.0507202987930506          | 6                  | 1.0423869654597173     | 0.0037267799624820666
+        1.0407202987930506          | 0.1                          | 5         | 1.0407202987930506          | 6                  | 1.0407202987930508     | 0.09128709291752618
+        1.0407202987930506          | 0.0000001                    | 5         | 1.0407202987930506          | 6                  | 1.0407202987930508     | 8.995716907717204E-8D
+        52                          | 0.0000000000                 | 5         | 52                          | 6                  | 52                     | 0.0
+        1                           | 0.0000000000                 | 5         | 1                           | 6                  | 1                      | 0.0
+        1.0407202987930506D         | 0                            | 5         | 1.0507202987930506D         | 6                  | 1.0423869654597173     | 0.0037267799624820666
+        1.0407202987930506D         | 0.005                        | 5         | 1.0407202987930506D         | 6                  | 1.0407202987930508     | 0.004564354645844039
+        1.0407202987930506D         | 0                            | 5         | 1.0407202987930506D         | 6                  | 1.0407202987930508     | 0.0
+        1.0407202987930506 as float | 0                            | 5         | 1.0407202987930506 as float | 6                  | 1.0407203435897827     | 0.0
+        1.040720D                   | 0                            | 5         | 1.040720D                   | 6                  | 1.040720D              | 0.0
+        1.040720D                   | 0                            | 50        | 1.040720D                   | 51                 | 1.040720D              | 0.0
 
     }
 }

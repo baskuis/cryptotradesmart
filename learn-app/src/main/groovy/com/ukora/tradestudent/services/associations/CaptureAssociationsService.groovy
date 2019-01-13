@@ -282,15 +282,31 @@ class CaptureAssociationsService {
                 brain.mean as Double,
                 (brain.count + 1) as Double,
                 brain.standard_deviation as Double)
+
+        /**
+         * Under certain conditions
+         * inputs with type Double cause NaN outputs
+         * casting to float seems to resolve these
+         *
+         * Please refer to test cases for more details
+         */
+        if(newDeviation.naN) {
+            newDeviation = NerdUtils.applyValueGetNewDeviation(
+                    value as float,
+                    brain.mean as float,
+                    (brain.count + 1) as float,
+                    brain.standard_deviation as float)
+        }
+
         Double newMean = NerdUtils.applyValueGetNewMean(
                 value as Double,
                 brain.mean as Double,
                 brain.count as Double)
         if (newDeviation == null || newDeviation.naN || newMean == null || newMean.naN) {
-            Logger.log(String.format("Brain.mean: %s, Brain.count + 1: %s, brain.standard_deviation: %s, value: %s, newMean: %s, newDeviation: %s",
+            Logger.debug(String.format("Brain.mean: %s, Brain.count + 1: %s, brain.standard_deviation: %s, value: %s, newMean: %s, newDeviation: %s",
                     brain.mean, brain.count + 1, brain.standard_deviation, value, newMean, newDeviation
             ))
-            Logger.log(String.format("Not capturing new value mean %s deviation %s", newMean, newDeviation))
+            Logger.debug(String.format("Not capturing new value mean %s deviation %s", newMean, newDeviation))
             return
         }
         brain.standard_deviation = newDeviation
