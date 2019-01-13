@@ -1,6 +1,7 @@
 package com.ukora.tradestudent.services
 
 import com.ukora.domain.entities.CorrelationAssociation
+import com.ukora.domain.entities.Memory
 import com.ukora.domain.entities.Metadata
 import com.ukora.domain.entities.SimulatedTradeEntry
 import com.ukora.domain.entities.SimulationResult
@@ -18,6 +19,8 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 import javax.annotation.PostConstruct
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 @Service
 class LiveTradeSimulationService {
@@ -49,6 +52,7 @@ class LiveTradeSimulationService {
          */
         SimulatedTradeEntry latestSimulatedTradeEntry = bytesFetcherService.getLatestSimulatedTradeEntry()
         if (!latestSimulatedTradeEntry) {
+            Memory memory = bytesFetcherService.getMemory(Date.from(Instant.now().minus(5, ChronoUnit.MINUTES)))
             latestSimulatedTradeEntry = new SimulatedTradeEntry(
                     metadata: new Metadata(
                             datetime: new Date(),
@@ -58,7 +62,8 @@ class LiveTradeSimulationService {
                     balanceB: 0,
                     totalValueA: BuySellTradingHistoricalSimulatorService.STARTING_BALANCE,
                     tradeType: TradeExecution.TradeType.BUY,
-                    date: new Date()
+                    date: new Date(),
+                    price: memory?.graph?.price
             )
             bytesFetcherService.insertSimulatedTradeEntry(latestSimulatedTradeEntry)
         }
