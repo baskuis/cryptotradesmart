@@ -81,7 +81,12 @@ class LiveTradeSimulationService {
                     Double probability = correlationAssociation.tagProbabilities.get(probabilityCombinerStrategy).get(tag)
                     if (probability) {
                         SimulatedTradeEntry latestSimulatedTradeEntry = bytesFetcherService.getLatestSimulatedTradeEntry()
-                        Double balanceProportion = latestSimulatedTradeEntry ? latestSimulatedTradeEntry.balanceA / (latestSimulatedTradeEntry.balanceA + (latestSimulatedTradeEntry.balanceB / correlationAssociation.price)) : 1
+                        Double balanceProportion = (
+                                latestSimulatedTradeEntry &&
+                                correlationAssociation.price &&
+                                latestSimulatedTradeEntry.balanceA &&
+                                latestSimulatedTradeEntry.balanceB
+                        ) ? latestSimulatedTradeEntry.balanceA / (latestSimulatedTradeEntry.balanceA + (latestSimulatedTradeEntry.balanceB / correlationAssociation.price)) : 1
                         if (!NerdUtils.assertRange(balanceProportion)) {
                             Logger.log(String.format('balanceProportion %s is not in range', balanceProportion))
                             return
