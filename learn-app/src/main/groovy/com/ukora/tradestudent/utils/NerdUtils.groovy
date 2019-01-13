@@ -152,7 +152,7 @@ class NerdUtils {
      * @param Double deviation
      * @return Double
      */
-    static Double applyValueGetNewDeviation(Double value, Double mean, Double count, Double deviation) {
+    static synchronized Double applyValueGetNewDeviation(Double value, Double mean, Double count, Double deviation) {
         return (Double) Math.sqrt(
                 (
                         (count * (Math.pow(value, 2.0) + (
