@@ -102,6 +102,18 @@ class BytesFetcherService {
     }
 
     /**
+     * Get latest memory
+     *
+     * @return
+     */
+    Memory getLatestMemory() {
+        List<Memory> memories = memoryRepository.findAll(
+                new PageRequest(0, 1, new Sort(Sort.Direction.DESC, "metadata.datetime"))
+        )?.getContent()
+        return (memories && memories?.size() > 0 ? memories.first() : null)
+    }
+
+    /**
      * Insert simulation trade entry
      *
      * @param simulatedTradeEntry

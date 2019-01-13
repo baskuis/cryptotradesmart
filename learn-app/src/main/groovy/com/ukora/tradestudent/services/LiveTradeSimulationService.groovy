@@ -52,7 +52,7 @@ class LiveTradeSimulationService {
          */
         SimulatedTradeEntry latestSimulatedTradeEntry = bytesFetcherService.getLatestSimulatedTradeEntry()
         if (!latestSimulatedTradeEntry) {
-            Memory memory = bytesFetcherService.getMemory(Date.from(Instant.now().minus(5, ChronoUnit.MINUTES)))
+            Memory memory = bytesFetcherService.getLatestMemory()
             latestSimulatedTradeEntry = new SimulatedTradeEntry(
                     metadata: new Metadata(
                             datetime: new Date(),

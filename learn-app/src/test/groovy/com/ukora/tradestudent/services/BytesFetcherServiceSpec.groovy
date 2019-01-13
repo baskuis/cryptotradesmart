@@ -66,7 +66,6 @@ class BytesFetcherServiceSpec {
 
     }
 
-
     @Test
     void testInsertThenReadMemory() {
 
@@ -191,6 +190,18 @@ class BytesFetcherServiceSpec {
 
         assert retrievedMemory.graph.quantity == memory.graph.quantity
         assert retrievedMemory.graph.price == memory.graph.price
+
+    }
+
+    @Test
+    void testGetLatestMemory() {
+
+        when:
+        Memory memory = bytesFetcherService.getLatestMemory()
+
+        then:
+        memory != null
+        memory.metadata.datetime != null
 
     }
 
