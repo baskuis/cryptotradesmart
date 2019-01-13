@@ -68,64 +68,68 @@ class LiveTradeSimulationService {
     @Scheduled(cron = "5 * * * * *")
     @Async
     void simulateTrade() {
-        Date now = new Date()
-        List<TradeExecution> tradeExecutions = []
-        SimulationResult simulationResult = simulationResultService.getTopPerformingSimulation()
-        CorrelationAssociation correlationAssociation = probabilityCombinerService.getCorrelationAssociations(now)
-        if (simulationResult) {
-            if (correlationAssociation) {
-                TradeExecutionStrategy tradeExecutionStrategy = applicationContext.getBean(simulationResult.tradeExecutionStrategy, TradeExecutionStrategy)
-                String probabilityCombinerStrategy = simulationResult.probabilityCombinerStrategy
-                buySellTagGroup.tags().each {
-                    String tag = it.tagName
-                    Double probability = correlationAssociation.tagProbabilities.get(probabilityCombinerStrategy).get(tag)
-                    if (probability) {
-                        SimulatedTradeEntry latestSimulatedTradeEntry = bytesFetcherService.getLatestSimulatedTradeEntry()
-                        Double balanceProportion = (
-                                latestSimulatedTradeEntry &&
-                                correlationAssociation.price &&
-                                latestSimulatedTradeEntry.balanceA &&
-                                latestSimulatedTradeEntry.balanceB
-                        ) ? latestSimulatedTradeEntry.balanceA / (latestSimulatedTradeEntry.balanceA + (latestSimulatedTradeEntry.balanceB / correlationAssociation.price)) : 1
-                        if (!NerdUtils.assertRange(balanceProportion)) {
-                            Logger.log(String.format('balanceProportion %s is not in range', balanceProportion))
-                            return
+        try {
+            Date now = new Date()
+            List<TradeExecution> tradeExecutions = []
+            SimulationResult simulationResult = simulationResultService.getTopPerformingSimulation()
+            CorrelationAssociation correlationAssociation = probabilityCombinerService.getCorrelationAssociations(now)
+            if (simulationResult) {
+                if (correlationAssociation) {
+                    TradeExecutionStrategy tradeExecutionStrategy = applicationContext.getBean(simulationResult.tradeExecutionStrategy, TradeExecutionStrategy)
+                    String probabilityCombinerStrategy = simulationResult.probabilityCombinerStrategy
+                    buySellTagGroup.tags().each {
+                        String tag = it.tagName
+                        Double probability = correlationAssociation.tagProbabilities.get(probabilityCombinerStrategy).get(tag)
+                        if (probability) {
+                            SimulatedTradeEntry latestSimulatedTradeEntry = bytesFetcherService.getLatestSimulatedTradeEntry()
+                            Double balanceProportion = (
+                                    latestSimulatedTradeEntry &&
+                                            correlationAssociation.price &&
+                                            latestSimulatedTradeEntry.balanceA &&
+                                            latestSimulatedTradeEntry.balanceB
+                            ) ? latestSimulatedTradeEntry.balanceA / (latestSimulatedTradeEntry.balanceA + (latestSimulatedTradeEntry.balanceB / correlationAssociation.price)) : 1
+                            if (!NerdUtils.assertRange(balanceProportion)) {
+                                Logger.log(String.format('balanceProportion %s is not in range', balanceProportion))
+                                return
+                            }
+                            TradeExecution tradeExecution = tradeExecutionStrategy.getTrade(
+                                    correlationAssociation,
+                                    tag,
+                                    probability,
+                                    new Simulation(
+                                            startingBalance: BuySellTradingHistoricalSimulatorService.STARTING_BALANCE,
+                                            buyThreshold: simulationResult.buyThreshold,
+                                            sellThreshold: simulationResult.sellThreshold,
+                                            tradeIncrement: simulationResult.tradeIncrement
+                                    ),
+                                    probabilityCombinerStrategy,
+                                    balanceProportion
+                            )
+                            if (tradeExecution) tradeExecutions << tradeExecution
                         }
-                        TradeExecution tradeExecution = tradeExecutionStrategy.getTrade(
-                                correlationAssociation,
-                                tag,
-                                probability,
-                                new Simulation(
-                                        startingBalance: BuySellTradingHistoricalSimulatorService.STARTING_BALANCE,
-                                        buyThreshold: simulationResult.buyThreshold,
-                                        sellThreshold: simulationResult.sellThreshold,
-                                        tradeIncrement: simulationResult.tradeIncrement
-                                ),
-                                probabilityCombinerStrategy,
-                                balanceProportion
-                        )
-                        if (tradeExecution) tradeExecutions << tradeExecution
                     }
+                    if (tradeExecutions) {
+                        Logger.log(String.format("Simulating %s trades", tradeExecutions.size()))
+                        simulateTrades(tradeExecutions)
+                    } else {
+                        Logger.log(String.format("Not simulating trades for %s", now))
+                    }
+                    return
                 }
-                if (tradeExecutions) {
-                    Logger.log(String.format("Simulating %s trades", tradeExecutions.size()))
-                    simulateTrades(tradeExecutions)
-                } else {
-                    Logger.log(String.format("Not simulating trades for %s", now))
-                }
+            } else {
+                simulateTrades([new TradeExecution(
+                        date: now,
+                        tradeType: TradeExecution.TradeType.BUY,
+                        amount: 0.1,
+                        price: correlationAssociation.price
+                )])
+                Logger.log(String.format("Moving to safety", tradeExecutions.size()))
                 return
             }
-        } else {
-            simulateTrades([new TradeExecution(
-                    date: now,
-                    tradeType: TradeExecution.TradeType.BUY,
-                    amount: 0.1,
-                    price: correlationAssociation.price
-            )])
-            Logger.log(String.format("Moving to safety", tradeExecutions.size()))
-            return
+            Logger.log(String.format("Unable to evaluate live trades for %s", now))
+        } catch(Exception e) {
+            Logger.log(String.format("Unable to simulate live trade due to error: %s", e.message))
         }
-        Logger.log(String.format("Unable to evaluate live trades for %s", now))
     }
 
     /**
