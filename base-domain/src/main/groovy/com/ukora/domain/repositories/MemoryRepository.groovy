@@ -6,7 +6,26 @@ import org.springframework.data.mongodb.repository.MongoRepository
 
 interface MemoryRepository extends MongoRepository<Memory, String> {
 
-    @Query(value = '{ \'metadata.datetime\' : [ $and: { $gt: ?0 }, { $lt: ?1 } ] }')
-    List<Memory> findByMetadataDatetimeBetween(Date min, Date max)
+    @Query(value =
+    """
+        { 
+            'metadata.datetime' : { 
+                \$and: [
+                    { \$gt: ?0 }, 
+                    { \$lt: ?1 } 
+                ]
+            }
+            'exchange.exchange': ?3,
+            'exchange.details.tradecurrency': ?4,
+            'exchange.details.pricecurrency': ?5
+        }
+    """)
+    List<Memory> findByMetadataDatetimeBetween(
+            Date min,
+            Date max,
+            String platform,
+            String tradeCurrency,
+            String priceCurrency
+    )
 
 }
