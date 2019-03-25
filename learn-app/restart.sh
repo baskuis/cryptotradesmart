@@ -1,4 +1,4 @@
-cd /home/bas/Projects/tradestudent-learn/
+cd /home/bas/Projects/tradestudent-learn/learn-app
 ./stop.sh
 ./start.sh
-tail -f /home/bas/Projects/tradestudent-learn/application.out
+tail -f /home/bas/Projects/tradestudent-learn/learn-app/application.out
