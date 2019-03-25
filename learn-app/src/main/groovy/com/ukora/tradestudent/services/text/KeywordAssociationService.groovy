@@ -30,7 +30,7 @@ class KeywordAssociationService {
     @Autowired
     BytesFetcherService bytesFetcherService
 
-    Map<String, AbstractCorrelationTag> tagMap = [:]
+    Map<String, ? extends AbstractCorrelationTag> tagMap = [:]
     Map<String, Long> tagCount = [:]
 
     @PostConstruct
