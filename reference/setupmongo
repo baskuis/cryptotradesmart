@@ -1,4 +1,5 @@
 db.memory.ensureIndex({"metadata.datetime":1})
+db.memory.ensureIndex({"metadata.datetime":1,"exchange.exchange":1,"exchange.details.tradecurrency":1,"exchange.details.pricecurrency":1})
 db.news.ensureIndex({"metadata.datetime":1})
 db.twitter.ensureIndex({"metadata.datetime":1})
 db.lessons.ensureIndex({"processed":1})
