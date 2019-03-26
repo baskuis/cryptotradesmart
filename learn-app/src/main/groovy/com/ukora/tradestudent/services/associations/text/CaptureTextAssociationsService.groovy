@@ -90,8 +90,8 @@ class CaptureTextAssociationsService {
                             source as String),
                     source as String
             )
-            bumpCount(brainCount, lesson.tag.tagName, it.value)
-            bumpCount(brainCount, tagService.getTagGroupByTag(lesson.tag)?.name, it.value)
+            bumpCount(brainCount, lesson.tag, it.value)
+            bumpCount(brainCount, tagService.getTagGroupByTagName(lesson.tag)?.name, it.value)
             bumpCount(brainCount, GENERAL, it.value)
             bytesFetcherService.saveBrainCount(brainCount)
         }
