@@ -30,8 +30,8 @@ class LessonTotalsService {
 
     }
 
-    Map<AbstractCorrelationTag, Integer> getTagCountSummary(){
-        Map<AbstractCorrelationTag, Integer> summary = [:]
+    Map<AbstractCorrelationTag, Long> getTagCountSummary(){
+        Map<AbstractCorrelationTag, Long> summary = [:]
         tagMap.each {
             summary.put(it.value, bytesFetcherService.getLessonCount(it.value.tagName))
         }

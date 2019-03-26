@@ -8,6 +8,7 @@ import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.security.access.method.P
 import org.springframework.stereotype.Service
 
 @Service
@@ -47,24 +48,29 @@ class CaptureAssociationsService {
     void learn() {
         if (leaningEnabled) {
             learningSpeed.times {
-                Logger.debug(String.format("capturing lesson %s", it))
-                Lesson lesson = bytesFetcherService.getNextLesson()
-                if (lesson) {
+                try {
+                    Logger.debug(String.format("capturing lesson %s", it))
+                    Lesson lesson = bytesFetcherService.getNextLesson()
+                    if (lesson) {
 
-                    /** Hydrate lesson */
-                    associationService.hydrateAssociation(lesson)
+                        /** Hydrate lesson */
+                        associationService.hydrateAssociation(lesson)
 
-                    /** Hydrate association tags */
-                    hydrateAssociationTags(lesson, lesson.tag)
+                        /** Hydrate association tags */
+                        hydrateAssociationTags(lesson, lesson.tag)
 
-                    /** Hydrate specialized numeric association tags */
-                    hydrateSpecializedAssociationTags(lesson, lesson.tag)
+                        /** Hydrate specialized numeric association tags */
+                        hydrateSpecializedAssociationTags(lesson, lesson.tag)
 
-                    /** Remember all that */
-                    rememberAllThat(lesson)
+                        /** Remember all that */
+                        rememberAllThat(lesson)
 
-                } else {
-                    Logger.debug("no lesson")
+                    } else {
+                        Logger.debug("no lesson")
+                    }
+                } catch (Exception e) {
+                    Logger.log('Unable to retrieve an capture correlations for lesson. Info: ' + e.message)
+                    e.printStackTrace()
                 }
             }
         } else {
