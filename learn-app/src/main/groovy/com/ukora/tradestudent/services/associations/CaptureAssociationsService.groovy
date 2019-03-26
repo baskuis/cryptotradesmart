@@ -55,10 +55,10 @@ class CaptureAssociationsService {
                     associationService.hydrateAssociation(lesson)
 
                     /** Hydrate association tags */
-                    hydrateAssociationTags(lesson, lesson.tag?.tagName)
+                    hydrateAssociationTags(lesson, lesson.tag)
 
                     /** Hydrate specialized numeric association tags */
-                    hydrateSpecializedAssociationTags(lesson, lesson.tag?.tagName)
+                    hydrateSpecializedAssociationTags(lesson, lesson.tag)
 
                     /** Remember all that */
                     rememberAllThat(lesson)
