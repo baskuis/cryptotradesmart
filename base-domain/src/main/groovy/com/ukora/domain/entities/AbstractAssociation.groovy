@@ -1,9 +1,14 @@
 package com.ukora.domain.entities
 
-import com.mongodb.DBObject
+import org.springframework.data.annotation.Transient
 
 abstract class AbstractAssociation {
 
+    Date date
+
+    Double price
+
+    @Transient
     List<String> intervals = [
             '2minute',
             '5minute',
@@ -18,19 +23,22 @@ abstract class AbstractAssociation {
             '16hour'
     ]
 
+    @Transient
     Exchange exchange
-    String id
-    Date date
-    Double price
-    DBObject dbObject
 
+    @Transient
     Memory memory
+    @Transient
     Twitter twitter
+    @Transient
     List<News> news
+    @Transient
     Map<String, Double> previousPrices = [:]
+    @Transient
     Map<String, Memory> previousMemory = [:]
+    @Transient
     Map<String, List<News>> previousNews = [:]
-
+    @Transient
     Map<String, Map<String, Double>> associations = [:]
 
 }
