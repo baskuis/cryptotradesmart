@@ -1,6 +1,5 @@
 package com.ukora.domain.entities
 
-
 import org.springframework.data.annotation.Id
 
 class Brain {

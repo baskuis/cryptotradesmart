@@ -67,6 +67,48 @@ class BytesFetcherServiceSpec {
     }
 
     @Test
+    void testInsertThenGetLesson() {
+
+        Date d = new Date()
+
+        Lesson lesson = new Lesson(
+                tag: new BuyTag(),
+                price: 100l,
+                date: d,
+                textProcessed: true,
+                processed: false
+        )
+
+        bytesFetcherService.saveLesson(lesson)
+
+        Lesson nextLesson = bytesFetcherService.getNextLesson()
+
+        assert nextLesson != null
+
+    }
+
+    @Test
+    void testNextTextLesson() {
+
+        Date d = new Date()
+
+        Lesson lesson = new Lesson(
+                tag: new BuyTag(),
+                price: 100l,
+                date: d,
+                textProcessed: false,
+                processed: true
+        )
+
+        bytesFetcherService.saveLesson(lesson)
+
+        Lesson nextTextLesson = bytesFetcherService.getNextTextLesson()
+
+        assert nextTextLesson != null
+
+    }
+
+    @Test
     void testInsertThenReadMemory() {
 
         Memory memory = new Memory(

@@ -1,6 +1,5 @@
 package com.ukora.domain.entities
 
-import com.ukora.domain.beans.tags.AbstractCorrelationTag
 import org.springframework.data.annotation.Id
 
 class Lesson extends AbstractAssociation {
@@ -10,6 +9,6 @@ class Lesson extends AbstractAssociation {
 
     Boolean processed
     Boolean textProcessed
-    AbstractCorrelationTag tag
+    String tag
 
 }

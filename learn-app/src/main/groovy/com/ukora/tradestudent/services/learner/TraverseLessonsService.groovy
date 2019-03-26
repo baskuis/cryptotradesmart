@@ -165,7 +165,7 @@ class TraverseLessonsService {
                         Logger.log("Storing sell lesson date: ${entry['date']} price: ${entry['price']} multiple: ${entry['multiple']}")
                         (1..entry['multiple']).each {
                             bytesFetcherService.saveLesson(new Lesson(
-                                    tag: buySellTagGroup.sellTag,
+                                    tag: buySellTagGroup?.sellTag?.tagName,
                                     date: entry['date'] as Date,
                                     price: entry['price'] as Double
                             ))
@@ -174,7 +174,7 @@ class TraverseLessonsService {
                         Logger.log("Storing buy lesson date: ${entry['date']} price: ${entry['price']} multiple: ${entry['multiple']}")
                         (1..entry['multiple']).each {
                             bytesFetcherService.saveLesson(new Lesson(
-                                    tag: buySellTagGroup.buyTag,
+                                    tag: buySellTagGroup?.buyTag?.tagName,
                                     date: entry['date'] as Date,
                                     price: entry['price'] as Double
                             ))
@@ -182,7 +182,7 @@ class TraverseLessonsService {
                     }
                 }
             } else {
-                Logger.log("Unable to find willing simulation producing value ${winningSimulation.balanceA}")
+                Logger.log("Unable to find winning simulation balanceA:${winningSimulation.balanceA} not enough")
             }
         }
 
@@ -334,14 +334,14 @@ class TraverseLessonsService {
                 if (average['upReversal']) {
                     up = (it.key as Date).after(average['lowest']['date'] as Date)
                     lessons << new Lesson(
-                            tag: upDownReversalTagGroup.upReversalTag,
+                            tag: upDownReversalTagGroup?.upReversalTag?.tagName,
                             date: it.key as Date,
                             price: it.value as Double
                     )
                 } else if (average['downReversal']) {
                     up = (it.key as Date).before(average['highest']['date'] as Date)
                     lessons << new Lesson(
-                            tag: upDownReversalTagGroup.downReversalTag,
+                            tag: upDownReversalTagGroup?.downReversalTag?.tagName,
                             date: it.key as Date,
                             price: it.value as Double
                     )
@@ -351,7 +351,7 @@ class TraverseLessonsService {
                     up = false
                 }
                 lessons << new Lesson(
-                        tag: up ? upDownTagGroup.upTag : upDownTagGroup.downTag,
+                        tag: up ? upDownTagGroup.upTag?.tagName : upDownTagGroup.downTag?.tagName,
                         date: it.key as Date,
                         price: it.value as Double
                 )
