@@ -115,7 +115,7 @@ class TraverseLessonsService {
             Property latestBuySell = bytesFetcherService.getProperty(LATEST_BUY_SELL_PROPERTY_KEY)
             Instant start = Instant.now().minus(14, ChronoUnit.DAYS)
             if (latestBuySell) {
-                start = new Date(latestBuySell.getValue()).toInstant().minus(24, ChronoUnit.HOURS)
+                start = new Date(latestBuySell.getValue()).toInstant().minus(72, ChronoUnit.HOURS)
             }
             learnFromBuySell(Date.from(start))
             bytesFetcherService.saveProperty(LATEST_BUY_SELL_PROPERTY_KEY, new Date() as String)
