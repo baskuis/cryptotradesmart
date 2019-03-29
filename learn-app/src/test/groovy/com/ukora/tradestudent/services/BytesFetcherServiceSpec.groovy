@@ -161,11 +161,11 @@ class BytesFetcherServiceSpec {
                 ),
                 exchange: new Exchange(
                         details: new Details(
-                                tradecurrency: "foo",
-                                pricecurrency: "bar",
+                                tradecurrency: "BTC",
+                                pricecurrency: "USD",
                         ),
-                        platform: "foobar",
-                        exchange: "foobar"
+                        platform: "COINBASEPRO",
+                        exchange: "COINBASEPRO"
                 ),
                 graph: new Graph(
                         price: 0.1d,
@@ -180,7 +180,7 @@ class BytesFetcherServiceSpec {
         Memory retrievedMemory = bytesFetcherService.getMemory(memory.metadata.datetime)
 
         /** Compare all fields */
-        assert retrievedMemory.metadata.hostname == memory.metadata.hostname
+        assert retrievedMemory?.metadata?.hostname == memory?.metadata?.hostname
 
         /** Date String->Date conversion loses milliseconds */
         assert Math.floor(retrievedMemory.metadata.datetime.time / 1000) == Math.floor(memory.metadata.datetime.time / 1000)
