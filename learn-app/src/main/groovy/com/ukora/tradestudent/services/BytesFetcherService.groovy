@@ -366,7 +366,13 @@ class BytesFetcherService {
         Date fromDate = calendar.time
         calendar.add(Calendar.SECOND, 90)
         Date toDate = calendar.time
-        List<Memory> r = memoryRepository.findByMetadataDatetimeBetween(fromDate, toDate, 'COINBASEPRO', 'BTC', 'USD')
+        List<Memory> r = memoryRepository.findByMetadataDatetimeBetween(
+                fromDate,
+                toDate,
+                'COINBASEPRO',
+                'BTC',
+                'USD'
+        )
         if(r && r.size() > 0) return r.first()
         return null
     }

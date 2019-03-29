@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.repository.MongoRepository
 
 interface MemoryRepository extends MongoRepository<Memory, String> {
 
+    /** TODO: Write test to make sure that this works */
     @Query(value =
     """
         { 
@@ -15,14 +16,14 @@ interface MemoryRepository extends MongoRepository<Memory, String> {
                     { \$lt: ?1 } 
                 ]
             }
-            'exchange.exchange': ?3,
-            'exchange.details.tradecurrency': ?4,
-            'exchange.details.pricecurrency': ?5
+            'exchange.exchange': ?2,
+            'exchange.details.tradecurrency': ?3,
+            'exchange.details.pricecurrency': ?4
         }
     """)
-    List<Memory> findByMetadataDatetimeBetween(
-            Date min,
-            Date max,
+    List<Memory> customQuery(
+            Date from,
+            Date to,
             String platform,
             String tradeCurrency,
             String priceCurrency
