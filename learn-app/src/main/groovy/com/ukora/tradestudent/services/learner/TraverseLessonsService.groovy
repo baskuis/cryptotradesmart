@@ -34,9 +34,9 @@ class TraverseLessonsService {
     public final static long INTERVAL_SECONDS = 60
     public final static long INTERVAL_HOURS = 1
 
-    public final static long REPEAT_FOR_TREND = 8 /** Represents hours */
-    public final static long MINIMUM_HOLD_PERIOD = 90 /** In minutes */
-    public final static long REPEAT_FOR_BUY_SELL = 600 /** Represents minutes */
+    public final static long REPEAT_FOR_TREND = 6 /** Represents hours */
+    public final static long MINIMUM_HOLD_PERIOD = 15 /** In minutes */
+    public final static long REPEAT_FOR_BUY_SELL = 300 /** Represents minutes */
 
     private final static int SIMULATION_INTERVAL_INCREMENT = 1
 
