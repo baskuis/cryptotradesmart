@@ -283,7 +283,7 @@ class CaptureAssociationsService {
     void captureNewValue(Brain brain, Double value) {
         if (!value) return
         if (!brain) return
-        Double newDeviation = NerdUtils.applyValueGetNewDeviation(
+        Double newDeviation = NerdUtils.applyValueGetNewDeviationAlt(
                 value as Double,
                 brain.mean as Double,
                 (brain.count + 1) as Double,
@@ -297,7 +297,7 @@ class CaptureAssociationsService {
          * Please refer to test cases for more details
          */
         if(newDeviation.naN) {
-            newDeviation = NerdUtils.applyValueGetNewDeviation(
+            newDeviation = NerdUtils.applyValueGetNewDeviationAlt(
                     value as float,
                     brain.mean as float,
                     (brain.count + 1) as float,

@@ -152,6 +152,7 @@ class NerdUtils {
      * @param Double deviation
      * @return Double
      */
+    @Deprecated
     static Double applyValueGetNewDeviation(Double value, Double mean, Double count, Double deviation) {
         return (Double) Math.sqrt(
                 (
@@ -159,6 +160,26 @@ class NerdUtils {
                                 (count - 1.0) * (Math.pow(deviation, 2.0) + Math.pow(mean, 2.0))
                         ))) - Math.pow(value + ((count - 1.0) * mean), 2.0)
                 ) / Math.pow(count, 2.0))
+    }
+
+    /**
+     * Apply value to data set
+     * and get new standard deviation
+     *
+     * @param value
+     * @param mean
+     * @param count
+     * @param deviation
+     * @return
+     */
+    static Double applyValueGetNewDeviationAlt(Double value, Double mean, Double count, Double deviation) {
+        Double newMean = applyValueGetNewMean(value, mean, count)
+        return (Double) Math.sqrt(
+                (
+                        ((count - 1) * Math.pow(deviation, 2.0)) +
+                                ((value - newMean) * (value - mean))
+                ) / (count)
+        )
     }
 
     /**
