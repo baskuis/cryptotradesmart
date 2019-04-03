@@ -1,17 +1,24 @@
 package com.ukora.tradestudent.services
 
+import com.ukora.domain.beans.bayes.numbers.NumberAssociation
+import com.ukora.domain.beans.tags.TagGroup
 import com.ukora.domain.entities.*
 import com.ukora.domain.repositories.*
-import com.ukora.domain.beans.tags.TagGroup
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.context.ApplicationContext
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 
+import javax.annotation.PostConstruct
+
 @Service
 class BytesFetcherService {
+
+    @Autowired
+    ApplicationContext applicationContext
 
     @Autowired
     PropertyRepository propertyRepository
@@ -26,13 +33,18 @@ class BytesFetcherService {
     @Autowired
     BrainCountRepository brainCountRepository
     @Autowired
-    BrainNodeRepository brainNodeRepository
-    @Autowired
     NewsRepository newsRepository
     @Autowired
     TwitterRepository twitterRepository
     @Autowired
     MemoryRepository memoryRepository
+
+    Map<String, TagGroup> tagGroupMap
+
+    @PostConstruct
+    void init() {
+        tagGroupMap = applicationContext.getBeansOfType(TagGroup)
+    }
 
     /**
      * Get property
@@ -43,7 +55,7 @@ class BytesFetcherService {
     @Cacheable("properties")
     Property getProperty(String name) {
         List<Property> properties = propertyRepository.findByName(name)
-        if(properties.size() > 0) {
+        if (properties.size() > 0) {
             return properties.get(0)
         }
         null
@@ -57,7 +69,9 @@ class BytesFetcherService {
     @CacheEvict(value = "properties", allEntries = true)
     void saveProperty(Property property) {
         Property p = this.getProperty(property.name)
-        if(!p) { p = property }
+        if (!p) {
+            p = property
+        }
         p.value = property.value
         propertyRepository.save(p)
     }
@@ -71,7 +85,9 @@ class BytesFetcherService {
     @CacheEvict(value = "properties", allEntries = true)
     void saveProperty(String name, String value) {
         Property p = this.getProperty(name)
-        if(!p) { p = new Property(name: name) }
+        if (!p) {
+            p = new Property(name: name)
+        }
         p.value = value
         propertyRepository.save(p)
     }
@@ -219,7 +235,7 @@ class BytesFetcherService {
      */
     Brain getBrain(String reference, String tag) {
         List<Brain> brainList = brainRepository.findByReferenceAndTag(reference, tag)
-        if(brainList && brainList.size() > 0) {
+        if (brainList && brainList.size() > 0) {
             return brainList.first()
         }
         return new Brain(
@@ -264,8 +280,16 @@ class BytesFetcherService {
     @Cacheable("brainNodes")
     Map<String, BrainNode> getAllBrainNodes() {
         Map<String, BrainNode> nodes = [:]
-        brainNodeRepository.findAll().each {
-            nodes.put(it.reference, it)
+        brainRepository.findAll().each { Brain b ->
+            nodes.get(b.reference, new BrainNode(reference: b.reference)).tagReference.put(b.tag,
+                new NumberAssociation(
+                        tagGroup: tagGroupMap.find { (it.value.tags().find { it.getTagName() == b.tag }) }?.key,
+                        tag: b.tag,
+                        mean: b.mean,
+                        count: b.count,
+                        standard_deviation: b.standard_deviation
+                )
+            )
         }
         return nodes
     }
@@ -287,7 +311,7 @@ class BytesFetcherService {
      */
     Lesson getNextTextLesson() {
         List<Lesson> unprocessedLessons = lessonRepository.findByTextProcessedNot(true)
-        if(unprocessedLessons && unprocessedLessons.size() > 0) {
+        if (unprocessedLessons && unprocessedLessons.size() > 0) {
             return unprocessedLessons.get(0)
         }
         return null
@@ -300,7 +324,7 @@ class BytesFetcherService {
      */
     Lesson getNextLesson() {
         List<Lesson> unprocessedLessons = lessonRepository.findByProcessedNot(true)
-        if(unprocessedLessons && unprocessedLessons.size() > 0) {
+        if (unprocessedLessons && unprocessedLessons.size() > 0) {
             return unprocessedLessons.get(0)
         }
         return null
@@ -347,7 +371,7 @@ class BytesFetcherService {
         calendar.add(Calendar.SECOND, 90)
         Date toDate = calendar.time
         def r = twitterRepository.findByMetadataDatetimeBetween(fromDate, toDate)
-        if(r && r.size() > 0) return r.first()
+        if (r && r.size() > 0) return r.first()
         return null
     }
 
@@ -370,10 +394,10 @@ class BytesFetcherService {
                 fromDate,
                 toDate
         )
-        if(r && r.size() > 0) return r.find({
+        if (r && r.size() > 0) return r.find({
             it?.exchange?.exchange == 'COINBASEPRO' &&
-            it?.exchange?.details?.tradecurrency == 'BTC' &&
-            it?.exchange?.details?.pricecurrency == 'USD'
+                    it?.exchange?.details?.tradecurrency == 'BTC' &&
+                    it?.exchange?.details?.pricecurrency == 'USD'
         })
         return null
     }
