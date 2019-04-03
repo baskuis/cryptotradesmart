@@ -43,6 +43,10 @@ class CaptureTextAssociationsService {
                 Lesson lesson = bytesFetcherService.getNextTextLesson()
                 if (lesson) {
 
+                    /** Mark as processed */
+                    lesson.textProcessed = true
+                    bytesFetcherService.saveLesson(lesson)
+
                     /** Extract text for date */
                     ExtractedText extractedText = textExtractorService.extractTextForDate(lesson.date)
 

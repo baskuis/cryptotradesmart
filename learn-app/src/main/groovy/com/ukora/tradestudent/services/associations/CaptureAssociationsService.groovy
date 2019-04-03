@@ -53,6 +53,10 @@ class CaptureAssociationsService {
                     Lesson lesson = bytesFetcherService.getNextLesson()
                     if (lesson) {
 
+                        /** Mark processed */
+                        lesson.processed = true
+                        bytesFetcherService.saveLesson(lesson)
+
                         /** Hydrate lesson */
                         associationService.hydrateAssociation(lesson)
 
@@ -283,31 +287,8 @@ class CaptureAssociationsService {
     void captureNewValue(Brain brain, Double value) {
         if (!value) return
         if (!brain) return
-        Double newDeviation = NerdUtils.applyValueGetNewDeviationAlt(
-                value as Double,
-                brain.mean as Double,
-                (brain.count + 1) as Double,
-                brain.standard_deviation as Double)
-
-        /**
-         * Under certain conditions
-         * inputs with type Double cause NaN outputs
-         * casting to float seems to resolve these
-         *
-         * Please refer to test cases for more details
-         */
-        if(newDeviation.naN) {
-            newDeviation = NerdUtils.applyValueGetNewDeviationAlt(
-                    value as float,
-                    brain.mean as float,
-                    (brain.count + 1) as float,
-                    brain.standard_deviation as float)
-        }
-
-        Double newMean = NerdUtils.applyValueGetNewMean(
-                value as Double,
-                brain.mean as Double,
-                brain.count as Double)
+        Double newDeviation = NerdUtils.applyValueGetNewDeviationAlt(value, brain.mean, (brain.count + 1), brain.standard_deviation)
+        Double newMean = NerdUtils.applyValueGetNewMean(value, brain.mean, brain.count)
         if (newDeviation == null || newDeviation.naN || newMean == null || newMean.naN) {
             Logger.debug(String.format("Brain.mean: %s, Brain.count + 1: %s, brain.standard_deviation: %s, value: %s, newMean: %s, newDeviation: %s",
                     brain.mean, brain.count + 1, brain.standard_deviation, value, newMean, newDeviation
