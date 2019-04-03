@@ -287,7 +287,7 @@ class BytesFetcherService {
         brainRepository.findAll().each { Brain b ->
             nodes.get(b.reference, new BrainNode(reference: b.reference)).tagReference.put(b.tag,
                 new NumberAssociation(
-                        tagGroup: tagGroupMap.find { (it.value.tags().find { it.getTagName() == b.tag }) }?.key,
+                        tagGroup: tagGroupMap.find { (it.value.tags().find { it.getTagName() == b.tag }) }?.value?.getName(),
                         tag: b.tag,
                         mean: b.mean,
                         count: b.count,
