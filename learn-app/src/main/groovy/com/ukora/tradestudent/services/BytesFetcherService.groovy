@@ -209,7 +209,11 @@ class BytesFetcherService {
      */
     @Cacheable("brainCount")
     BrainCount getBrainCount(String reference, String source) {
-        return brainCountRepository.findByReference(reference) ?: new BrainCount(
+        List<BrainCount> brainCountList = brainCountRepository.findByReference(reference);
+        if (brainCountList && brainCountList.size() > 0) {
+            return brainCountList.first()
+        }
+        return new BrainCount(
                 id: null,
                 source: source,
                 reference: reference,

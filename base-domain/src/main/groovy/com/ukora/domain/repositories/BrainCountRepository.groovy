@@ -5,6 +5,6 @@ import org.springframework.data.mongodb.repository.MongoRepository
 
 interface BrainCountRepository extends MongoRepository<BrainCount, String> {
 
-    BrainCount findByReference(String reference)
+    List<BrainCount> findByReference(String reference)
 
 }
