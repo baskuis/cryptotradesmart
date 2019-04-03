@@ -1,17 +1,14 @@
 package com.ukora.tradestudent.controller
 
+import com.ukora.domain.entities.*
 import com.ukora.tradestudent.TradestudentApplication
-import com.ukora.domain.entities.BrainNode
-import com.ukora.domain.entities.CorrelationAssociation
-import com.ukora.domain.entities.ExtractedText
-import com.ukora.domain.entities.SimulatedTradeEntry
-import com.ukora.domain.entities.SimulationResult
 import com.ukora.tradestudent.services.*
 import com.ukora.tradestudent.services.associations.CaptureAssociationsService
 import com.ukora.tradestudent.services.associations.TechnicalAnalysisService
 import com.ukora.tradestudent.services.associations.text.CaptureTextAssociationsService
 import com.ukora.tradestudent.services.learner.TraverseLessonsService
 import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
+import com.ukora.tradestudent.services.simulator.TradeSimulatorService
 import com.ukora.tradestudent.services.text.TextAssociationProbabilityService
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
@@ -44,6 +41,9 @@ class TradeStudentController {
 
     @Autowired
     TechnicalAnalysisService technicalAnalysisService
+
+    @Autowired
+    TradeSimulatorService tradeSimulatorService
 
     @Autowired
     AliasService aliasService
@@ -120,6 +120,12 @@ class TradeStudentController {
     @RequestMapping(path = '/simulation', method = RequestMethod.GET)
     String simulation(@RequestParam(value = 'date') Date date) {
         tradingHistoricalSimulatorService.runSimulation(date)
+        "STARTED"
+    }
+
+    @RequestMapping(path = '/runsimulation', method = RequestMethod.GET)
+    String runsimulation() {
+        tradeSimulatorService.runSimulation()
         "STARTED"
     }
 
@@ -200,35 +206,35 @@ class TradeStudentController {
     }
 
     @RequestMapping(path = '/probabilitycombiners', method = RequestMethod.GET)
-    List getTopPerformingProbabilityCombiners(){
+    List getTopPerformingProbabilityCombiners() {
         simulationResultService.getTopPerformingProbabilityCombiners()
     }
 
     @RequestMapping(path = '/tradeexecutionstrategies', method = RequestMethod.GET)
-    List getTopPerformingTradeExecutionStrategies(){
+    List getTopPerformingTradeExecutionStrategies() {
         simulationResultService.getTopPerformingTradeExecutionStrategies()
     }
 
     @RequestMapping(path = '/keywords', method = RequestMethod.GET)
-    def getTextAssociationProbabilityService(@RequestParam(value = 'date') Date date){
+    def getTextAssociationProbabilityService(@RequestParam(value = 'date') Date date) {
         textAssociationProbabilityService.getTextKeywordsByDate(date)
     }
 
     @RequestMapping(path = '/lessontotals', method = RequestMethod.GET)
-    def getLessonTotals(){
+    def getLessonTotals() {
         lessonTotalsService.getTagCountSummary()
     }
 
     @RequestMapping(path = '/keyword', method = RequestMethod.GET)
-    def getKeywordAssociation(@RequestParam(value = 'keyword') String keyword){
+    def getKeywordAssociation(@RequestParam(value = 'keyword') String keyword) {
         [
                 (ExtractedText.TextSource.TWITTER): textAssociationProbabilityService.getKeywordAssociation(keyword, ExtractedText.TextSource.TWITTER),
-                (ExtractedText.TextSource.NEWS): textAssociationProbabilityService.getKeywordAssociation(keyword, ExtractedText.TextSource.NEWS)
+                (ExtractedText.TextSource.NEWS)   : textAssociationProbabilityService.getKeywordAssociation(keyword, ExtractedText.TextSource.NEWS)
         ]
     }
 
     @RequestMapping(path = '/textassociations', method = RequestMethod.GET)
-    def getTextAssociations(@RequestParam(value = 'date') Date date){
+    def getTextAssociations(@RequestParam(value = 'date') Date date) {
         textAssociationProbabilityService.tagCorrelationByText(date)
     }
 
