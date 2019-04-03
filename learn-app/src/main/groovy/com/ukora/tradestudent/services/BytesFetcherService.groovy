@@ -156,7 +156,7 @@ class BytesFetcherService {
     @CacheEvict(value = "brainNodes", allEntries = true)
     void resetBrainNodesCount(TagGroup tagGroup, int maxCount) {
         brainRepository.findAll().each {
-            if (it.tag && tagGroup.tags().collect({ it.tagName }).contains(it.tag.tagName)) {
+            if (it.tag && tagGroup.tags().collect({ it.tagName }).contains(it.tag)) {
                 it.count = maxCount
                 brainRepository.save(it)
             }
