@@ -18,7 +18,7 @@ class CaptureTextAssociationsService {
     public static final String GENERAL = "general"
 
     public static boolean leaningEnabled = true
-    public static Integer learningSpeed = 15
+    public static Integer learningSpeed = 10
 
     @Autowired
     BytesFetcherService bytesFetcherService

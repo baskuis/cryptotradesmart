@@ -25,7 +25,7 @@ class CaptureAssociationsService {
     public static final String TIME_DAY_IN_MONTH = 'dayinmonth'
 
     public static boolean leaningEnabled = true
-    public static Integer learningSpeed = 15
+    public static Integer learningSpeed = 40
 
     public static Double PRACTICAL_ZERO = 0.000000001
 
