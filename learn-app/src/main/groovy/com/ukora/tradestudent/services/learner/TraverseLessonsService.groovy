@@ -82,7 +82,7 @@ class TraverseLessonsService {
      * Learn from trading history
      *
      */
-    @Scheduled(cron = "0 0 3,15 * * *")
+    @Scheduled(cron = "0 0 0 * * 2,5")
     @Async
     void learnFromHistoryTrendData() {
         if (!running) {
@@ -91,7 +91,7 @@ class TraverseLessonsService {
             Property latestUpDown = bytesFetcherService.getProperty(LATEST_UP_DOWN_PROPERTY_KEY)
             Instant start = Instant.now().minus(14, ChronoUnit.DAYS)
             if (latestUpDown) {
-                start = new Date(latestUpDown.getValue()).toInstant().minus(16, ChronoUnit.HOURS)
+                start = new Date(latestUpDown.getValue()).toInstant().minus(4, ChronoUnit.DAYS)
             }
             learnFromTrend(Date.from(start))
             bytesFetcherService.saveProperty(LATEST_UP_DOWN_PROPERTY_KEY, new Date() as String)
@@ -106,7 +106,7 @@ class TraverseLessonsService {
      * Learn from trading history
      *
      */
-    @Scheduled(cron = "0 6 */4 * * *")
+    @Scheduled(cron = "0 6 */12 * * *")
     @Async
     void learnFromBuySellBehavior() {
         if (!running) {
