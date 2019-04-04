@@ -10,9 +10,9 @@ import static com.ukora.tradestudent.utils.NerdUtils.assertRanges
 @Component
 class AvoidOutlierNaiveBayesianProbablityCombinerStrategy implements ProbabilityCombinerStrategy {
 
-    public final static long MIN_RELEVANCE = 0.0075
+    public final static long MIN_RELEVANCE = 0.0025
 
-    boolean enabled = false
+    boolean enabled = true
 
     @Override
     String getAlias() {

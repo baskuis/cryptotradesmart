@@ -71,7 +71,7 @@ class TwitterBalanceReversalTrendAwareProgressiveTradeExecutionStrategy implemen
         return buySellTagGroup.applies(toTag)
     }
 
-    private boolean enabled = false
+    private boolean enabled = true
 
     @Override
     boolean isEnabled() {
