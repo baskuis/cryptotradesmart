@@ -8,12 +8,9 @@ import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
-import org.springframework.context.ApplicationContext
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
-
-import javax.annotation.PostConstruct
 
 @Service
 class BytesFetcherService {
@@ -279,18 +276,20 @@ class BytesFetcherService {
     Map<String, BrainNode> getAllBrainNodes() {
         Map<String, BrainNode> nodes = [:]
         brainRepository.findAll().each { Brain b ->
-            String tagGroupName = this.tagService.tagGroupMap?.find { (it.value.tags().find { it.getTagName() == b.tag }) }?.value?.getName()
-            if(!tagGroupName) {
+            String tagGroupName = this.tagService?.tagGroupMap?.find {
+                (it.value.tags().find { it.getTagName() == b.tag })
+            }?.value?.getName()
+            if (!tagGroupName) {
                 Logger.log(String.format('Unable to find tagGroupName from tag[%s], tagGroupMap.keys[%s]', b.tag, this.tagService.tagGroupMap?.keySet()))
             }
             nodes.get(b.reference, new BrainNode(reference: b.reference)).tagReference.put(b.tag,
-                new NumberAssociation(
-                        tagGroup: tagGroupName,
-                        tag: b.tag,
-                        mean: b.mean,
-                        count: b.count,
-                        standard_deviation: b.standard_deviation
-                )
+                    new NumberAssociation(
+                            tagGroup: tagGroupName,
+                            tag: b.tag,
+                            mean: b.mean,
+                            count: b.count,
+                            standard_deviation: b.standard_deviation
+                    )
             )
         }
         return nodes
