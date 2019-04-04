@@ -41,7 +41,7 @@ class ProbabilityCombinerService {
 
     public static Map<String, BrainNode> relevantNodes = [:]
 
-    static final int MAX_CORRELATION_DATA_POINTS = 100
+    static final int MAX_CORRELATION_DATA_POINTS = 3000
 
     static public boolean multiThreadingEnabled = true
 
@@ -75,17 +75,14 @@ class ProbabilityCombinerService {
         /** Enabled probability combiners */
         enabledProbabilityCombiners = applicationContext.getBeansOfType(ProbabilityCombinerStrategy).findAll { it.value.enabled }
 
-        /** Setup relevant nodes */
-        setRelevantNodes()
-
     }
 
-    @Scheduled(initialDelay = 30000L, fixedRate = 600000L)
+    @Scheduled(initialDelay = 300000L, fixedRate = 600000L)
     @CacheEvict(value = [
             "associations",
             "brainNodes"
     ], allEntries = true)
-    Map<String, BrainNode> setRelevantNodes() {
+    setRelevantNodes() {
         relevantNodes = getBrainNodes()?.take(MAX_CORRELATION_DATA_POINTS)
     }
 
@@ -101,6 +98,9 @@ class ProbabilityCombinerService {
         Logger.log(String.format('attempting to get association for %s', eventDate))
         CorrelationAssociation correlationAssociation = new CorrelationAssociation()
         correlationAssociation.setDate(eventDate)
+
+        /** set relevant nodes */
+        if(!relevantNodes) { setRelevantNodes() }
 
         /** hydrate correlative data from memory */
         associationService.hydrateAssociation(correlationAssociation)
@@ -128,7 +128,6 @@ class ProbabilityCombinerService {
      *
      * @return
      */
-    @Cacheable("brainNodes")
     Map<String, BrainNode> getBrainNodes(){
         Map<String, BrainNode> nodes = bytesFetcherService.getAllBrainNodes()
         nodes.each {

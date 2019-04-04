@@ -130,6 +130,7 @@ class ProbabilityCombinerServiceSpec extends Specification {
 
         when:
         probabilityCombinerService.init()
+        probabilityCombinerService.setRelevantNodes()
         probabilityCombinerService.hydrateTagProbabilities(correlationAssociation)
 
         then:
@@ -159,6 +160,7 @@ class ProbabilityCombinerServiceSpec extends Specification {
 
         when:
         probabilityCombinerService.init()
+        probabilityCombinerService.setRelevantNodes()
         Map<String, BrainNode> nodes = probabilityCombinerService.getBrainNodes()
 
         then:
@@ -195,6 +197,7 @@ class ProbabilityCombinerServiceSpec extends Specification {
 
         when:
         probabilityCombinerService.init()
+        probabilityCombinerService.setRelevantNodes()
         ProbabilityCombinerService.filterOutIrrelevantBrainNodes(correlationAssociation)
 
         then:

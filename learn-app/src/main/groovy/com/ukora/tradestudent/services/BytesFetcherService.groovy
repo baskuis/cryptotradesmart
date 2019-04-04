@@ -4,6 +4,7 @@ import com.ukora.domain.beans.bayes.numbers.NumberAssociation
 import com.ukora.domain.beans.tags.TagGroup
 import com.ukora.domain.entities.*
 import com.ukora.domain.repositories.*
+import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
@@ -285,6 +286,10 @@ class BytesFetcherService {
     Map<String, BrainNode> getAllBrainNodes() {
         Map<String, BrainNode> nodes = [:]
         brainRepository.findAll().each { Brain b ->
+            String tagGroupName = tagGroupMap.find { (it.value.tags().find { it.getTagName() == b.tag }) }?.value?.getName()
+            if(!tagGroupName) {
+                Logger.log(String.format('Unable to find tagGroupName from tag[%s], tagGroupMap.keys[%s]', b.tag, tagGroupMap.keySet()))
+            }
             nodes.get(b.reference, new BrainNode(reference: b.reference)).tagReference.put(b.tag,
                 new NumberAssociation(
                         tagGroup: tagGroupMap.find { (it.value.tags().find { it.getTagName() == b.tag }) }?.value?.getName(),

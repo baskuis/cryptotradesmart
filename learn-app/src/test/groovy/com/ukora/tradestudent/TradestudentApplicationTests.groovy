@@ -40,4 +40,18 @@ class TradestudentApplicationTests {
 		assert aliasService.beanToAlias.collect { it.value }.size() == aliasService.beanToAlias.collect { it.value }.unique().size()
 	}
 
+	@Test
+	void testThatWeAreAbleToFindAllTheTags() {
+		tagGroupMap = applicationContext.getBeansOfType(TagGroup)
+		assert tagGroupMap.find { (it.value.tags().find { it.getTagName() == 'up' }) }?.value?.getName() == 'updown'
+		assert tagGroupMap.find { (it.value.tags().find { it.getTagName() == 'down' }) }?.value?.getName() == 'updown'
+		assert tagGroupMap.find { (it.value.tags().find { it.getTagName() == 'buy' }) }?.value?.getName() == 'buysell'
+		assert tagGroupMap.find { (it.value.tags().find { it.getTagName() == 'sell' }) }?.value?.getName() == 'buysell'
+		assert tagGroupMap.find { (it.value.tags().find { it.getTagName() == 'upreversal' }) }?.value?.getName() == 'updownreversal'
+		assert tagGroupMap.find { (it.value.tags().find { it.getTagName() == 'downreversal' }) }?.value?.getName() == 'updownreversal'
+		int tagCount
+		tagGroupMap.each { it.value.tags().each { tagCount++ } }
+		assert tagCount == 6
+	}
+
 }

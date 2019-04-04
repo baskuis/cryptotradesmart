@@ -1,5 +1,6 @@
 package com.ukora.tradestudent.controller
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ukora.domain.entities.*
 import com.ukora.tradestudent.TradestudentApplication
 import com.ukora.tradestudent.services.*
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping('/learn')
 class TradeStudentController {
+
+    ObjectMapper objectMapper = new ObjectMapper()
 
     @Autowired
     ProbabilityCombinerService probabilityCombinerService
@@ -137,9 +140,8 @@ class TradeStudentController {
 
     @RequestMapping(path = '/simulations', method = RequestMethod.GET)
     Object simulations() {
-        aliasService.replaceAllWithAlias(
-                objectMapper.convertValue(bytesFetcherService.getSimulations(), Object)
-        )
+        objectMapper.convertValue(bytesFetcherService.getSimulations(), Object)
+
     }
 
     @RequestMapping(path = '/multion', method = RequestMethod.GET)
