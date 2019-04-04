@@ -19,9 +19,6 @@ import javax.annotation.PostConstruct
 class BytesFetcherService {
 
     @Autowired
-    ApplicationContext applicationContext
-
-    @Autowired
     PropertyRepository propertyRepository
     @Autowired
     LessonRepository lessonRepository
@@ -40,12 +37,8 @@ class BytesFetcherService {
     @Autowired
     MemoryRepository memoryRepository
 
-    Map<String, TagGroup> tagGroupMap
-
-    @PostConstruct
-    void init() {
-        tagGroupMap = applicationContext.getBeansOfType(TagGroup)
-    }
+    @Autowired
+    TagService tagService
 
     /**
      * Get property
@@ -286,13 +279,13 @@ class BytesFetcherService {
     Map<String, BrainNode> getAllBrainNodes() {
         Map<String, BrainNode> nodes = [:]
         brainRepository.findAll().each { Brain b ->
-            String tagGroupName = tagGroupMap.find { (it.value.tags().find { it.getTagName() == b.tag }) }?.value?.getName()
+            String tagGroupName = this.tagService.tagGroupMap?.find { (it.value.tags().find { it.getTagName() == b.tag }) }?.value?.getName()
             if(!tagGroupName) {
-                Logger.log(String.format('Unable to find tagGroupName from tag[%s], tagGroupMap.keys[%s]', b.tag, tagGroupMap.keySet()))
+                Logger.log(String.format('Unable to find tagGroupName from tag[%s], tagGroupMap.keys[%s]', b.tag, this.tagService.tagGroupMap?.keySet()))
             }
             nodes.get(b.reference, new BrainNode(reference: b.reference)).tagReference.put(b.tag,
                 new NumberAssociation(
-                        tagGroup: tagGroupMap.find { (it.value.tags().find { it.getTagName() == b.tag }) }?.value?.getName(),
+                        tagGroup: tagGroupName,
                         tag: b.tag,
                         mean: b.mean,
                         count: b.count,
