@@ -88,13 +88,13 @@ class TraverseLessonsService {
         if (!running) {
             running = true
             resetSimulations()
-            Property latestUpDown = bytesFetcherService.getProperty(LATEST_UP_DOWN_PROPERTY_KEY)
+            Property latestUpDown = bytesFetcherService.getProp(LATEST_UP_DOWN_PROPERTY_KEY)
             Instant start = Instant.now().minus(14, ChronoUnit.DAYS)
             if (latestUpDown) {
                 start = new Date(latestUpDown.getValue()).toInstant().minus(4, ChronoUnit.DAYS)
             }
             learnFromTrend(Date.from(start))
-            bytesFetcherService.saveProperty(LATEST_UP_DOWN_PROPERTY_KEY, new Date() as String)
+            bytesFetcherService.saveProp(LATEST_UP_DOWN_PROPERTY_KEY, new Date() as String)
             Logger.log(String.format("Completed"))
             running = false
         } else {
@@ -112,13 +112,13 @@ class TraverseLessonsService {
         if (!running) {
             running = true
             resetSimulations()
-            Property latestBuySell = bytesFetcherService.getProperty(LATEST_BUY_SELL_PROPERTY_KEY)
+            Property latestBuySell = bytesFetcherService.getProp(LATEST_BUY_SELL_PROPERTY_KEY)
             Instant start = Instant.now().minus(14, ChronoUnit.DAYS)
             if (latestBuySell) {
                 start = new Date(latestBuySell.getValue()).toInstant().minus(72, ChronoUnit.HOURS)
             }
             learnFromBuySell(Date.from(start))
-            bytesFetcherService.saveProperty(LATEST_BUY_SELL_PROPERTY_KEY, new Date() as String)
+            bytesFetcherService.saveProp(LATEST_BUY_SELL_PROPERTY_KEY, new Date() as String)
             Logger.log(String.format("Completed"))
             running = false
         } else {

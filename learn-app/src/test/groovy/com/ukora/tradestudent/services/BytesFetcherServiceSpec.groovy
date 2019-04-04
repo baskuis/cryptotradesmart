@@ -23,23 +23,23 @@ class BytesFetcherServiceSpec {
                 value: "bar"
         )
 
-        bytesFetcherService.saveProperty(p)
+        bytesFetcherService.saveProp(p)
 
-        Property r = bytesFetcherService.getProperty('foo')
+        Property r = bytesFetcherService.getProp('foo')
 
         assert p.name == r.name
         assert p.value == r.value
         assert r.id != null
 
-        bytesFetcherService.saveProperty('foo', 'fizz')
-        Property f = bytesFetcherService.getProperty('foo')
+        bytesFetcherService.saveProp('foo', 'fizz')
+        Property f = bytesFetcherService.getProp('foo')
 
         assert f.name == 'foo'
         assert f.value == 'fizz'
         assert f.id == r.id
 
-        bytesFetcherService.saveProperty(p)
-        r = bytesFetcherService.getProperty('foo')
+        bytesFetcherService.saveProp(p)
+        r = bytesFetcherService.getProp('foo')
 
         assert r.id == f.id
         assert r.value == 'bar'

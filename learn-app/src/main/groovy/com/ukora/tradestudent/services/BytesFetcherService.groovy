@@ -44,7 +44,7 @@ class BytesFetcherService {
      * @return
      */
     @Cacheable("properties")
-    Property getProperty(String name) {
+    Property getProp(String name) {
         List<Property> properties = propertyRepository.findByName(name)
         if (properties.size() > 0) {
             return properties.get(0)
@@ -58,8 +58,8 @@ class BytesFetcherService {
      * @param property
      */
     @CacheEvict(value = "properties", allEntries = true)
-    void saveProperty(Property property) {
-        Property p = this.getProperty(property.name)
+    void saveProp(Property property) {
+        Property p = this.getProp(property.name)
         if (!p) {
             p = property
         }
@@ -74,8 +74,8 @@ class BytesFetcherService {
      * @param value
      */
     @CacheEvict(value = "properties", allEntries = true)
-    void saveProperty(String name, String value) {
-        Property p = this.getProperty(name)
+    void saveProp(String name, String value) {
+        Property p = this.getProp(name)
         if (!p) {
             p = new Property(name: name)
         }
@@ -276,7 +276,7 @@ class BytesFetcherService {
     Map<String, BrainNode> getAllBrainNodes() {
         Map<String, BrainNode> nodes = [:]
         brainRepository.findAll().each { Brain b ->
-            String tagGroupName = this.tagService?.tagGroupMap?.find {
+            String tagGroupName = tagService?.tagGroupMap?.find {
                 (it.value.tags().find { it.getTagName() == b.tag })
             }?.value?.getName()
             if (!tagGroupName) {

@@ -44,7 +44,7 @@ class TagService {
      * @return
      */
     TagGroup getTagGroupByTag(AbstractCorrelationTag tag){
-        return tagGroupMap.find { (it.value.tags().find{ it.tagName == tag.tagName }) }?.value
+        return tagGroupMap.find { (it.value.tags().find{ it.tagName == tag?.tagName }) }?.value
     }
 
     /**
