@@ -90,7 +90,7 @@ class BytesFetcherService {
      */
     List<SimulatedTradeEntry> getLatestSimulatedTradeEntries() {
         return simulatedTradeEntryRepository
-                .findAll(new Sort(Sort.Direction.DESC, "date"))[0..1999]
+                .findAll(new Sort(Sort.Direction.DESC, "date")).take(2000)
                 .sort({ SimulatedTradeEntry a, SimulatedTradeEntry b ->
             a.getDate() <=> b.getDate()
         })
