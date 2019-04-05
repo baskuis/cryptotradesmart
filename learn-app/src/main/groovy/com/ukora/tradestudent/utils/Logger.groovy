@@ -5,7 +5,7 @@ import org.apache.commons.io.input.ReversedLinesFileReader
 
 class Logger {
 
-    final static LOG_FILE_LOCATION = 'application.out'
+    final static LOG_FILE_LOCATION = '/home/bas/Projects/tradestudent-learn/learn-app/application.out'
 
     static void debug(String message){
         if(TradestudentApplication.DEBUG_LOGGING_ENABLED){

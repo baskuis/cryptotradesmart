@@ -10,6 +10,7 @@ import com.ukora.tradestudent.services.associations.text.CaptureTextAssociations
 import com.ukora.tradestudent.services.learner.TraverseLessonsService
 import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.simulator.TradeSimulatorService
+import com.ukora.tradestudent.services.text.KeywordAssociationService
 import com.ukora.tradestudent.services.text.TextAssociationProbabilityService
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
@@ -47,6 +48,9 @@ class TradeStudentController {
 
     @Autowired
     TradeSimulatorService tradeSimulatorService
+
+    @Autowired
+    KeywordAssociationService keywordAssociationService
 
     @Autowired
     AliasService aliasService
@@ -230,8 +234,8 @@ class TradeStudentController {
     @RequestMapping(path = '/keyword', method = RequestMethod.GET)
     def getKeywordAssociation(@RequestParam(value = 'keyword') String keyword) {
         [
-                (ExtractedText.TextSource.TWITTER): textAssociationProbabilityService.getKeywordAssociation(keyword, ExtractedText.TextSource.TWITTER),
-                (ExtractedText.TextSource.NEWS)   : textAssociationProbabilityService.getKeywordAssociation(keyword, ExtractedText.TextSource.NEWS)
+                (ExtractedText.TextSource.TWITTER): keywordAssociationService.getKeywordAssociation(keyword, ExtractedText.TextSource.TWITTER),
+                (ExtractedText.TextSource.NEWS)   : keywordAssociationService.getKeywordAssociation(keyword, ExtractedText.TextSource.NEWS)
         ]
     }
 
