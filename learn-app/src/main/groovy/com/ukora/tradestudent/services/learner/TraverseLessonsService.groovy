@@ -333,18 +333,22 @@ class TraverseLessonsService {
                 boolean up = false
                 if (average['upReversal']) {
                     up = (it.key as Date).after(average['lowest']['date'] as Date)
-                    lessons << new Lesson(
-                            tag: upDownReversalTagGroup?.upReversalTag?.tagName,
-                            date: it.key as Date,
-                            price: it.value as Double
-                    )
+                    if (up) {
+                        lessons << new Lesson(
+                                tag: upDownReversalTagGroup?.upReversalTag?.tagName,
+                                date: it.key as Date,
+                                price: it.value as Double
+                        )
+                    }
                 } else if (average['downReversal']) {
                     up = (it.key as Date).before(average['highest']['date'] as Date)
-                    lessons << new Lesson(
-                            tag: upDownReversalTagGroup?.downReversalTag?.tagName,
-                            date: it.key as Date,
-                            price: it.value as Double
-                    )
+                    if (!up) {
+                        lessons << new Lesson(
+                                tag: upDownReversalTagGroup?.downReversalTag?.tagName,
+                                date: it.key as Date,
+                                price: it.value as Double
+                        )
+                    }
                 } else if (average['rising']) {
                     up = true
                 } else if (average['falling']) {
