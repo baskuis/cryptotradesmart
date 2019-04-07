@@ -78,7 +78,7 @@ class TextAssociationProbabilityService {
     }
 
     /**
-     * Get tag corrFelations by text
+     * Get tag correlations by text
      *
      * @param eventDate
      */

@@ -27,7 +27,7 @@ class TraverseLessonsService {
     private final static Double TRADE_LOSS = 0.0025
 
     /** Minimal gain for trade */
-    private final static Double MINIMAL_GAIN = 1.005
+    private final static Double MINIMAL_GAIN = 1.003
 
     private final static Double MINIMAL_PROPORTION = 1.035
 
@@ -224,17 +224,17 @@ class TraverseLessonsService {
             Double fallenAmount = reference.get('price') as Double
             boolean rising = (nextEntries.size() > (learnSimulation.interval / 2) && nextEntries.findAll {
                 it.get('price') > reference.get('price') * MINIMAL_GAIN
-            }.each { risingAmount = it.get('price') as Double }.size() > PEAK_PADDING)
+            }.each { risingAmount = ((it.get('price') as Double) > risingAmount) ? it.get('price') as Double : risingAmount }.size() > PEAK_PADDING)
             boolean falling = (nextEntries.size() > (learnSimulation.interval / 2) && nextEntries.findAll {
                 it.get('price') * MINIMAL_GAIN < reference.get('price')
-            }.each { fallingAmount = it.get('price') as Double }.size() > PEAK_PADDING)
+            }.each { fallingAmount = ((it.get('price') as Double) < fallingAmount) ? (it.get('price') as Double) : fallingAmount }.size() > PEAK_PADDING)
 
             boolean risen = (previousEntries.size() > learnSimulation.interval / 2) && previousEntries.findAll {
                 it.get('price') * MINIMAL_GAIN < reference.get('price')
-            }.each { risenAmount = it.get('price') as Double }.size() > PEAK_PADDING
+            }.each { risenAmount = ((it.get('price') as Double) > risenAmount) ? (it.get('price') as Double) : risenAmount }.size() > PEAK_PADDING
             boolean fallen = (previousEntries.size() > learnSimulation.interval / 2) && previousEntries.findAll {
                 it.get('price') > reference.get('price') * MINIMAL_GAIN
-            }.each { fallenAmount = it.get('price') as Double }.size() > PEAK_PADDING
+            }.each { fallenAmount = ((it.get('price') as Double) < fallenAmount) ? (it.get('price') as Double) : fallingAmount }.size() > PEAK_PADDING
 
             boolean buy = fallen && rising && !risen && !falling
             boolean sell = risen && falling && !rising && !fallen
@@ -257,8 +257,8 @@ class TraverseLessonsService {
             entry['buy'] = buy
             entry['sell'] = sell
             if (buy || sell) {
-                Logger.debug(String.format("risen: %s, rising: %s, fallen: %s, falling: %s, buy: %s, sell: %s, date: %s, price: %s, multiple: %s",
-                        risen, rising, fallen, falling, buy, sell, entry['date'], entry['price'], entry['multiple']
+                Logger.debug(String.format("risen: %s, risingAmount: %s, rising: %s, fallen: %s, falling: %s, buy: %s, sell: %s, date: %s, price: %s, multiple: %s",
+                        risen, risingAmount, rising, fallen, falling, buy, sell, entry['date'], entry['price'], entry['multiple']
                 ))
             }
             progression << entry
