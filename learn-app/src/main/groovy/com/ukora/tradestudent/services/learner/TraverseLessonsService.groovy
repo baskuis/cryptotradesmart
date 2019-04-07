@@ -32,7 +32,7 @@ class TraverseLessonsService {
     private final static Double MINIMAL_PROPORTION = 1.035
 
     public final static long INTERVAL_SECONDS = 60
-    public final static long INTERVAL_HOURS = 1
+    public final static long INTERVAL_MINUTES = 10
 
     public final static long REPEAT_FOR_TREND = 6 /** Represents hours */
     public final static long MINIMUM_HOLD_PERIOD = 15 /** In minutes */
@@ -241,10 +241,10 @@ class TraverseLessonsService {
 
             Double multiple = 1d
             if(buy){
-                multiple = Math.round(((risingAmount / (reference.get('price') as Double)) + (fallenAmount / (reference.get('price') as Double))) / MINIMAL_GAIN)
+                multiple = Math.round(((risingAmount - fallenAmount) / (reference.get('price') as Double)) / (MINIMAL_GAIN - 1))
             }
             if(sell){
-                multiple = Math.round(((risenAmount / (reference.get('price') as Double)) + (fallingAmount / (reference.get('price') as Double))) / MINIMAL_GAIN)
+                multiple = Math.round(((risenAmount - fallingAmount) / (reference.get('price') as Double)) / (MINIMAL_GAIN - 1))
             }
 
             entry['multiple'] = multiple
@@ -408,7 +408,7 @@ class TraverseLessonsService {
     private static List<Map<String, Object>> digestReferences(Date fromDate, Map<Date, Double> references) {
         Instant end = Instant.now()
         List<Map<String, Object>> averages = []
-        Duration hourGap = Duration.ofHours(INTERVAL_HOURS)
+        Duration hourGap = Duration.ofMinutes(INTERVAL_MINUTES)
         Instant current = Instant.ofEpochMilli(fromDate.time)
         while (current.isBefore(end)) {
             Double average
