@@ -82,8 +82,8 @@ class TextAssociationProbabilityService {
      *
      * @param eventDate
      */
-    @Cacheable("textTagCorrelations")
-    def tagCorrelationByText(Date eventDate){
+    @Cacheable(value = "textTagCorrelations", sync = true)
+    def synchronized tagCorrelationByText(Date eventDate){
 
         Logger.log(String.format('Attempting to get text association for %s', eventDate))
         ExtractedText extractedText = textExtractorService.extractTextForDate(eventDate)
