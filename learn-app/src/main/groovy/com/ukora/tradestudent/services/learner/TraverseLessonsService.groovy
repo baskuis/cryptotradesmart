@@ -386,8 +386,16 @@ class TraverseLessonsService {
                 } catch (IndexOutOfBoundsException e) { /** Ignore */
                 }
             }
-            boolean rising = (nextEntries.size() > (REPEAT_FOR_TREND / 2) && nextEntries.collect { it['average'] }.sum() / nextEntries.size() > average['average'])
+            double risingAmount = average.average
+            double fallingAmount = average.average
+            boolean rising = (nextEntries.size() > (REPEAT_FOR_TREND / 2) && nextEntries.each {
+                risingAmount = (risingAmount < (it['highest'] as Double)) ? it['highest'] : risingAmount
+                fallingAmount = (fallingAmount > (it['lowest'] as Double)) ? it['lowest'] : fallingAmount
+            }.collect {
+                it['average']
+            }.max() > average['average'])
             boolean falling = !rising
+
             average['rising'] = rising
             average['falling'] = falling
             boolean upReversal = (previousFalling != null && previousFalling != falling && rising && previousRising != rising)
