@@ -149,6 +149,46 @@ class TraverseLessonsServiceSpec extends Specification {
                     )
             )
         }
+        (1..300).each {
+            memories << new Memory(
+                    metadata: new Metadata(
+                            datetime: null
+                    ),
+                    graph: new Graph(
+                            price: 1000 + it
+                    )
+            )
+        }
+        (1..300).each {
+            memories << new Memory(
+                    metadata: new Metadata(
+                            datetime: null
+                    ),
+                    graph: new Graph(
+                            price: 1300 - it
+                    )
+            )
+        }
+        (1..200).each {
+            memories << new Memory(
+                    metadata: new Metadata(
+                            datetime: null
+                    ),
+                    graph: new Graph(
+                            price: 1000 + it
+                    )
+            )
+        }
+        (1..100).each {
+            memories << new Memory(
+                    metadata: new Metadata(
+                            datetime: null
+                    ),
+                    graph: new Graph(
+                            price: 1200 - it
+                    )
+            )
+        }
 
         when:
         int idx = -1

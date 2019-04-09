@@ -1,12 +1,12 @@
 package com.ukora.tradestudent.services.learner
 
+import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
+import com.ukora.domain.beans.tags.reversal.UpDownReversalTagGroup
+import com.ukora.domain.beans.tags.trend.UpDownTagGroup
 import com.ukora.domain.entities.Lesson
 import com.ukora.domain.entities.Memory
 import com.ukora.domain.entities.Property
 import com.ukora.tradestudent.services.BytesFetcherService
-import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
-import com.ukora.domain.beans.tags.reversal.UpDownReversalTagGroup
-import com.ukora.domain.beans.tags.trend.UpDownTagGroup
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
@@ -34,7 +34,7 @@ class TraverseLessonsService {
     public final static long INTERVAL_SECONDS = 60
     public final static long INTERVAL_MINUTES = 10
 
-    public final static long REPEAT_FOR_TREND = 6 /** Represents hours */
+    public final static long REPEAT_FOR_TREND = 15 /** Represents hours */
     public final static long MINIMUM_HOLD_PERIOD = 15 /** In minutes */
     public final static long REPEAT_FOR_BUY_SELL = 300 /** Represents minutes */
 
@@ -224,26 +224,34 @@ class TraverseLessonsService {
             Double fallenAmount = reference.get('price') as Double
             boolean rising = (nextEntries.size() > (learnSimulation.interval / 2) && nextEntries.findAll {
                 it.get('price') > reference.get('price') * MINIMAL_GAIN
-            }.each { risingAmount = ((it.get('price') as Double) > risingAmount) ? it.get('price') as Double : risingAmount }.size() > PEAK_PADDING)
+            }.each {
+                risingAmount = ((it.get('price') as Double) > risingAmount) ? it.get('price') as Double : risingAmount
+            }.size() > PEAK_PADDING)
             boolean falling = (nextEntries.size() > (learnSimulation.interval / 2) && nextEntries.findAll {
                 it.get('price') * MINIMAL_GAIN < reference.get('price')
-            }.each { fallingAmount = ((it.get('price') as Double) < fallingAmount) ? (it.get('price') as Double) : fallingAmount }.size() > PEAK_PADDING)
+            }.each {
+                fallingAmount = ((it.get('price') as Double) < fallingAmount) ? (it.get('price') as Double) : fallingAmount
+            }.size() > PEAK_PADDING)
 
             boolean risen = (previousEntries.size() > learnSimulation.interval / 2) && previousEntries.findAll {
                 it.get('price') * MINIMAL_GAIN < reference.get('price')
-            }.each { risenAmount = ((it.get('price') as Double) > risenAmount) ? (it.get('price') as Double) : risenAmount }.size() > PEAK_PADDING
+            }.each {
+                risenAmount = ((it.get('price') as Double) > risenAmount) ? (it.get('price') as Double) : risenAmount
+            }.size() > PEAK_PADDING
             boolean fallen = (previousEntries.size() > learnSimulation.interval / 2) && previousEntries.findAll {
                 it.get('price') > reference.get('price') * MINIMAL_GAIN
-            }.each { fallenAmount = ((it.get('price') as Double) < fallenAmount) ? (it.get('price') as Double) : fallingAmount }.size() > PEAK_PADDING
+            }.each {
+                fallenAmount = ((it.get('price') as Double) < fallenAmount) ? (it.get('price') as Double) : fallingAmount
+            }.size() > PEAK_PADDING
 
             boolean buy = fallen && rising && !risen && !falling
             boolean sell = risen && falling && !rising && !fallen
 
             Double multiple = 1d
-            if(buy){
+            if (buy) {
                 multiple = Math.round(((risingAmount - fallenAmount) / (reference.get('price') as Double)) / (MINIMAL_GAIN - 1))
             }
-            if(sell){
+            if (sell) {
                 multiple = Math.round(((risenAmount - fallingAmount) / (reference.get('price') as Double)) / (MINIMAL_GAIN - 1))
             }
 
@@ -269,11 +277,11 @@ class TraverseLessonsService {
         progression.each { Map<String, Object> entry ->
             if (entry['sell']) {
                 learnSimulation.balanceB += ((learnSimulation.balanceA / PEAK_PADDING) * (entry['price'] as Double) * (1 - TRADE_LOSS))
-                learnSimulation.balanceA = learnSimulation.balanceA * (1 - (1/PEAK_PADDING))
+                learnSimulation.balanceA = learnSimulation.balanceA * (1 - (1 / PEAK_PADDING))
                 learnSimulation.tradeCount++
             } else if (entry['buy']) {
                 learnSimulation.balanceA += (((learnSimulation.balanceB / PEAK_PADDING) / (entry['price'] as Double)) * (1 - TRADE_LOSS))
-                learnSimulation.balanceB = learnSimulation.balanceB * (1 - (1/PEAK_PADDING))
+                learnSimulation.balanceB = learnSimulation.balanceB * (1 - (1 / PEAK_PADDING))
                 learnSimulation.tradeCount++
             }
             finalPrice = (entry['price'] as Double)
@@ -330,38 +338,46 @@ class TraverseLessonsService {
         averages.each {
             def average = it
             (average['entries'] as Map).each {
+                Map.Entry entry = it
                 boolean up = false
                 if (average['upReversal']) {
                     up = (it.key as Date).after(average['lowest']['date'] as Date)
                     if (up) {
-                        lessons << new Lesson(
-                                tag: upDownReversalTagGroup?.upReversalTag?.tagName,
-                                date: it.key as Date,
-                                price: it.value as Double
-                        )
+                        (1..average['multiple']).each {
+                            lessons << new Lesson(
+                                    tag: upDownReversalTagGroup?.upReversalTag?.tagName,
+                                    date: entry.key as Date,
+                                    price: entry.value as Double
+                            )
+                        }
                     }
                 } else if (average['downReversal']) {
                     up = (it.key as Date).before(average['highest']['date'] as Date)
                     if (!up) {
-                        lessons << new Lesson(
-                                tag: upDownReversalTagGroup?.downReversalTag?.tagName,
-                                date: it.key as Date,
-                                price: it.value as Double
-                        )
+                        (1..average['multiple']).each {
+                            lessons << new Lesson(
+                                    tag: upDownReversalTagGroup?.downReversalTag?.tagName,
+                                    date: entry.key as Date,
+                                    price: entry.value as Double
+                            )
+                        }
                     }
                 } else if (average['rising']) {
                     up = true
                 } else if (average['falling']) {
                     up = false
                 }
-                lessons << new Lesson(
-                        tag: up ? upDownTagGroup.upTag?.tagName : upDownTagGroup.downTag?.tagName,
-                        date: it.key as Date,
-                        price: it.value as Double
-                )
+
+                (1..average['multiple']).each {
+                    lessons << new Lesson(
+                            tag: up ? upDownTagGroup.upTag?.tagName : upDownTagGroup.downTag?.tagName,
+                            date: entry.key as Date,
+                            price: entry.value as Double
+                    )
+                }
             }
         }
-        return lessons.unique({ a, b -> a.date <=> b.date })
+        return lessons
     }
 
     /**
@@ -371,11 +387,13 @@ class TraverseLessonsService {
      * @return
      */
     private static void hydrateTrendIndicators(List<Map<String, Object>> averages) {
-        boolean previousRising = null
-        boolean previousFalling = null
+        Boolean previousRising = null
+        Boolean previousFalling = null
         averages.eachWithIndex { Map average, int index ->
+
             List previousEntries = []
             List nextEntries = []
+
             for (int i = REPEAT_FOR_TREND; i > 0; i--) {
                 try {
                     previousEntries << averages.get(index - i)
@@ -386,25 +404,53 @@ class TraverseLessonsService {
                 } catch (IndexOutOfBoundsException e) { /** Ignore */
                 }
             }
+
+            Boolean rising
+            Boolean falling
             double risingAmount = average.average
             double fallingAmount = average.average
-            boolean rising = (nextEntries.size() > (REPEAT_FOR_TREND / 2) && nextEntries.each {
-                risingAmount = (risingAmount < (it['highest'] as Double)) ? it['highest'] : risingAmount
-                fallingAmount = (fallingAmount > (it['lowest'] as Double)) ? it['lowest'] : fallingAmount
-            }.collect {
-                it['average']
-            }.max() > average['average'])
-            boolean falling = !rising
+
+            nextEntries.each {
+                risingAmount = (risingAmount < ((it['highest'] as Map).value as Double)) ? ((it['highest'] as Map).value as Double) : risingAmount
+                fallingAmount = (fallingAmount > ((it['lowest'] as Map).value as Double)) ? ((it['lowest'] as Map).value as Double) : fallingAmount
+            }
+
+            Boolean highRising = (nextEntries.size() > 0 && nextEntries.collect {
+                ((it['highest'] as Map).value as Double)
+            }.max() > ((average['highest'] as Map).value as Double))
+
+            Boolean lowFalling = (nextEntries.size() > 0 && nextEntries.collect {
+                ((it['lowest'] as Map).value as Double)
+            }.min() < ((average['lowest'] as Map).value as Double))
+
+            rising = (rising != null) ? rising : (nextEntries.size() > 0 && (nextEntries.first() as Map).average > average['average'])
+            falling = !rising
+
+            if (previousRising && highRising) {
+                rising = true
+                falling = !rising
+            }
+            if (previousFalling && lowFalling) {
+                falling = true
+                rising = !falling
+            }
 
             average['rising'] = rising
             average['falling'] = falling
-            boolean upReversal = (previousFalling != null && previousFalling != falling && rising && previousRising != rising)
-            boolean downReversal = (previousRising != null && previousRising != rising && falling && previousFalling != falling)
+
+            boolean upReversal = (previousRising != null && rising && !previousRising)
+            boolean downReversal = (previousFalling != null && falling && !previousFalling)
+
             average['upReversal'] = upReversal
             average['downReversal'] = downReversal
-            Logger.log(String.format("rising: %s, falling: %s, upReversal: %s, downReversal: %s, date: %s, avgPrice: %s",
-                    rising, falling, upReversal, downReversal, average['date'], average['average']
+
+            average['multiple'] = (rising) ? Math.round((risingAmount - (average['average'] as Double)) / (average['average'] as Double) / (MINIMAL_GAIN - 1)) :
+                    Math.round(((average['average'] as Double) - fallingAmount) / (average['average'] as Double) / (MINIMAL_GAIN - 1))
+
+            Logger.log(String.format("avgPrice: %s, rising: %s, falling: %s, upReversal: %s, downReversal: %s, date: %s, multiple: %s",
+                    average['average'], rising, falling, upReversal, downReversal, average['date'], average['multiple']
             ))
+
             previousRising = rising
             previousFalling = falling
         }
