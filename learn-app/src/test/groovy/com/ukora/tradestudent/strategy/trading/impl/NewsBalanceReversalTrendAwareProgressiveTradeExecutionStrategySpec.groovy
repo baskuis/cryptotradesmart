@@ -3,7 +3,7 @@ package com.ukora.tradestudent.strategy.trading.impl
 import com.ukora.domain.entities.CorrelationAssociation
 import com.ukora.domain.entities.ExtractedText
 import com.ukora.tradestudent.services.simulator.Simulation
-import com.ukora.tradestudent.services.text.TextAssociationProbabilityService
+import com.ukora.tradestudent.services.text.ConcurrentTextAssociationProbabilityService
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
 import com.ukora.domain.beans.tags.buysell.BuyTag
@@ -23,10 +23,9 @@ class NewsBalanceReversalTrendAwareProgressiveTradeExecutionStrategySpec extends
 
     TradeExecutionStrategy tradeExecutionStrategy
 
-    TextAssociationProbabilityService mockTextAssociationProbabilityService = Mock(TextAssociationProbabilityService)
+    ConcurrentTextAssociationProbabilityService mockConcurrentTextAssociationProbabilityService = Mock(ConcurrentTextAssociationProbabilityService)
 
     def setup() {
-
         tradeExecutionStrategy = new NewsBalanceReversalTrendAwareProgressiveTradeExecutionStrategy(
                 upTag: new UpTag(),
                 downTag: new DownTag(),
@@ -34,7 +33,7 @@ class NewsBalanceReversalTrendAwareProgressiveTradeExecutionStrategySpec extends
                 sellTag: new SellTag(),
                 upReversalTag: new UpReversalTag(),
                 downReversalTag: new DownReversalTag(),
-                textAssociationProbabilityService: mockTextAssociationProbabilityService
+                concurrentTextAssociationProbabilityService: mockConcurrentTextAssociationProbabilityService
         )
     }
 
@@ -72,7 +71,7 @@ class NewsBalanceReversalTrendAwareProgressiveTradeExecutionStrategySpec extends
         )
 
         then:
-        1 * mockTextAssociationProbabilityService.tagCorrelationByText(_) >> [
+        1 * mockConcurrentTextAssociationProbabilityService.tagCorrelationByText(_) >> [
                 averageTextProbabilityCombinerStrategy: [
                         (ExtractedText.TextSource.NEWS.name()): [
                                 'buy'         : 0.60,

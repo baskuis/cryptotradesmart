@@ -10,6 +10,7 @@ import com.ukora.tradestudent.services.associations.text.CaptureTextAssociations
 import com.ukora.tradestudent.services.learner.TraverseLessonsService
 import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.simulator.TradeSimulatorService
+import com.ukora.tradestudent.services.text.ConcurrentTextAssociationProbabilityService
 import com.ukora.tradestudent.services.text.KeywordAssociationService
 import com.ukora.tradestudent.services.text.TextAssociationProbabilityService
 import com.ukora.tradestudent.utils.Logger
@@ -57,6 +58,9 @@ class TradeStudentController {
 
     @Autowired
     TextAssociationProbabilityService textAssociationProbabilityService
+
+    @Autowired
+    ConcurrentTextAssociationProbabilityService concurrentTextAssociationProbabilityService
 
     @Autowired
     LessonTotalsService lessonTotalsService
@@ -241,7 +245,7 @@ class TradeStudentController {
 
     @RequestMapping(path = '/textassociations', method = RequestMethod.GET)
     def getTextAssociations(@RequestParam(value = 'date') Date date) {
-        textAssociationProbabilityService.tagCorrelationByText(date)
+        concurrentTextAssociationProbabilityService.tagCorrelationByText(date)
     }
 
     @RequestMapping(path = '/log', method = RequestMethod.GET)

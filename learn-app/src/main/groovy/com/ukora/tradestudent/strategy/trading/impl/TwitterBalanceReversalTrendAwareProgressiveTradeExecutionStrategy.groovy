@@ -1,11 +1,5 @@
 package com.ukora.tradestudent.strategy.trading.impl
 
-import com.ukora.domain.entities.CorrelationAssociation
-import com.ukora.domain.entities.ExtractedText
-import com.ukora.tradestudent.services.simulator.Simulation
-import com.ukora.tradestudent.services.text.TextAssociationProbabilityService
-import com.ukora.domain.beans.trade.TradeExecution
-import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
 import com.ukora.domain.beans.tags.TagSubset
 import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
 import com.ukora.domain.beans.tags.buysell.BuyTag
@@ -14,6 +8,12 @@ import com.ukora.domain.beans.tags.reversal.DownReversalTag
 import com.ukora.domain.beans.tags.reversal.UpReversalTag
 import com.ukora.domain.beans.tags.trend.DownTag
 import com.ukora.domain.beans.tags.trend.UpTag
+import com.ukora.domain.beans.trade.TradeExecution
+import com.ukora.domain.entities.CorrelationAssociation
+import com.ukora.domain.entities.ExtractedText
+import com.ukora.tradestudent.services.simulator.Simulation
+import com.ukora.tradestudent.services.text.ConcurrentTextAssociationProbabilityService
+import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -59,7 +59,7 @@ class TwitterBalanceReversalTrendAwareProgressiveTradeExecutionStrategy implemen
     DownReversalTag downReversalTag
 
     @Autowired
-    TextAssociationProbabilityService textAssociationProbabilityService
+    ConcurrentTextAssociationProbabilityService concurrentTextAssociationProbabilityService
 
     @Override
     String getAlias() {
@@ -114,7 +114,7 @@ class TwitterBalanceReversalTrendAwareProgressiveTradeExecutionStrategy implemen
         Double downReversalTextProbability
         try {
             String textCStrategy = 'averageTextProbabilityCombinerStrategy'
-            Map textAssociations = textAssociationProbabilityService.tagCorrelationByText(correlationAssociation.date)
+            Map textAssociations = concurrentTextAssociationProbabilityService.tagCorrelationByText(correlationAssociation.date)
             buyTextProbability = textAssociations?.get(textCStrategy)?.get(textSource)?.get(buyTag.tagName)
             sellTextProbability = textAssociations?.get(textCStrategy)?.get(textSource)?.get(sellTag.tagName)
             upTextProbability = textAssociations?.get(textCStrategy)?.get(textSource)?.get(upTag.tagName)
