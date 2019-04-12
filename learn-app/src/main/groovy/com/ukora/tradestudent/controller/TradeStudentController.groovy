@@ -75,6 +75,11 @@ class TradeStudentController {
         probabilityCombinerService.getBrainNodes()
     }
 
+    @RequestMapping(path = '/bestindicators', produces = 'application/json', method = RequestMethod.GET)
+    Map<String, List<String>> getBestIndicators() {
+        probabilityCombinerService.getPopularCorrelationKeys()
+    }
+
     @RequestMapping(path = '/indicators', produces = 'application/json', method = RequestMethod.GET)
     Set<String> getIndicators() {
         probabilityCombinerService.getRelevantBrainNodes().keySet()

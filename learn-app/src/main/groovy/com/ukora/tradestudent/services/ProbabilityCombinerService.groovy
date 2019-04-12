@@ -165,6 +165,33 @@ class ProbabilityCombinerService {
     }
 
     /**
+     * Get popular correlation keys
+     *
+     * @return
+     */
+    Map<String, List<String>> getPopularCorrelationKeys(){
+        Map<String, List<Map>> correlationLookup = [:]
+        getBrainNodes().each { Map.Entry<String, BrainNode> entry ->
+            BrainNode brainNode = entry.value
+            brainNode.tagReference.each { Map.Entry<String, NumberAssociation> reference ->
+                NumberAssociation numberAssociation = reference.value
+                if (numberAssociation.relevance) {
+                    List<Map<String, Object>> l = correlationLookup.get(numberAssociation.tag, [])
+                    l.add([
+                            reference: brainNode.reference as String,
+                            relevance: numberAssociation.relevance as Double
+                    ])
+                }
+            }
+        }
+        Map<String, List<String>> correlationKeys = [:]
+        correlationLookup.each {
+            correlationKeys.put(it.key, it.value.sort({ it.relevance }).reverse().collect({ it.reference }))
+        }
+        return correlationKeys
+    }
+
+    /**
      * Get relevant brain nodes
      *
      * @return
