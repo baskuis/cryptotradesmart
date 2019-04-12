@@ -19,7 +19,7 @@ class AssociationService {
      * @param lesson
      * @return
      */
-    public <T extends AbstractAssociation> T hydrateAssociation(T someAssociation) {
+    def <T extends AbstractAssociation> T hydrateAssociation(T someAssociation) {
         if (!someAssociation) return null
         try {
             //TODO: Get memory .. other class (to caching works)
@@ -52,11 +52,32 @@ class AssociationService {
             Calendar calendar = Calendar.instance
             calendar.setTime(someAssociation.date)
             switch (key) {
+                case '1minute':
+                    calendar.add(Calendar.MINUTE, -1)
+                    break
                 case '2minute':
                     calendar.add(Calendar.MINUTE, -2)
                     break
+                case '3minute':
+                    calendar.add(Calendar.MINUTE, -3)
+                    break
+                case '4minute':
+                    calendar.add(Calendar.MINUTE, -4)
+                    break
                 case '5minute':
                     calendar.add(Calendar.MINUTE, -5)
+                    break
+                case '6minute':
+                    calendar.add(Calendar.MINUTE, -6)
+                    break
+                case '7minute':
+                    calendar.add(Calendar.MINUTE, -7)
+                    break
+                case '8minute':
+                    calendar.add(Calendar.MINUTE, -8)
+                    break
+                case '9minute':
+                    calendar.add(Calendar.MINUTE, -9)
                     break
                 case '10minute':
                     calendar.add(Calendar.MINUTE, -10)
@@ -84,6 +105,9 @@ class AssociationService {
                     break
                 case '16hour':
                     calendar.add(Calendar.HOUR, -16)
+                    break
+                case '24hour':
+                    calendar.add(Calendar.HOUR, -24)
                     break
                 default:
                     throw new RuntimeException(String.format("Unknown interval %s", key))

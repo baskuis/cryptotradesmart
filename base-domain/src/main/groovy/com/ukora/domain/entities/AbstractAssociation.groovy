@@ -10,8 +10,15 @@ abstract class AbstractAssociation {
 
     @Transient
     List<String> intervals = [
+            '1minute',
             '2minute',
+            '3minute',
+            '4minute',
             '5minute',
+            '6minute',
+            '7minute',
+            '8minute',
+            '9minute',
             '10minute',
             '15minute',
             '30minute',
@@ -20,7 +27,8 @@ abstract class AbstractAssociation {
             '2hour',
             '4hour',
             '8hour',
-            '16hour'
+            '16hour',
+            '24hour'
     ]
 
     @Transient
