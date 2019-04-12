@@ -9,7 +9,7 @@ import static com.ukora.tradestudent.utils.NerdUtils.assertRanges
 @Component
 class WeightedNaiveBayesianProbabilityCombinerStrategy implements ProbabilityCombinerStrategy {
 
-    boolean enabled = true
+    boolean enabled = false
 
     @Override
     String getAlias() {
