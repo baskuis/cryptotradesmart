@@ -1,6 +1,5 @@
 package com.ukora.tradestudent.utils
 
-import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.concurrent.ConcurrentHashMap
 

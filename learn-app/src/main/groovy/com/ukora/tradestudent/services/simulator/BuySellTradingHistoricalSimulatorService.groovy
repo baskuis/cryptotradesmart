@@ -63,10 +63,10 @@ class BuySellTradingHistoricalSimulatorService {
     private final static Double MAX_TRADE_INCREMENT = 2
     private final static Double TRADE_INCREMENT = 1
     private final static Double TRADE_TRANSACTION_COST = 0.0020
-    private final static Double LOWEST_THRESHOLD = 0.50
-    private final static Double HIGHEST_THRESHOLD = 0.80
-    private final static Double THRESHOLD_INCREMENT = 0.001
-    private final static Double MAX_THRESHOLD_DELTA = 0.050
+    private final static Double LOWEST_THRESHOLD = 0.49
+    private final static Double HIGHEST_THRESHOLD = 0.70
+    private final static Double THRESHOLD_INCREMENT = 0.002
+    private final static Double MAX_THRESHOLD_DELTA = 0.010
 
     @PostConstruct
     void init() {
