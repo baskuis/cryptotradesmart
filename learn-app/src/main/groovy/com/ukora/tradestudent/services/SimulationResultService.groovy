@@ -89,7 +89,7 @@ class SimulationResultService {
      */
     static getScore(SimulationResult simulationResult) {
         if(!simulationResult || !simulationResult?.tradeCount) {
-            Logger.log(String.format('Unable to get score for %s', new ObjectMapper().writeValueAsString(simulationResult)))
+            Logger.debug(String.format('Unable to get score for %s', new ObjectMapper().writeValueAsString(simulationResult)))
             return 0d
         }
         Double thresholdBalance = Math.abs(simulationResult.buyThreshold - simulationResult.sellThreshold)

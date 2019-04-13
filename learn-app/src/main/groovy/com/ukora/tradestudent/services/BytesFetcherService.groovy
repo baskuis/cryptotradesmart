@@ -148,8 +148,10 @@ class BytesFetcherService {
     void resetBrainNodesCount(TagGroup tagGroup, int maxCount) {
         brainRepository.findAll().each {
             if (it.tag && tagGroup.tags().collect({ it.tagName }).contains(it.tag)) {
-                it.count = maxCount
-                brainRepository.save(it)
+                if(it.count > maxCount) {
+                    it.count = maxCount
+                    brainRepository.save(it)
+                }
             }
         }
     }
