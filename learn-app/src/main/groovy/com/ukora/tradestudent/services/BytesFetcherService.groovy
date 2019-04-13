@@ -265,6 +265,7 @@ class BytesFetcherService {
     void resetLessons() {
         lessonRepository.findAll().each {
             it.processed = false
+            it.textProcessed = false
             lessonRepository.save(it)
         }
     }
