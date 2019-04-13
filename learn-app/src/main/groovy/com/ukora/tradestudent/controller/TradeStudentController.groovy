@@ -110,7 +110,7 @@ class TradeStudentController {
 
     @RequestMapping(path = '/relearn', method = RequestMethod.GET)
     String resetLessons() {
-        //return "DISABLED"
+        return "DISABLED"
         bytesFetcherService.resetLessons()
         "OK"
     }
