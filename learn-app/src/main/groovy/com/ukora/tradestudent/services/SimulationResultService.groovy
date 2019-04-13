@@ -1,5 +1,6 @@
 package com.ukora.tradestudent.services
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ukora.domain.entities.SimulationResult
 import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.utils.Logger
@@ -88,7 +89,7 @@ class SimulationResultService {
      */
     static getScore(SimulationResult simulationResult) {
         if(!simulationResult || !simulationResult?.tradeCount) {
-            Logger.log(String.format('Unable to get score for %s', simulationResult))
+            Logger.log(String.format('Unable to get score for %s', new ObjectMapper().writeValueAsString(simulationResult)))
             return 0d
         }
         Double thresholdBalance = Math.abs(simulationResult.buyThreshold - simulationResult.sellThreshold)
