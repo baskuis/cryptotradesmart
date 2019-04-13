@@ -19,7 +19,7 @@ class EmailService {
     @Autowired
     SimulationResultService simulationResultService
 
-    @Scheduled(initialDelay = 30000l, fixedRate = 3600000l)
+    @Scheduled(cron = '0 59 */6 * * *')
     def sendBestSimulation() {
         ObjectMapper objectMapper = new ObjectMapper()
         def r = simulationResultService.getTopPerformingSimulation()
