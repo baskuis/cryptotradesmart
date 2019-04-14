@@ -15,7 +15,7 @@ class LessonContainer {
     @Autowired
     BytesFetcherService bytesFetcherService
 
-    @Scheduled(initialDelay = 30000, fixedRate = 1800000)
+    @Scheduled(initialDelay = 30000l, fixedRate = 1800000l)
     def reload(){
         unproccessedLessons = bytesFetcherService.unproccessedLessons()
         textUnproccessedLessons = bytesFetcherService.unproccessedTextLessons()
