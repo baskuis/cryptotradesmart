@@ -9,16 +9,18 @@ import org.springframework.stereotype.Service
 @Service
 class LessonContainer {
 
-    Stack<Lesson> unproccessedLessons = []
-    Stack<Lesson> textUnproccessedLessons = []
+    Stack<Lesson> unproccessedLessons = new Stack<>()
+    Stack<Lesson> textUnproccessedLessons = new Stack<>()
 
     @Autowired
     BytesFetcherService bytesFetcherService
 
     @Scheduled(initialDelay = 30000l, fixedRate = 1800000l)
     def reload(){
-        unproccessedLessons = bytesFetcherService.unproccessedLessons()
-        textUnproccessedLessons = bytesFetcherService.unproccessedTextLessons()
+        unproccessedLessons.removeAllElements()
+        unproccessedLessons.addAll(bytesFetcherService.unproccessedLessons())
+        textUnproccessedLessons.removeAllElements()
+        textUnproccessedLessons.addAll(bytesFetcherService.unproccessedTextLessons())
     }
 
     /**
