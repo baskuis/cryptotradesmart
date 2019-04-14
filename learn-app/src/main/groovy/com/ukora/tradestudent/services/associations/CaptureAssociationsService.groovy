@@ -3,12 +3,12 @@ package com.ukora.tradestudent.services.associations
 import com.ukora.domain.entities.*
 import com.ukora.tradestudent.services.AssociationService
 import com.ukora.tradestudent.services.BytesFetcherService
+import com.ukora.tradestudent.services.LessonContainer
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.security.access.method.P
 import org.springframework.stereotype.Service
 
 @Service
@@ -38,6 +38,9 @@ class CaptureAssociationsService {
     @Autowired
     TechnicalAnalysisService technicalAnalysisService
 
+    @Autowired
+    LessonContainer lessonContainer
+
     /**
      * Main schedule to digest lessons
      * and create associations
@@ -50,7 +53,7 @@ class CaptureAssociationsService {
             learningSpeed.times {
                 try {
                     Logger.debug(String.format("capturing lesson %s", it))
-                    Lesson lesson = bytesFetcherService.getNextLesson()
+                    Lesson lesson = lessonContainer.getNextLesson()
                     if (lesson) {
 
                         /** Mark processed */

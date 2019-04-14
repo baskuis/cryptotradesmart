@@ -4,6 +4,7 @@ import com.ukora.domain.entities.BrainCount
 import com.ukora.domain.entities.ExtractedText
 import com.ukora.domain.entities.Lesson
 import com.ukora.tradestudent.services.BytesFetcherService
+import com.ukora.tradestudent.services.LessonContainer
 import com.ukora.tradestudent.services.TagService
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
@@ -27,6 +28,9 @@ class CaptureTextAssociationsService {
     TextExtractorService textExtractorService
 
     @Autowired
+    LessonContainer lessonContainer
+
+    @Autowired
     TagService tagService
 
     /**
@@ -40,7 +44,7 @@ class CaptureTextAssociationsService {
         if(leaningEnabled) {
             learningSpeed.times {
                 Logger.debug(String.format("capturing text lesson %s", it))
-                Lesson lesson = bytesFetcherService.getNextTextLesson()
+                Lesson lesson = lessonContainer.getNextTextLesson()
                 if (lesson) {
 
                     /** Mark as processed */

@@ -322,6 +322,24 @@ class BytesFetcherService {
     }
 
     /**
+     * Get unprocessed lessons
+     *
+     * @return
+     */
+    List<Lesson> unproccessedLessons() {
+        return lessonRepository.findByProcessedNot(true)
+    }
+
+    /**
+     * Unprocessed text lessons
+     *
+     * @return
+     */
+    List<Lesson> unproccessedTextLessons() {
+        return lessonRepository.findByTextProcessedNot(true)
+    }
+
+    /**
      * Get the next un-processed lesson
      *
      * @return
