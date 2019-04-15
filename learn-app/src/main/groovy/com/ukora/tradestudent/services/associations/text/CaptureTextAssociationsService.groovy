@@ -21,7 +21,7 @@ class CaptureTextAssociationsService {
     public static boolean leaningEnabled = true
     public static Integer learningSpeed = 10
 
-    public final static Integer numCores = Runtime.getRuntime().availableProcessors() / 3 as Integer
+    public final static Integer numCores = 3
 
     static boolean busy = false
 
@@ -37,7 +37,7 @@ class CaptureTextAssociationsService {
     @Autowired
     TagService tagService
 
-    @Scheduled(initialDelay = 40000l, fixedRate = 60000l)
+    @Scheduled(initialDelay = 40000l, fixedRate = 30000l)
     static reset() {
         busy = false
     }
@@ -47,7 +47,7 @@ class CaptureTextAssociationsService {
      * and create associations
      *
      */
-    @Scheduled(initialDelay = 40000l, fixedRate = 1000l)
+    @Scheduled(initialDelay = 40000l, fixedRate = 5000l)
     @Async
     void learn(){
         if(leaningEnabled) {
