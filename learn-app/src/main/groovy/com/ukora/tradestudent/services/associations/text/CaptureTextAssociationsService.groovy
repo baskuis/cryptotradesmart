@@ -21,6 +21,8 @@ class CaptureTextAssociationsService {
     public static boolean leaningEnabled = true
     public static Integer learningSpeed = 10
 
+    public final static Integer numCores = Runtime.getRuntime().availableProcessors()
+
     @Autowired
     BytesFetcherService bytesFetcherService
 
@@ -44,34 +46,37 @@ class CaptureTextAssociationsService {
         if(leaningEnabled) {
             learningSpeed.times {
                 int n = it
-                Thread.start {
-                    Logger.debug(String.format("capturing text lesson %s", n))
-                    Lesson lesson = lessonContainer.getNextTextLesson()
-                    if (lesson) {
+                numCores.times {
+                    int c = it
+                    Thread.start {
+                        Logger.debug(String.format("capturing text lesson %s, core %s", n, c))
+                        Lesson lesson = lessonContainer.getNextTextLesson()
+                        if (lesson) {
 
-                        /** Mark as processed */
-                        lesson.textProcessed = true
-                        bytesFetcherService.saveLesson(lesson)
+                            /** Mark as processed */
+                            lesson.textProcessed = true
+                            bytesFetcherService.saveLesson(lesson)
 
-                        /** Extract text for date */
-                        ExtractedText extractedText = textExtractorService.extractTextForDate(lesson.date)
+                            /** Extract text for date */
+                            ExtractedText extractedText = textExtractorService.extractTextForDate(lesson.date)
 
-                        /** Capture news */
-                        captureText(
-                                ExtractedText.TextSource.NEWS,
-                                getWordCount(extractedText, ExtractedText.TextSource.NEWS),
-                                lesson
-                        )
+                            /** Capture news */
+                            captureText(
+                                    ExtractedText.TextSource.NEWS,
+                                    getWordCount(extractedText, ExtractedText.TextSource.NEWS),
+                                    lesson
+                            )
 
-                        /** Capture twitter */
-                        captureText(
-                                ExtractedText.TextSource.TWITTER,
-                                getWordCount(extractedText, ExtractedText.TextSource.TWITTER),
-                                lesson
-                        )
+                            /** Capture twitter */
+                            captureText(
+                                    ExtractedText.TextSource.TWITTER,
+                                    getWordCount(extractedText, ExtractedText.TextSource.TWITTER),
+                                    lesson
+                            )
 
-                    } else {
-                        Logger.debug("no text lesson")
+                        } else {
+                            Logger.debug("no text lesson")
+                        }
                     }
                 }
             }

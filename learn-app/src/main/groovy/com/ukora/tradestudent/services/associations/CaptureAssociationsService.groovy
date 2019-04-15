@@ -29,6 +29,8 @@ class CaptureAssociationsService {
 
     public static Double PRACTICAL_ZERO = 0.000000001
 
+    public final static Integer numCores = Runtime.getRuntime().availableProcessors()
+
     @Autowired
     BytesFetcherService bytesFetcherService
 
@@ -52,34 +54,37 @@ class CaptureAssociationsService {
         if (leaningEnabled) {
             learningSpeed.times {
                 int n = it
-                Thread.start {
-                    try {
-                        Logger.debug(String.format("capturing lesson %s", n))
-                        Lesson lesson = lessonContainer.getNextLesson()
-                        if (lesson) {
+                numCores.times {
+                    int c = it
+                    Thread.start {
+                        try {
+                            Logger.debug(String.format("capturing lesson %s: core: %s", n, c))
+                            Lesson lesson = lessonContainer.getNextLesson()
+                            if (lesson) {
 
-                            /** Mark processed */
-                            lesson.processed = true
-                            bytesFetcherService.saveLesson(lesson)
+                                /** Mark processed */
+                                lesson.processed = true
+                                bytesFetcherService.saveLesson(lesson)
 
-                            /** Hydrate lesson */
-                            associationService.hydrateAssociation(lesson)
+                                /** Hydrate lesson */
+                                associationService.hydrateAssociation(lesson)
 
-                            /** Hydrate association tags */
-                            hydrateAssociationTags(lesson, lesson.tag)
+                                /** Hydrate association tags */
+                                hydrateAssociationTags(lesson, lesson.tag)
 
-                            /** Hydrate specialized numeric association tags */
-                            hydrateSpecializedAssociationTags(lesson, lesson.tag)
+                                /** Hydrate specialized numeric association tags */
+                                hydrateSpecializedAssociationTags(lesson, lesson.tag)
 
-                            /** Remember all that */
-                            rememberAllThat(lesson)
+                                /** Remember all that */
+                                rememberAllThat(lesson)
 
-                        } else {
-                            Logger.debug("no lesson")
+                            } else {
+                                Logger.debug("no lesson")
+                            }
+                        } catch (Exception e) {
+                            Logger.log('Unable to retrieve an capture correlations for lesson. Info: ' + e.message)
+                            e.printStackTrace()
                         }
-                    } catch (Exception e) {
-                        Logger.log('Unable to retrieve an capture correlations for lesson. Info: ' + e.message)
-                        e.printStackTrace()
                     }
                 }
             }
