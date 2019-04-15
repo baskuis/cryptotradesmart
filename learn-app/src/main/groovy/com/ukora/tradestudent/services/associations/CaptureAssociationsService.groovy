@@ -29,7 +29,7 @@ class CaptureAssociationsService {
 
     public static Double PRACTICAL_ZERO = 0.000000001
 
-    public final static Integer numCores = Runtime.getRuntime().availableProcessors()
+    public final static Integer numCores = Runtime.getRuntime().availableProcessors() / 3 as Integer
 
     static boolean busy = false
 

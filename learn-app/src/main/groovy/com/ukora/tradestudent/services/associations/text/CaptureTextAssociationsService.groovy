@@ -21,7 +21,7 @@ class CaptureTextAssociationsService {
     public static boolean leaningEnabled = true
     public static Integer learningSpeed = 10
 
-    public final static Integer numCores = Runtime.getRuntime().availableProcessors()
+    public final static Integer numCores = Runtime.getRuntime().availableProcessors() / 3 as Integer
 
     static boolean busy = false
 
