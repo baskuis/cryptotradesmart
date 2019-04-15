@@ -54,9 +54,10 @@ class CaptureAssociationsService {
         if (leaningEnabled) {
             learningSpeed.times {
                 int n = it
+                List<Thread> threads = []
                 numCores.times {
                     int c = it
-                    Thread.start {
+                    threads.add Thread.start {
                         try {
                             Logger.debug(String.format("capturing lesson %s: core: %s", n, c))
                             Lesson lesson = lessonContainer.getNextLesson()
@@ -87,6 +88,7 @@ class CaptureAssociationsService {
                         }
                     }
                 }
+                threads*.join()
             }
         } else {
             Logger.log("leaning disabled")

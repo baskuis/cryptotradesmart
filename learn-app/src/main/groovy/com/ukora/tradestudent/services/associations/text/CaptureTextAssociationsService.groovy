@@ -46,9 +46,10 @@ class CaptureTextAssociationsService {
         if(leaningEnabled) {
             learningSpeed.times {
                 int n = it
+                List<Thread> threads = []
                 numCores.times {
                     int c = it
-                    Thread.start {
+                    threads.add Thread.start {
                         Logger.debug(String.format("capturing text lesson %s, core %s", n, c))
                         Lesson lesson = lessonContainer.getNextTextLesson()
                         if (lesson) {
@@ -79,6 +80,7 @@ class CaptureTextAssociationsService {
                         }
                     }
                 }
+                threads*.join()
             }
         }else{
             Logger.log("text leaning disabled")
