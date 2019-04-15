@@ -37,8 +37,8 @@ class CaptureTextAssociationsService {
     @Autowired
     TagService tagService
 
-    @Scheduled(initialDelay = 40000l, fixedRate = 600000l)
-    def reset() {
+    @Scheduled(initialDelay = 40000l, fixedRate = 60000l)
+    static reset() {
         busy = false
     }
 
