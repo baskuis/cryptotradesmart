@@ -43,33 +43,35 @@ class CaptureTextAssociationsService {
     void learn(){
         if(leaningEnabled) {
             learningSpeed.times {
-                Logger.debug(String.format("capturing text lesson %s", it))
-                Lesson lesson = lessonContainer.getNextTextLesson()
-                if (lesson) {
+                Thread.start {
+                    Logger.debug(String.format("capturing text lesson %s", it))
+                    Lesson lesson = lessonContainer.getNextTextLesson()
+                    if (lesson) {
 
-                    /** Mark as processed */
-                    lesson.textProcessed = true
-                    bytesFetcherService.saveLesson(lesson)
+                        /** Mark as processed */
+                        lesson.textProcessed = true
+                        bytesFetcherService.saveLesson(lesson)
 
-                    /** Extract text for date */
-                    ExtractedText extractedText = textExtractorService.extractTextForDate(lesson.date)
+                        /** Extract text for date */
+                        ExtractedText extractedText = textExtractorService.extractTextForDate(lesson.date)
 
-                    /** Capture news */
-                    captureText(
-                            ExtractedText.TextSource.NEWS,
-                            getWordCount(extractedText, ExtractedText.TextSource.NEWS),
-                            lesson
-                    )
+                        /** Capture news */
+                        captureText(
+                                ExtractedText.TextSource.NEWS,
+                                getWordCount(extractedText, ExtractedText.TextSource.NEWS),
+                                lesson
+                        )
 
-                    /** Capture twitter */
-                    captureText(
-                            ExtractedText.TextSource.TWITTER,
-                            getWordCount(extractedText, ExtractedText.TextSource.TWITTER),
-                            lesson
-                    )
+                        /** Capture twitter */
+                        captureText(
+                                ExtractedText.TextSource.TWITTER,
+                                getWordCount(extractedText, ExtractedText.TextSource.TWITTER),
+                                lesson
+                        )
 
-                } else {
-                    Logger.debug("no text lesson")
+                    } else {
+                        Logger.debug("no text lesson")
+                    }
                 }
             }
         }else{
