@@ -23,6 +23,8 @@ class CaptureTextAssociationsService {
 
     public final static Integer numCores = Runtime.getRuntime().availableProcessors()
 
+    static boolean busy = false
+
     @Autowired
     BytesFetcherService bytesFetcherService
 
@@ -35,15 +37,25 @@ class CaptureTextAssociationsService {
     @Autowired
     TagService tagService
 
+    @Scheduled(initialDelay = 40000l, fixedRate = 600000l)
+    def reset() {
+        busy = false
+    }
+
     /**
      * Main schedule to digest lessons
      * and create associations
      *
      */
-    @Scheduled(cron = "*/10 * * * * *")
+    @Scheduled(initialDelay = 40000l, fixedRate = 1000l)
     @Async
     void learn(){
         if(leaningEnabled) {
+            if(busy) {
+                Logger.debug('Still learning skipping')
+                return
+            }
+            busy = true
             learningSpeed.times {
                 int n = it
                 List<Thread> threads = []
@@ -82,6 +94,7 @@ class CaptureTextAssociationsService {
                 }
                 threads*.join()
             }
+            busy = false
         }else{
             Logger.log("text leaning disabled")
         }
