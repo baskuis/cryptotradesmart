@@ -43,8 +43,9 @@ class CaptureTextAssociationsService {
     void learn(){
         if(leaningEnabled) {
             learningSpeed.times {
+                int n = it
                 Thread.start {
-                    Logger.debug(String.format("capturing text lesson %s", it))
+                    Logger.debug(String.format("capturing text lesson %s", n))
                     Lesson lesson = lessonContainer.getNextTextLesson()
                     if (lesson) {
 
