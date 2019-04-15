@@ -175,9 +175,9 @@ class NerdUtils {
         Double newMean = applyValueGetNewMean(value, mean, count)
         return (Double) Math.sqrt(
                 (
-                        ((count - 1) * Math.pow(deviation, 2.0)) +
+                        ((count) * Math.pow(deviation, 2.0)) +
                                 ((value - newMean) * (value - mean))
-                ) / (count)
+                ) / (count + 1)
         )
     }
 
