@@ -290,7 +290,7 @@ class CaptureAssociationsService {
     void captureNewValue(Brain brain, Double value) {
         if (!value) return
         if (!brain) return
-        Double newDeviation = NerdUtils.applyValueGetNewDeviationAlt(value, brain.mean, (brain.count + 1), brain.standard_deviation)
+        Double newDeviation = NerdUtils.applyValueGetNewDeviationAlt(value, brain.mean, brain.count, brain.standard_deviation)
         Double newMean = NerdUtils.applyValueGetNewMean(value, brain.mean, brain.count)
         if (newDeviation == null || newDeviation.naN || newMean == null || newMean.naN) {
             Logger.debug(String.format("Brain.mean: %s, Brain.count + 1: %s, brain.standard_deviation: %s, value: %s, newMean: %s, newDeviation: %s",
