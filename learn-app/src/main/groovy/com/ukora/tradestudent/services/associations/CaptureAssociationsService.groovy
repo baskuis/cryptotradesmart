@@ -60,7 +60,7 @@ class CaptureAssociationsService {
     void learn() {
         if (leaningEnabled) {
             if(busy) {
-                Logger.debug('Still learning skipping')
+                Logger.debug('Still learning skipping getNextLesson cycle')
                 return
             }
             busy = true

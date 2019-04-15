@@ -52,7 +52,7 @@ class CaptureTextAssociationsService {
     void learn(){
         if(leaningEnabled) {
             if(busy) {
-                Logger.debug('Still learning skipping')
+                Logger.debug('Still learning skipping getNextTextLesson cycle')
                 return
             }
             busy = true
