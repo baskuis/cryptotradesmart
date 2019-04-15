@@ -4,13 +4,9 @@ class ExtractedText {
 
     enum TextSource {NEWS,TWITTER}
 
-    Map<TextSource, List<String>> extract = [:]
+    Map<TextSource, Set<String>> extract = [:]
 
-    void hydrate(TextSource textSource, List<String> keywords){
-        extract.put(textSource, keywords)
-    }
-
-    List<String> extract(TextSource textSource){
+    Set<String> extract(TextSource textSource){
         return extract.get(textSource)
     }
 

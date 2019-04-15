@@ -16,10 +16,10 @@ class TextUtilsSpec extends Specification {
         r == expected
 
         where:
-        scenario              | text      | expected
-        'simple whitespace'   | 'a word'  | ['a', 'word']
-        'special character'   | 'a,word'  | ['a', 'word']
-        'combined characters' | 'a, word' | ['a', 'word']
+        scenario              | text              | expected
+        'simple whitespace'   | 'a word'          | ['a', 'word'] as Set
+        'special character'   | 'a,word'          | ['a', 'word'] as Set
+        'combined characters' | 'a, word, word a' | ['a', 'word'] as Set
 
     }
 

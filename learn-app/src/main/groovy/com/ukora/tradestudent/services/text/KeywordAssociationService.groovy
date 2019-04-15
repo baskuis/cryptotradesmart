@@ -1,13 +1,13 @@
 package com.ukora.tradestudent.services.text
 
+import com.ukora.domain.beans.tags.AbstractCorrelationTag
+import com.ukora.domain.beans.tags.TagGroup
 import com.ukora.domain.entities.BrainCount
 import com.ukora.domain.entities.ExtractedText
 import com.ukora.domain.entities.KeywordAssociation
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.TagService
 import com.ukora.tradestudent.services.associations.text.CaptureTextAssociationsService
-import com.ukora.domain.beans.tags.AbstractCorrelationTag
-import com.ukora.domain.beans.tags.TagGroup
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CacheEvict
@@ -51,7 +51,7 @@ class KeywordAssociationService {
     void refresh() {
         tagMap.each {
             Long c = bytesFetcherService.getLessonCount(it.value.tagName)
-            if(c) tagCount.put(it.value.tagName, c)
+            if (c) tagCount.put(it.value.tagName, c)
         }
     }
 
@@ -62,32 +62,29 @@ class KeywordAssociationService {
      * @return
      */
     @Cacheable("keywordAssociation")
-    KeywordAssociation getKeywordAssociation(String keyword, ExtractedText.TextSource source){
+    KeywordAssociation getKeywordAssociation(String keyword, ExtractedText.TextSource source) {
         BrainCount brainCount = bytesFetcherService.getBrainCount(
                 CaptureTextAssociationsService.generateReference(keyword, source as String),
                 source as String
         )
-        if(brainCount) {
+        if (brainCount) {
             KeywordAssociation keywordAssociation = new KeywordAssociation()
             keywordAssociation.source = source
             tagMap.each {
                 AbstractCorrelationTag tag = it.value
                 TagGroup tagGroup = tagService.getTagGroupByTagName(it.value.tagName)
-                if(tag && tagGroup.tags().size() == 2){
+                if (tag && tagGroup.tags().size() == 2) {
                     AbstractCorrelationTag counterTag = tagGroup.tags().find({
                         it.tagName != tag.tagName
                     })
                     Double p = 1 / tagGroup.tags().size()
                     Integer tagKeywordAssociationCount = brainCount.counters.get(tag.tagName)
                     Integer counterTagKeywordAssociationCount = brainCount.counters.get(counterTag.tagName)
-                    if(counterTag && tagKeywordAssociationCount && counterTagKeywordAssociationCount){
+                    if (counterTag && tagKeywordAssociationCount && counterTagKeywordAssociationCount) {
                         Double tagProportion = tagCount.getOrDefault(counterTag.tagName, 1) /
                                 (tagCount.getOrDefault(tag.tagName, 1) + tagCount.getOrDefault(counterTag.tagName, 1))
                         Double counterTagProportion = 1 - tagProportion
-                        p = (tagProportion * tagKeywordAssociationCount) / (
-                                (tagProportion * tagKeywordAssociationCount) +
-                                        (counterTagProportion * counterTagKeywordAssociationCount)
-                        )
+                        p = extractProbability(tagProportion, counterTagProportion, tagKeywordAssociationCount, counterTagKeywordAssociationCount)
                     }
                     keywordAssociation.tagProbabilities.put(tag.tagName, p)
                 }
@@ -95,6 +92,13 @@ class KeywordAssociationService {
             return keywordAssociation
         }
         return null
+    }
+
+    static Double extractProbability(Double tagProportion, Double counterTagProportion, Double tagKeywordAssociationCount, Double counterTagKeywordAssociationCount) {
+        return (counterTagProportion * tagKeywordAssociationCount) / (
+                (tagProportion * tagKeywordAssociationCount) +
+                        (counterTagProportion * counterTagKeywordAssociationCount)
+        )
     }
 
 }
