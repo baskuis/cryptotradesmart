@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentSkipListMap
 
 /**
  * The logic could also belong to the CaptureAssociationsService
@@ -30,7 +31,7 @@ class TechnicalAnalysisService {
 
     private static final int MIN_DISTANCE_FROM_PEAK = 20
 
-    private static TreeMap<Long, Double> priceCache = [:]
+    private static ConcurrentSkipListMap<Long, Double> priceCache = [:]
 
     private static final List<Integer> analysisBoundaries = [
             30,
