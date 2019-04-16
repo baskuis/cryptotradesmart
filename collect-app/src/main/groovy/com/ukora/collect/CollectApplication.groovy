@@ -130,7 +130,7 @@ class CollectApplication {
         }
     }
 
-    @Scheduled(initialDelay = 10000l, fixedRate = 10000l)
+    @Scheduled(initialDelay = 10000l, fixedRate = 2000l)
     void digest() {
         orderBookRepository.findByProcessed(false)?.each {
             try {

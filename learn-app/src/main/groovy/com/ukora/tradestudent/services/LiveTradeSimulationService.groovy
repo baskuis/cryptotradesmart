@@ -20,7 +20,9 @@ import org.springframework.stereotype.Service
 
 import javax.annotation.PostConstruct
 import java.time.Instant
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.TimeUnit
 
 @Service
 class LiveTradeSimulationService {
@@ -74,7 +76,7 @@ class LiveTradeSimulationService {
     @Async
     void simulateTrade() {
         try {
-            Date now = new Date()
+            Date now = Date.from(new Date().toInstant().minusSeconds(120l).atZone(ZoneId.systemDefault()).toInstant())
             List<TradeExecution> tradeExecutions = []
             SimulationResult simulationResult = simulationResultService.getTopPerformingSimulation()
             CorrelationAssociation correlationAssociation = probabilityCombinerService.getCorrelationAssociations(now)
