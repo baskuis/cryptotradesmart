@@ -278,8 +278,6 @@ class CollectApplication {
 
                 //mark processed
                 if( it.processed ) throw new Exception('Already processed')
-                it.processed = true
-                orderBookRepository.save(it)
 
                 //Insert memory
                 Memory i = memoryRepository.insert(memory)
@@ -288,6 +286,9 @@ class CollectApplication {
             } catch (Exception e) {
                 println "Issue parsing order book"
                 e.printStackTrace()
+            } finally {
+                it.processed = true
+                orderBookRepository.save(it)
             }
         }
     }
