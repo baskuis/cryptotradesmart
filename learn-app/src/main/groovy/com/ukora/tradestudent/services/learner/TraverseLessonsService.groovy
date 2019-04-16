@@ -29,7 +29,7 @@ class TraverseLessonsService {
     /** Minimal gain for trade */
     private final static Double MINIMAL_GAIN = 1.003
 
-    private final static Double MINIMAL_PROPORTION = 1.035
+    private final static Double MINIMAL_PROPORTION = 1.010
 
     public final static long INTERVAL_SECONDS = 60
     public final static long INTERVAL_MINUTES = 10
