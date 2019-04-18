@@ -40,7 +40,7 @@ class TraverseLessonsService {
 
     private final static int SIMULATION_INTERVAL_INCREMENT = 1
 
-    private final static int PEAK_PADDING = 4
+    private final static int PEAK_PADDING = 2
 
     public final static String LATEST_BUY_SELL_PROPERTY_KEY = 'latestBuySell'
     public final static String LATEST_UP_DOWN_PROPERTY_KEY = 'latestUpDown'
@@ -82,7 +82,7 @@ class TraverseLessonsService {
      * Learn from trading history
      *
      */
-    @Scheduled(cron = "0 0 0 * * 2,5")
+    @Scheduled(cron = "0 0 0 * * *")
     @Async
     void learnFromHistoryTrendData() {
         if (!running) {
