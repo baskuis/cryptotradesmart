@@ -202,8 +202,8 @@ class TraverseLessonsService {
             }
 
             /** Get multiples */
-            Integer maxMultiple = Math.round((max - price / price / (MINIMAL_GAIN - 1)))
-            Integer minMultiple = Math.round((min - price / price / (MINIMAL_GAIN - 1)))
+            Integer maxMultiple = Math.round(((max - price) / price / (MINIMAL_GAIN - 1)))
+            Integer minMultiple = Math.round(((min - price) / price / (MINIMAL_GAIN - 1)))
 
             /** Capture short term up move */
             if (maxMultiple > 0) {
