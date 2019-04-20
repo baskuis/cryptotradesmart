@@ -29,6 +29,7 @@ class TraverseLessonsService {
 
     /** Minimal gain for trade */
     private final static Double MINIMAL_GAIN = 1.003
+    private final static Double MINIMAL_MOVE = 1.002
 
     private final static Double MINIMAL_PROPORTION = 1.010
 
@@ -182,7 +183,7 @@ class TraverseLessonsService {
 
             /** Get next 20 minutes */
             List<Double> nextEntries = []
-            for (int i = index + 1; i <= 20; i++) {
+            for (int i = index + 1; i <= 30; i++) {
                 try {
                     nextEntries << ((transformedReferences.get(index + i) as Map)?.price as Double)
                 } catch (IndexOutOfBoundsException e) { /** Ignore */
@@ -202,8 +203,8 @@ class TraverseLessonsService {
             }
 
             /** Get multiples */
-            Integer maxMultiple = Math.round(((max - price) / price / (MINIMAL_GAIN - 1)))
-            Integer minMultiple = Math.round(((min - price) / price / (MINIMAL_GAIN - 1)))
+            Integer maxMultiple = Math.round(((max - price) / price / (MINIMAL_MOVE - 1)))
+            Integer minMultiple = Math.round(((min - price) / price / (MINIMAL_MOVE - 1)))
 
             /** Capture short term up move */
             if (maxMultiple > 0) {
