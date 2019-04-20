@@ -30,7 +30,7 @@ class CaptureTextAssociationsServiceSpec extends Specification {
 
         setup:
         ExtractedText extractedText = new ExtractedText(extract: [
-                (ExtractedText.TextSource.TWITTER): ['hi','hello','hi']
+                (ExtractedText.TextSource.TWITTER): ['hi','hello','hi'] as Set
         ])
         ExtractedText.TextSource source = ExtractedText.TextSource.TWITTER
 
@@ -38,7 +38,7 @@ class CaptureTextAssociationsServiceSpec extends Specification {
         Map r = CaptureTextAssociationsService.getWordCount(extractedText, source)
 
         then:
-        r == ['hi': 2, 'hello': 1]
+        r == ['hi': 1, 'hello': 1]
 
     }
 

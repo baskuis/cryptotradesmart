@@ -175,6 +175,12 @@ class TradeStudentController {
         "STARTED"
     }
 
+    @RequestMapping(path = '/learnmarketmoves', method = RequestMethod.GET)
+    String learnMarketMoves() {
+        traverseLessonsService.learnFromMarketMoves()
+        "STARTED"
+    }
+
     @RequestMapping(path = '/learntradehistory', method = RequestMethod.GET)
     String learnTrendHistory() {
         traverseLessonsService.learnFromHistoryTrendData()

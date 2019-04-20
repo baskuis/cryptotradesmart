@@ -1,6 +1,7 @@
 package com.ukora.tradestudent.services.learner
 
 import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
+import com.ukora.domain.beans.tags.moves.UpDownMovesTagGroup
 import com.ukora.domain.beans.tags.reversal.UpDownReversalTagGroup
 import com.ukora.domain.beans.tags.trend.UpDownTagGroup
 import com.ukora.domain.entities.Lesson
@@ -44,6 +45,7 @@ class TraverseLessonsService {
 
     public final static String LATEST_BUY_SELL_PROPERTY_KEY = 'latestBuySell'
     public final static String LATEST_UP_DOWN_PROPERTY_KEY = 'latestUpDown'
+    public final static String LATEST_MOVES_PROPERTY_KEY = 'latestMarketMoves'
 
     @Autowired
     UpDownTagGroup upDownTagGroup
@@ -53,6 +55,9 @@ class TraverseLessonsService {
 
     @Autowired
     UpDownReversalTagGroup upDownReversalTagGroup
+
+    @Autowired
+    UpDownMovesTagGroup upDownMovesTagGroup
 
     @Autowired
     BytesFetcherService bytesFetcherService
@@ -124,6 +129,103 @@ class TraverseLessonsService {
         } else {
             Logger.log("already learning from memory")
         }
+    }
+
+    /**
+     * Learn from trading history
+     *
+     */
+    @Scheduled(cron = "0 46 */12 * * *")
+    @Async
+    void learnFromMarketMoves() {
+        if (!running) {
+            running = true
+            Property latestMarketMoves = bytesFetcherService.getProp(LATEST_MOVES_PROPERTY_KEY)
+            Instant start = Instant.now().minus(14, ChronoUnit.DAYS)
+            if (latestMarketMoves) {
+                start = new Date(latestMarketMoves.getValue()).toInstant().minus(72, ChronoUnit.HOURS)
+            }
+            learnFromMarketMoves(Date.from(start))
+            bytesFetcherService.saveProp(LATEST_MOVES_PROPERTY_KEY, new Date() as String)
+            Logger.log(String.format("Completed"))
+            running = false
+        }
+    }
+
+    /**
+     * Learn from market moves
+     *
+     * @param fromDate
+     */
+    void learnFromMarketMoves(Date fromDate) {
+
+        Logger.log(String.format('Learning from market moves up/down starting from %s', fromDate))
+
+        /** Step 1.) Extract data points */
+        Logger.log(String.format("Extracting data points since %s", fromDate))
+        Map<Date, Double> references = getReferences(fromDate)
+        Logger.log(String.format("Extracted %s data points", references.size()))
+        if (!references || references.size() == 0) return
+
+        /** Step 2.) Transform references */
+        List<Map<String, Object>> transformedReferences = []
+        references.each {
+            transformedReferences << [
+                    'date' : it.key,
+                    'price': it.value
+            ]
+        }
+
+        /** Step 3.) Check for moves **/
+        def index = 0
+        transformedReferences.each {
+
+            /** Get next 20 mins */
+            List<Double> nextEntries = []
+            for (int i = index + 1; i <= 20; i++) {
+                try {
+                    nextEntries << transformedReferences.get(index + i)?.price as Double
+                } catch (IndexOutOfBoundsException e) { /** Ignore */
+                }
+            }
+            index++
+
+            /** Get entry, max, min etc */
+            Map entry = it
+            Double price = it.price as Double
+            Double max = nextEntries.max()
+            Double min = nextEntries.min()
+
+            /** Get multiples */
+            Integer maxMultiple = Math.round((max - price / price / (MINIMAL_GAIN - 1)))
+            Integer minMultiple = Math.round((min - price / price / (MINIMAL_GAIN - 1)))
+
+            /** Capture short term up move */
+            if (maxMultiple > 0) {
+                (1..maxMultiple).each {
+                    Logger.log("Storing up move lesson date: ${entry['date']} price: ${entry['price']} multiple: ${entry['multiple']}")
+                    bytesFetcherService.saveLesson(new Lesson(
+                            tag: upDownMovesTagGroup?.upMoveTag?.tagName,
+                            date: entry.date as Date,
+                            price: entry.price as Double
+                    ))
+                }
+            }
+
+            /** Capture short term down move */
+            if (minMultiple > 0) {
+                (1..minMultiple).each {
+                    Logger.log("Storing down move lesson date: ${entry['date']} price: ${entry['price']} multiple: ${entry['multiple']}")
+                    bytesFetcherService.saveLesson(new Lesson(
+                            tag: upDownMovesTagGroup?.downMoveTag?.tagName,
+                            date: entry.date as Date,
+                            price: entry.price as Double
+                    ))
+                }
+            }
+
+        }
+
     }
 
     /**
@@ -519,7 +621,7 @@ class TraverseLessonsService {
         Instant end = Instant.now()
         Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
         Instant current = Instant.ofEpochMilli(fromDate.time)
-        Map<Date, Double> reference = [:]
+        Map<Date, Double> reference = new TreeMap<Date, Double>()
         while (current.isBefore(end)) {
             current = current + gap
             Memory memory = bytesFetcherService.getMemory(Date.from(current))

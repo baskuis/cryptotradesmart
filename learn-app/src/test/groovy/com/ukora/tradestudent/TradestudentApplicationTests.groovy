@@ -49,9 +49,11 @@ class TradestudentApplicationTests {
 		assert tagGroupMap.find { (it.value.tags().find { it.getTagName() == 'sell' }) }?.value?.getName() == 'buysell'
 		assert tagGroupMap.find { (it.value.tags().find { it.getTagName() == 'upreversal' }) }?.value?.getName() == 'updownreversal'
 		assert tagGroupMap.find { (it.value.tags().find { it.getTagName() == 'downreversal' }) }?.value?.getName() == 'updownreversal'
+		assert tagGroupMap.find { (it.value.tags().find { it.getTagName() == 'upmove' }) }?.value?.getName() == 'updownmove'
+		assert tagGroupMap.find { (it.value.tags().find { it.getTagName() == 'downmove' }) }?.value?.getName() == 'updownmove'
 		int tagCount
 		tagGroupMap.each { it.value.tags().each { tagCount++ } }
-		assert tagCount == 6
+		assert tagCount == 8
 	}
 
 }
