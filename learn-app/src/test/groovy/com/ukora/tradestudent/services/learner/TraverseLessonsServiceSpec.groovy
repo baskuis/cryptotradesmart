@@ -1,6 +1,9 @@
 package com.ukora.tradestudent.services.learner
 
 import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
+import com.ukora.domain.beans.tags.moves.DownMoveTag
+import com.ukora.domain.beans.tags.moves.UpDownMovesTagGroup
+import com.ukora.domain.beans.tags.moves.UpMoveTag
 import com.ukora.domain.beans.tags.reversal.DownReversalTag
 import com.ukora.domain.beans.tags.reversal.UpDownReversalTagGroup
 import com.ukora.domain.beans.tags.reversal.UpReversalTag
@@ -26,12 +29,14 @@ class TraverseLessonsServiceSpec extends Specification {
     UpDownTagGroup upDownTagGroup = Mock(UpDownTagGroup)
     BuySellTagGroup buySellTagGroup = Mock(BuySellTagGroup)
     UpDownReversalTagGroup upDownReversalTagGroup = Mock(UpDownReversalTagGroup)
+    UpDownMovesTagGroup upDownMovesTagGroup = Mock(UpDownMovesTagGroup)
     BytesFetcherService bytesFetcherService = Mock(BytesFetcherService)
 
     def setup() {
         traverseLessonsService.upDownTagGroup = upDownTagGroup
         traverseLessonsService.buySellTagGroup = buySellTagGroup
         traverseLessonsService.upDownReversalTagGroup = upDownReversalTagGroup
+        traverseLessonsService.upDownMovesTagGroup = upDownMovesTagGroup
         traverseLessonsService.bytesFetcherService = bytesFetcherService
         TradestudentApplication.DEBUG_LOGGING_ENABLED = true
     }
@@ -208,6 +213,56 @@ class TraverseLessonsServiceSpec extends Specification {
         _ * upDownTagGroup.getUpTag() >> new UpTag()
         _ * upDownReversalTagGroup.getDownReversalTag() >> new DownReversalTag()
         _ * upDownReversalTagGroup.getUpReversalTag() >> new UpReversalTag()
+        _ * bytesFetcherService.saveLesson(_ as Lesson)
+        noExceptionThrown()
+        0 * _
+
+    }
+
+    def "test learnFromMarketMoves"() {
+
+        setup:
+        Date startFrom = Date.from(LocalDateTime.now().minusDays(2).atZone(ZoneId.systemDefault()).toInstant())
+        TradestudentApplication.DEBUG_LOGGING_ENABLED = true
+        List<Memory> memories = []
+        (1..20).each {
+            memories << new Memory(
+                    metadata: new Metadata(
+                            datetime: null
+                    ),
+                    graph: new Graph(
+                            price: 1000 + (it * 10)
+                    )
+            )
+        }
+        (1..20).each {
+            memories << new Memory(
+                    metadata: new Metadata(
+                            datetime: null
+                    ),
+                    graph: new Graph(
+                            price: 1200 - (it * 10)
+                    )
+            )
+        }
+
+
+        when:
+        int idx = -1
+        traverseLessonsService.learnFromMarketMoves(startFrom)
+
+        then:
+        _ * bytesFetcherService.getMemory( _ as Date) >> { Date d ->
+            idx++
+            Memory m
+            try {
+                m = (memories.get(idx) as Memory)
+                m.metadata.datetime = d
+            } catch (e) { /** ignore */ }
+            return m?:null
+        }
+        _ * upDownMovesTagGroup.getUpMoveTag() >> new UpMoveTag()
+        _ * upDownMovesTagGroup.getDownMoveTag() >> new DownMoveTag()
         _ * bytesFetcherService.saveLesson(_ as Lesson)
         noExceptionThrown()
         0 * _

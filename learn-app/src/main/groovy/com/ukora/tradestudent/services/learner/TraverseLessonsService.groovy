@@ -177,14 +177,14 @@ class TraverseLessonsService {
         }
 
         /** Step 3.) Check for moves **/
-        def index = 0
+        int index = 0
         transformedReferences.each {
 
-            /** Get next 20 mins */
+            /** Get next 20 minutes */
             List<Double> nextEntries = []
             for (int i = index + 1; i <= 20; i++) {
                 try {
-                    nextEntries << transformedReferences.get(index + i)?.price as Double
+                    nextEntries << ((transformedReferences.get(index + i) as Map)?.price as Double)
                 } catch (IndexOutOfBoundsException e) { /** Ignore */
                 }
             }
@@ -196,6 +196,11 @@ class TraverseLessonsService {
             Double max = nextEntries.max()
             Double min = nextEntries.min()
 
+            if (!price || !max || !min) {
+                Logger.debug('no price, max, min')
+                return
+            }
+
             /** Get multiples */
             Integer maxMultiple = Math.round((max - price / price / (MINIMAL_GAIN - 1)))
             Integer minMultiple = Math.round((min - price / price / (MINIMAL_GAIN - 1)))
@@ -203,7 +208,7 @@ class TraverseLessonsService {
             /** Capture short term up move */
             if (maxMultiple > 0) {
                 (1..maxMultiple).each {
-                    Logger.log("Storing up move lesson date: ${entry['date']} price: ${entry['price']} multiple: ${entry['multiple']}")
+                    Logger.log("Storing up move lesson date: ${entry['date']} price: ${entry['price']} multiple: ${maxMultiple}")
                     bytesFetcherService.saveLesson(new Lesson(
                             tag: upDownMovesTagGroup?.upMoveTag?.tagName,
                             date: entry.date as Date,
@@ -215,7 +220,7 @@ class TraverseLessonsService {
             /** Capture short term down move */
             if (minMultiple > 0) {
                 (1..minMultiple).each {
-                    Logger.log("Storing down move lesson date: ${entry['date']} price: ${entry['price']} multiple: ${entry['multiple']}")
+                    Logger.log("Storing down move lesson date: ${entry['date']} price: ${entry['price']} multiple: ${minMultiple}")
                     bytesFetcherService.saveLesson(new Lesson(
                             tag: upDownMovesTagGroup?.downMoveTag?.tagName,
                             date: entry.date as Date,
