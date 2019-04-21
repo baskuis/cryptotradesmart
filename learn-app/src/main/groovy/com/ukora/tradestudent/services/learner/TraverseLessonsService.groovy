@@ -197,11 +197,12 @@ class TraverseLessonsService {
             Double max = nextEntries.max()
             Double min = nextEntries.min()
 
-            Logger.debug(String.format(
-                    'no price:[%s], max:[%s], min:[%s], nextEntries.size:[%s], index:[%s}',
-                    price, max, min, nextEntries?.size(), index)
-            )
+            /** Assert sane values */
             if (!price || !max || !min) {
+                Logger.log(String.format(
+                        'no price:[%s], max:[%s], min:[%s], nextEntries.size:[%s], index:[%s}',
+                        price, max, min, nextEntries?.size(), index)
+                )
                 return
             }
 
@@ -210,7 +211,7 @@ class TraverseLessonsService {
             Integer minMultiple = Math.round(((price - min) / price / (MINIMAL_MOVE - 1)))
 
             /** Show what's happening */
-            Logger.debug(String.format(
+            Logger.log(String.format(
                     'price: %s, max: %s, min: %s, maxMultiple: %s, minMultiple: %s, date: %s ',
                     price, max, min, maxMultiple, minMultiple, entry.date
             ))
@@ -218,24 +219,24 @@ class TraverseLessonsService {
             /** Capture short term up move */
             if (maxMultiple > 0) {
                 (1..maxMultiple).each {
-                    //Logger.log("Storing up move lesson date: ${entry['date']} price: ${entry['price']} multiple: ${maxMultiple}")
-//                    bytesFetcherService.saveLesson(new Lesson(
-//                            tag: upDownMovesTagGroup?.upMoveTag?.tagName,
-//                            date: entry.date as Date,
-//                            price: entry.price as Double
-//                    ))
+                    Logger.debug("Storing up move lesson date: ${entry['date']} price: ${entry['price']} multiple: ${maxMultiple}")
+                    bytesFetcherService.saveLesson(new Lesson(
+                            tag: upDownMovesTagGroup?.upMoveTag?.tagName,
+                            date: entry.date as Date,
+                            price: entry.price as Double
+                    ))
                 }
             }
 
             /** Capture short term down move */
             if (minMultiple > 0) {
                 (1..minMultiple).each {
-                    //Logger.log("Storing down move lesson date: ${entry['date']} price: ${entry['price']} multiple: ${minMultiple}")
-//                    bytesFetcherService.saveLesson(new Lesson(
-//                            tag: upDownMovesTagGroup?.downMoveTag?.tagName,
-//                            date: entry.date as Date,
-//                            price: entry.price as Double
-//                    ))
+                    Logger.debug("Storing down move lesson date: ${entry['date']} price: ${entry['price']} multiple: ${minMultiple}")
+                    bytesFetcherService.saveLesson(new Lesson(
+                            tag: upDownMovesTagGroup?.downMoveTag?.tagName,
+                            date: entry.date as Date,
+                            price: entry.price as Double
+                    ))
                 }
             }
 
