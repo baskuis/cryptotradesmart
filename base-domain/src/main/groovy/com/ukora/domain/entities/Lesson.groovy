@@ -7,8 +7,8 @@ class Lesson extends AbstractAssociation {
     @Id
     String id
 
-    Boolean processed
-    Boolean textProcessed
+    Boolean processed = false
+    Boolean textProcessed = false
     String tag
 
 }
