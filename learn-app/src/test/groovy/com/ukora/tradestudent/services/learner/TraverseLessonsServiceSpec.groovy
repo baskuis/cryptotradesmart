@@ -222,10 +222,10 @@ class TraverseLessonsServiceSpec extends Specification {
     def "test learnFromMarketMoves"() {
 
         setup:
-        Date startFrom = Date.from(LocalDateTime.now().minusDays(2).atZone(ZoneId.systemDefault()).toInstant())
+        Date startFrom = Date.from(LocalDateTime.now().minusMinutes(90).atZone(ZoneId.systemDefault()).toInstant())
         TradestudentApplication.DEBUG_LOGGING_ENABLED = true
         List<Memory> memories = []
-        (1..20).each {
+        (1..30).each {
             memories << new Memory(
                     metadata: new Metadata(
                             datetime: null
@@ -235,37 +235,46 @@ class TraverseLessonsServiceSpec extends Specification {
                     )
             )
         }
-        (1..20).each {
+        (1..30).each {
             memories << new Memory(
                     metadata: new Metadata(
                             datetime: null
                     ),
                     graph: new Graph(
-                            price: 1200 - (it * 10)
+                            price: 1300
+                    )
+            )
+        }
+        (1..30).each {
+            memories << new Memory(
+                    metadata: new Metadata(
+                            datetime: null
+                    ),
+                    graph: new Graph(
+                            price: 1300 - (it * 10)
                     )
             )
         }
 
-
         when:
-        int idx = -1
+        int idx = 0
         traverseLessonsService.learnFromMarketMoves(startFrom)
 
         then:
-        _ * bytesFetcherService.getMemory( _ as Date) >> { Date d ->
-            idx++
-            Memory m
+        _ * bytesFetcherService.getMemory(_ as Date) >> { Date d ->
+            Memory m = null
             try {
-                m = (memories.get(idx) as Memory)
+                m = (memories.get(idx++) as Memory)
                 m.metadata.datetime = d
-            } catch (e) { /** ignore */ }
-            return m?:null
+            } catch (Exception e) { /** ignore */ }
+            return m
         }
         _ * upDownMovesTagGroup.getUpMoveTag() >> new UpMoveTag()
         _ * upDownMovesTagGroup.getDownMoveTag() >> new DownMoveTag()
         _ * bytesFetcherService.saveLesson(_ as Lesson)
         noExceptionThrown()
         0 * _
+        idx == 91
 
     }
 

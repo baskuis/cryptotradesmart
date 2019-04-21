@@ -183,9 +183,9 @@ class TraverseLessonsService {
 
             /** Get next 20 minutes */
             List<Double> nextEntries = []
-            for (int i = index + 1; i <= 30; i++) {
+            for (int i = index + 1; i <= index + 30; i++) {
                 try {
-                    nextEntries << ((transformedReferences.get(index + i) as Map)?.price as Double)
+                    nextEntries << ((transformedReferences.get(i) as Map)?.price as Double)
                 } catch (IndexOutOfBoundsException e) { /** Ignore */
                 }
             }
@@ -193,12 +193,15 @@ class TraverseLessonsService {
 
             /** Get entry, max, min etc */
             Map entry = it
-            Double price = it.price as Double
+            Double price = entry.price as Double
             Double max = nextEntries.max()
             Double min = nextEntries.min()
 
+            Logger.debug(String.format(
+                    'no price:[%s], max:[%s], min:[%s], nextEntries.size:[%s], index:[%s}',
+                    price, max, min, nextEntries?.size(), index)
+            )
             if (!price || !max || !min) {
-                Logger.debug('no price, max, min')
                 return
             }
 
@@ -206,27 +209,33 @@ class TraverseLessonsService {
             Integer maxMultiple = Math.round(((max - price) / price / (MINIMAL_MOVE - 1)))
             Integer minMultiple = Math.round(((price - min) / price / (MINIMAL_MOVE - 1)))
 
+            /** Show what's happening */
+            Logger.debug(String.format(
+                    'price: %s, max: %s, min: %s, maxMultiple: %s, minMultiple: %s, date: %s ',
+                    price, max, min, maxMultiple, minMultiple, entry.date
+            ))
+
             /** Capture short term up move */
             if (maxMultiple > 0) {
                 (1..maxMultiple).each {
-                    Logger.log("Storing up move lesson date: ${entry['date']} price: ${entry['price']} multiple: ${maxMultiple}")
-                    bytesFetcherService.saveLesson(new Lesson(
-                            tag: upDownMovesTagGroup?.upMoveTag?.tagName,
-                            date: entry.date as Date,
-                            price: entry.price as Double
-                    ))
+                    //Logger.log("Storing up move lesson date: ${entry['date']} price: ${entry['price']} multiple: ${maxMultiple}")
+//                    bytesFetcherService.saveLesson(new Lesson(
+//                            tag: upDownMovesTagGroup?.upMoveTag?.tagName,
+//                            date: entry.date as Date,
+//                            price: entry.price as Double
+//                    ))
                 }
             }
 
             /** Capture short term down move */
             if (minMultiple > 0) {
                 (1..minMultiple).each {
-                    Logger.log("Storing down move lesson date: ${entry['date']} price: ${entry['price']} multiple: ${minMultiple}")
-                    bytesFetcherService.saveLesson(new Lesson(
-                            tag: upDownMovesTagGroup?.downMoveTag?.tagName,
-                            date: entry.date as Date,
-                            price: entry.price as Double
-                    ))
+                    //Logger.log("Storing down move lesson date: ${entry['date']} price: ${entry['price']} multiple: ${minMultiple}")
+//                    bytesFetcherService.saveLesson(new Lesson(
+//                            tag: upDownMovesTagGroup?.downMoveTag?.tagName,
+//                            date: entry.date as Date,
+//                            price: entry.price as Double
+//                    ))
                 }
             }
 
