@@ -66,7 +66,7 @@ class BuySellTradingHistoricalSimulatorService {
     private final static Double LOWEST_THRESHOLD = 0.49
     private final static Double HIGHEST_THRESHOLD = 0.80
     private final static Double THRESHOLD_INCREMENT = 0.005
-    private final static Double MAX_THRESHOLD_DELTA = 0.1
+    private final static Double MAX_THRESHOLD_DELTA = 0.01
 
     static class SimulationSettings {
         Double tradeIncrement = TRADE_INCREMENT
