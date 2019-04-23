@@ -13,6 +13,7 @@ import com.ukora.tradestudent.services.simulator.TradeSimulatorService
 import com.ukora.tradestudent.services.text.ConcurrentTextAssociationProbabilityService
 import com.ukora.tradestudent.services.text.KeywordAssociationService
 import com.ukora.tradestudent.services.text.TextAssociationProbabilityService
+import com.ukora.tradestudent.services.toolkit.ToolkitService
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -64,6 +65,9 @@ class TradeStudentController {
 
     @Autowired
     LessonTotalsService lessonTotalsService
+
+    @Autowired
+    ToolkitService toolkitService
 
     @RequestMapping(path = '/correlations', produces = 'application/json', method = RequestMethod.GET)
     CorrelationAssociation getCorrelationAssociations(@RequestParam(value = 'date') Date date) {
@@ -257,6 +261,42 @@ class TradeStudentController {
     @RequestMapping(path = '/textassociations', method = RequestMethod.GET)
     def getTextAssociations(@RequestParam(value = 'date') Date date) {
         concurrentTextAssociationProbabilityService.tagCorrelationByText(date)
+    }
+
+    @RequestMapping(path = '/enablecombiner', method = RequestMethod.GET)
+    void enableProbabilityCombiner(String beanName) {
+        toolkitService.enableProbabilityCombiner(beanName)
+        "ENABLED"
+    }
+
+    @RequestMapping(path = '/disablecombiner', method = RequestMethod.GET)
+    void disableProbabilityCombiner(String beanName) {
+        toolkitService.disableProbabilityCombiner(beanName)
+        "DISABLED"
+    }
+
+    @RequestMapping(path = '/enablestrategy', method = RequestMethod.GET)
+    void enableTradeExecutionStrategy(String beanName) {
+        toolkitService.enableTradeExecutionStrategy(beanName)
+        "ENABLED"
+    }
+
+    @RequestMapping(path = '/disablestrategy', method = RequestMethod.GET)
+    void disableTradeExecutionStrategy(String beanName) {
+        toolkitService.disableTradeExecutionStrategy(beanName)
+        "DISABLED"
+    }
+
+    @RequestMapping(path = '/resetsimulator', method = RequestMethod.POST)
+    BuySellTradingHistoricalSimulatorService.SimulationSettings updateSimulationSettings(
+            @RequestBody BuySellTradingHistoricalSimulatorService.SimulationSettings simulationSettings
+    ) {
+        return toolkitService.updateSimulationSettings(simulationSettings)
+    }
+
+    @RequestMapping(path = '/resetsimulator', method = RequestMethod.GET)
+    BuySellTradingHistoricalSimulatorService.SimulationSettings resetSimulationSettings() {
+        return toolkitService.resetSimulationSettings()
     }
 
     @RequestMapping(path = '/log', method = RequestMethod.GET)

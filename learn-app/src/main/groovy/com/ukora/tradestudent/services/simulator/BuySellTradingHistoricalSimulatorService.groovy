@@ -60,13 +60,24 @@ class BuySellTradingHistoricalSimulatorService {
     List<Simulation> simulations = []
 
     public final static Double STARTING_BALANCE = 10
-    private final static Double MAX_TRADE_INCREMENT = 2
+    private final static Double MAX_TRADE_INCREMENT = 4
     private final static Double TRADE_INCREMENT = 1
     private final static Double TRADE_TRANSACTION_COST = 0.0020
     private final static Double LOWEST_THRESHOLD = 0.49
-    private final static Double HIGHEST_THRESHOLD = 0.70
-    private final static Double THRESHOLD_INCREMENT = 0.002
-    private final static Double MAX_THRESHOLD_DELTA = 0.010
+    private final static Double HIGHEST_THRESHOLD = 0.80
+    private final static Double THRESHOLD_INCREMENT = 0.005
+    private final static Double MAX_THRESHOLD_DELTA = 0.1
+
+    static class SimulationSettings {
+        Double tradeIncrement = TRADE_INCREMENT
+        Double maxTradeIncrement = MAX_TRADE_INCREMENT
+        Double lowestThreshold = LOWEST_THRESHOLD
+        Double highestThreshold = HIGHEST_THRESHOLD
+        Double thresholdIncrement = THRESHOLD_INCREMENT
+        Double maxThresholdDelta = MAX_THRESHOLD_DELTA
+    }
+
+    SimulationSettings simulationSettings = new SimulationSettings()
 
     @PostConstruct
     void init() {
@@ -84,11 +95,11 @@ class BuySellTradingHistoricalSimulatorService {
         /**
          * Build simulations
          */
-        for (Double tradeIncrement = TRADE_INCREMENT; tradeIncrement <= MAX_TRADE_INCREMENT; tradeIncrement += TRADE_INCREMENT) {
-            for (Double thresholdBuy = LOWEST_THRESHOLD; thresholdBuy <= HIGHEST_THRESHOLD; thresholdBuy += THRESHOLD_INCREMENT) {
-                Double maxBuyThreshold = (thresholdBuy + MAX_THRESHOLD_DELTA < HIGHEST_THRESHOLD) ? thresholdBuy + MAX_THRESHOLD_DELTA : HIGHEST_THRESHOLD
-                Double minBuyThreshold = (thresholdBuy - MAX_THRESHOLD_DELTA > LOWEST_THRESHOLD) ? thresholdBuy - MAX_THRESHOLD_DELTA : LOWEST_THRESHOLD
-                for (Double thresholdSell = minBuyThreshold; thresholdSell <= maxBuyThreshold; thresholdSell += THRESHOLD_INCREMENT) {
+        for (Double tradeIncrement = simulationSettings.tradeIncrement; tradeIncrement <= simulationSettings.maxTradeIncrement; tradeIncrement += simulationSettings.tradeIncrement) {
+            for (Double thresholdBuy = simulationSettings.lowestThreshold; thresholdBuy <= simulationSettings.highestThreshold; thresholdBuy += simulationSettings.thresholdIncrement) {
+                Double maxBuyThreshold = (thresholdBuy + simulationSettings.maxThresholdDelta < simulationSettings.highestThreshold) ? thresholdBuy + simulationSettings.maxThresholdDelta : simulationSettings.highestThreshold
+                Double minBuyThreshold = (thresholdBuy - simulationSettings.maxThresholdDelta > simulationSettings.lowestThreshold) ? thresholdBuy - simulationSettings.maxThresholdDelta : simulationSettings.lowestThreshold
+                for (Double thresholdSell = minBuyThreshold; thresholdSell <= maxBuyThreshold; thresholdSell += simulationSettings.thresholdIncrement) {
                     simulations << new Simulation(
                             key: String.format("buy:%s,sell:%s,inc:%s", thresholdBuy, thresholdSell, tradeIncrement),
                             buyThreshold: thresholdBuy,
@@ -105,6 +116,14 @@ class BuySellTradingHistoricalSimulatorService {
             }
         }
 
+    }
+
+    /**
+     * Reset SimulationSettings
+     *
+     */
+    void resetSimulationSettings() {
+        simulationSettings = new SimulationSettings()
     }
 
     /**

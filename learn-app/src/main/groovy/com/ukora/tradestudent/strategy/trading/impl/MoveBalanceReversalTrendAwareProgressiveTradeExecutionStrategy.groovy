@@ -69,7 +69,7 @@ class MoveBalanceReversalTrendAwareProgressiveTradeExecutionStrategy implements 
 
     @Override
     String getAlias() {
-        return "nova"
+        return "emmy"
     }
 
     @Override

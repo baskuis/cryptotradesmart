@@ -38,6 +38,7 @@ class WeightedProbalityCombinerStrategy implements ProbabilityCombinerStrategy {
             if(!it.value.get(tag)?.probability) return
             weight = Math.abs(it.value.get(tag).probability)
             probability = (1 + it.value.get(tag).probability) / 2
+            if(!probability || Double.isNaN(probability)) return
             toplineProbability += weight * probability
             totalProbability += weight
         }
