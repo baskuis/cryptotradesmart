@@ -13,7 +13,7 @@ class AverageProbabilityCombinerStrategy implements ProbabilityCombinerStrategy 
         return "george"
     }
 
-    boolean enabled = true
+    boolean enabled = false
 
     @Override
     boolean isEnabled() {
