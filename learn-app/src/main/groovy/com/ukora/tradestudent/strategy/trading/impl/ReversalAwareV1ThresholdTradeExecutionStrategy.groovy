@@ -50,7 +50,7 @@ class ReversalAwareV1ThresholdTradeExecutionStrategy implements TradeExecutionSt
 
     @Override
     String getAlias() {
-        return "erin"
+        return "vicky"
     }
 
     /**
