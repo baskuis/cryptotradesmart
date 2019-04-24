@@ -442,7 +442,8 @@ class BytesFetcherService {
      * @param correlationAssociation
      */
     void captureCorrelationAssociation(CorrelationAssociation correlationAssociation) {
-        CorrelationAssociation existing = correlationAssociationRepository.findByDate(correlationAssociation?.date)?.first()
+        def r = correlationAssociationRepository.findByDate(correlationAssociation?.date)
+        CorrelationAssociation existing = r.size() > 0 ? r.first() : null
         if (existing) {
             correlationAssociation.properties.each { key, value ->
                 if (existing.hasProperty(key as String) && !((key as String) in ['class', 'metaClass']))
