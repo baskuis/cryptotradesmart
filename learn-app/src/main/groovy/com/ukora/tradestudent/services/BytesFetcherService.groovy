@@ -33,6 +33,8 @@ class BytesFetcherService {
     TwitterRepository twitterRepository
     @Autowired
     MemoryRepository memoryRepository
+    @Autowired
+    CorrelationAssociationRepository correlationAssociationRepository
 
     @Autowired
     TagService tagService
@@ -432,6 +434,24 @@ class BytesFetcherService {
      */
     void insertMemory(Memory the_memory) {
         memoryRepository.insert(the_memory)
+    }
+
+    /**
+     * Capture correlation association
+     *
+     * @param correlationAssociation
+     */
+    void captureCorrelationAssociation(CorrelationAssociation correlationAssociation) {
+        CorrelationAssociation existing = correlationAssociationRepository.findByDate(correlationAssociation?.date)?.first()
+        if (existing) {
+            correlationAssociation.properties.each { key, value ->
+                if (existing.hasProperty(key as String) && !((key as String) in ['class', 'metaClass']))
+                    existing[key as String] = value
+            }
+            correlationAssociationRepository.save(existing)
+        } else {
+            correlationAssociationRepository.save(correlationAssociation)
+        }
     }
 
 }

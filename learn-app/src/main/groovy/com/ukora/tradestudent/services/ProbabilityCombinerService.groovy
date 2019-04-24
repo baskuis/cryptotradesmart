@@ -117,6 +117,9 @@ class ProbabilityCombinerService {
         /** calculate combined tag correlation probability */
         hydrateTagProbabilities(correlationAssociation)
 
+        /** capture correlation association */
+        bytesFetcherService.captureCorrelationAssociation(correlationAssociation)
+
         return correlationAssociation
 
     }
