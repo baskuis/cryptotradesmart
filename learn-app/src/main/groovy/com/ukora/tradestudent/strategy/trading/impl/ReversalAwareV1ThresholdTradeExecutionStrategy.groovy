@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component
  *
  */
 @Component
-class ReversalAwareAvgThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
+class ReversalAwareV1ThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
 
     @Autowired
     BuyTag buyTag
