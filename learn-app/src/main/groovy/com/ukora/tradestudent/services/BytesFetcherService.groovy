@@ -449,8 +449,10 @@ class BytesFetcherService {
                 if (existing.hasProperty(key as String) && !((key as String) in ['class', 'metaClass']))
                     existing[key as String] = value
             }
+            existing.date = correlationAssociation?.memory?.metadata?.datetime
             correlationAssociationRepository.save(existing)
         } else {
+            correlationAssociation.date = correlationAssociation?.memory?.metadata?.datetime
             correlationAssociationRepository.save(correlationAssociation)
         }
     }
