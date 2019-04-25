@@ -6,6 +6,8 @@ import com.ukora.domain.beans.tags.buysell.BuyTag
 import com.ukora.domain.beans.tags.buysell.SellTag
 import com.ukora.domain.beans.tags.reversal.DownReversalTag
 import com.ukora.domain.beans.tags.reversal.UpReversalTag
+import com.ukora.domain.beans.tags.trend.DownTag
+import com.ukora.domain.beans.tags.trend.UpTag
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.domain.entities.CorrelationAssociation
 import com.ukora.tradestudent.services.simulator.Simulation
@@ -13,14 +15,24 @@ import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
+/**
+ * This strategy uses an average of buy, up, upreversal
+ *
+ */
 @Component
-class ReversalAwareV1ThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
+class ReversalTrendAwareAvgThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
 
     @Autowired
     BuyTag buyTag
 
     @Autowired
     SellTag sellTag
+
+    @Autowired
+    UpTag upTag
+
+    @Autowired
+    DownTag downTag
 
     @Autowired
     BuySellTagGroup buySellTagGroup
@@ -50,7 +62,7 @@ class ReversalAwareV1ThresholdTradeExecutionStrategy implements TradeExecutionSt
 
     @Override
     String getAlias() {
-        return "vicky"
+        return "bio"
     }
 
     /**
@@ -74,19 +86,20 @@ class ReversalAwareV1ThresholdTradeExecutionStrategy implements TradeExecutionSt
             Double balanceProportion
     ) {
         TradeExecution tradeExecution = null
-        Double upProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(upReversalTag.tagName)
-        Double downProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(downReversalTag.tagName)
-        if (upProbability && downProbability) {
-            Double modifiedBuyThreshold = (simulation.buyThreshold + upProbability) / 2
-            Double modifiedSellThreshold = (simulation.sellThreshold + downProbability) / 2
-            if (tag == buyTag.getTagName() && probability > modifiedBuyThreshold) {
+        Double buyProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(buyTag.tagName)
+        Double upProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(upTag.tagName)
+        Double upReversalProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(upReversalTag.tagName)
+        if (buyProbability && upProbability && upReversalProbability) {
+            Double upAvg = (buyProbability + upProbability + upReversalProbability) / 3
+            Double downAvg = 1 - upAvg
+            if (tag == buyTag.getTagName() && upAvg > simulation.buyThreshold) {
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.BUY,
                         amount: simulation.tradeIncrement,
                         price: correlationAssociation.price,
                         date: correlationAssociation.date
                 )
-            } else if (tag == sellTag.getTagName() && probability > modifiedSellThreshold) {
+            } else if (tag == sellTag.getTagName() && downAvg > simulation.sellThreshold) {
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.SELL,
                         amount: simulation.tradeIncrement,

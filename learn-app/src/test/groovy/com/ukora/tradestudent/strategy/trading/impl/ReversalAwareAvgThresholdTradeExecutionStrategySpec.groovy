@@ -11,12 +11,12 @@ import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class ReversalAwareV1ThresholdTradeExecutionStrategySpec extends Specification {
+class ReversalAwareAvgThresholdTradeExecutionStrategySpec extends Specification {
 
     TradeExecutionStrategy tradeExecutionStrategy
 
     def setup() {
-        tradeExecutionStrategy = new ReversalAwareV1ThresholdTradeExecutionStrategy(
+        tradeExecutionStrategy = new ReversalAwareAvgThresholdTradeExecutionStrategy(
                 buyTag: new BuyTag(),
                 sellTag: new SellTag(),
                 upReversalTag: new UpReversalTag(),
