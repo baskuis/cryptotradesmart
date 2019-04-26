@@ -1,20 +1,24 @@
 package com.ukora.tradestudent.strategy.trading.impl
 
-import com.ukora.domain.entities.CorrelationAssociation
-import com.ukora.tradestudent.services.simulator.Simulation
-import com.ukora.domain.beans.trade.TradeExecution
-import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
 import com.ukora.domain.beans.tags.TagSubset
 import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
 import com.ukora.domain.beans.tags.buysell.BuyTag
 import com.ukora.domain.beans.tags.buysell.SellTag
-import com.ukora.domain.beans.tags.trend.DownTag
-import com.ukora.domain.beans.tags.trend.UpTag
+import com.ukora.domain.beans.tags.reversal.DownReversalTag
+import com.ukora.domain.beans.tags.reversal.UpReversalTag
+import com.ukora.domain.beans.trade.TradeExecution
+import com.ukora.domain.entities.CorrelationAssociation
+import com.ukora.tradestudent.services.simulator.Simulation
+import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
+/**
+ * This strategy only uses reversals
+ *
+ */
 @Component
-class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
+class ReversalOnlyThresholdTradeExecutionStrategy implements TradeExecutionStrategy, TagSubset {
 
     @Autowired
     BuyTag buyTag
@@ -26,17 +30,17 @@ class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrateg
     BuySellTagGroup buySellTagGroup
 
     @Autowired
-    UpTag upTag
+    UpReversalTag upReversalTag
 
     @Autowired
-    DownTag downTag
+    DownReversalTag downReversalTag
 
     @Override
     boolean applies(String toTag) {
         return buySellTagGroup.applies(toTag)
     }
 
-    private boolean enabled = false
+    private boolean enabled = true
 
     @Override
     boolean isEnabled() {
@@ -50,11 +54,11 @@ class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrateg
 
     @Override
     String getAlias() {
-        return "freeman"
+        return "ray"
     }
 
     /**
-     * Execute trades while taking trend probabilities into account
+     * Execute trades while taking reversal probabilities into account
      *
      * @param correlationAssociation
      * @param tag
@@ -74,28 +78,17 @@ class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrateg
             Double balanceProportion
     ) {
         TradeExecution tradeExecution = null
-        Double upProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(upTag.tagName)
-        Double downProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(downTag.tagName)
-        if (upProbability && downProbability) {
-            Double modifiedBuyThreshold
-            Double modifiedSellThreshold
-            if (upProbability > downProbability) {
-                Double trendDelta = upProbability - downProbability
-                modifiedBuyThreshold = simulation.buyThreshold - (trendDelta * (1 - simulation.buyThreshold) / 2)
-                modifiedSellThreshold = simulation.sellThreshold + (trendDelta * (1 - simulation.sellThreshold) / 2)
-            } else {
-                Double trendDelta = downProbability - upProbability
-                modifiedBuyThreshold = simulation.buyThreshold + (trendDelta * (1 - simulation.buyThreshold) / 2)
-                modifiedSellThreshold = simulation.sellThreshold - (trendDelta * (1 - simulation.sellThreshold) / 2)
-            }
-            if (tag == buyTag.getTagName() && probability > modifiedBuyThreshold) {
+        Double upReversalProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(upReversalTag.tagName)
+        Double downReversalProbability = correlationAssociation.tagProbabilities?.get(combinerStrategy)?.get(downReversalTag.tagName)
+        if (upReversalProbability && downReversalProbability) {
+            if (tag == buyTag.getTagName() && upReversalProbability > simulation.buyThreshold) {
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.BUY,
                         amount: simulation.tradeIncrement,
                         price: correlationAssociation.price,
                         date: correlationAssociation.date
                 )
-            } else if (tag == sellTag.getTagName() && probability > modifiedSellThreshold) {
+            } else if (tag == sellTag.getTagName() && downReversalProbability > simulation.sellThreshold) {
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.SELL,
                         amount: simulation.tradeIncrement,
@@ -108,3 +101,4 @@ class TrendAwareThresholdTradeExecutionStrategy implements TradeExecutionStrateg
     }
 
 }
+

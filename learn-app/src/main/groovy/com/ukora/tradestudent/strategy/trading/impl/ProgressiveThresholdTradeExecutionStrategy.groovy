@@ -36,7 +36,7 @@ class ProgressiveThresholdTradeExecutionStrategy implements TradeExecutionStrate
     final static Double MAX_MULTIPLIER = 2
     final static Double MIN_MULTIPLIER = 0.2
 
-    private boolean enabled = true
+    private boolean enabled = false
 
     @Override
     boolean isEnabled() {
