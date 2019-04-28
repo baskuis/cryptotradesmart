@@ -37,10 +37,14 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
     @Autowired
     TagService tagService
 
-    @Autowired BuySellTagGroup buySellTagGroup
-    @Autowired UpDownTagGroup upDownTagGroup
-    @Autowired UpDownReversalTagGroup upDownReversalTagGroup
-    @Autowired UpDownMovesTagGroup upDownMovesTagGroup
+    @Autowired
+    BuySellTagGroup buySellTagGroup
+    @Autowired
+    UpDownTagGroup upDownTagGroup
+    @Autowired
+    UpDownReversalTagGroup upDownReversalTagGroup
+    @Autowired
+    UpDownMovesTagGroup upDownMovesTagGroup
 
     @Autowired
     ProbabilityCombinerService probabilityCombinerService
@@ -99,7 +103,16 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
                                 Double minBuyThreshold = (thresholdBuy - simulationSettings.maxThresholdDelta > simulationSettings.lowestThreshold) ? thresholdBuy - simulationSettings.maxThresholdDelta : simulationSettings.lowestThreshold
                                 for (Double thresholdSell = minBuyThreshold; thresholdSell <= maxBuyThreshold; thresholdSell += simulationSettings.thresholdIncrement) {
                                     simulations << new Simulation(
-                                            key: String.format("buy:%s,sell:%s,inc:%s", thresholdBuy, thresholdSell, tradeIncrement),
+                                            key: String.format(
+                                                    "b:%s,s:%s,i:%s,bsw:%s,udw:%s,rw:%s,mw:%s",
+                                                    thresholdBuy,
+                                                    thresholdSell,
+                                                    tradeIncrement,
+                                                    buySellTagGroupWeight,
+                                                    upDownTagGroupWeight,
+                                                    upDownReversalTagGroupWeight,
+                                                    upDownMovesTagGroupWeight
+                                            ),
                                             buyThreshold: thresholdBuy,
                                             sellThreshold: thresholdSell,
                                             startingBalance: STARTING_BALANCE,
@@ -140,7 +153,7 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
     runSimulation(Date fromDate) {
         if (!fromDate) return
         if (simulationRunning) {
-            Logger.log("There is already a simulation running")
+            Logger.log("There is already a simulation running. Not starting flex simulation.")
             return
         }
         def newSimulation = true

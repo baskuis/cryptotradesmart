@@ -118,7 +118,7 @@ class BuySellTradingHistoricalSimulatorService extends AbstractTradingHistorical
     runSimulation(Date fromDate) {
         if (!fromDate) return
         if (simulationRunning) {
-            Logger.log("There is already a simulation running")
+            Logger.log("There is already a simulation running. Not starting simulation.")
             return
         }
         def newSimulation = true

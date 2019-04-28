@@ -18,7 +18,7 @@ class Simulation {
     Map balancesB = new ConcurrentHashMap<String, Double>()
     Map tradeCounts = new ConcurrentHashMap<String, Double>()
     Map totalBalances = new ConcurrentHashMap<String, Double>()
-    Map pursesEnabled = new ConcurrentHashMap<String, Double>()
+    Map pursesEnabled = new ConcurrentHashMap<String, Boolean>()
     Map result = [:]
 
     @Override
