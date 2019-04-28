@@ -73,6 +73,8 @@ class SimulationResultService {
      */
     List<SimulationResult> getTopPerformingSimulations() {
         return bytesFetcherService.getSimulations()?.findAll({
+            it.executionType != SimulationResult.ExecutionType.FLEX
+        })?.findAll({
             it.endDate > Date.from(Instant.now().minusSeconds(MAX_AGE_IN_HOURS * SECONDS_IN_HOUR)) && it.differential > MINIMUM_DIFFERENTIAL
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate

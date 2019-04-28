@@ -7,6 +7,9 @@ class SimulationResult {
     @Id
     String id
 
+    enum ExecutionType { BASIC, FLEX }
+
+    ExecutionType executionType = ExecutionType.BASIC
     Exchange exchange
     Metadata metadata = new Metadata(
             datetime: new Date(),

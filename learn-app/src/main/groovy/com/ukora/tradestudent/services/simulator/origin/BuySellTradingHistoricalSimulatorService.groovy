@@ -3,6 +3,7 @@ package com.ukora.tradestudent.services.simulator.origin
 import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.domain.entities.CorrelationAssociation
+import com.ukora.domain.entities.SimulationResult
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.ProbabilityCombinerService
 import com.ukora.tradestudent.services.simulator.AbstractTradingHistoricalSimulatorService
@@ -229,7 +230,12 @@ class BuySellTradingHistoricalSimulatorService extends AbstractTradingHistorical
         Map<String, Map> finalResults = captureResults()
 
         /** Persist simulation results */
-        persistSimulationResults(finalResults, fromDate, Date.from(end))
+        persistSimulationResults(
+                finalResults,
+                fromDate,
+                Date.from(end),
+                SimulationResult.ExecutionType.BASIC
+        )
 
         /** Allow another simulation to be started */
         simulationRunning = false

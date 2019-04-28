@@ -18,7 +18,7 @@ abstract class AbstractTradingHistoricalSimulatorService {
 
     final static long INTERVAL_SECONDS = 60
 
-    final static int numCores = Runtime.getRuntime().availableProcessors()
+    public final static int numCores = Runtime.getRuntime().availableProcessors()
 
     static boolean multiThreadingEnabled = true
 
@@ -42,10 +42,11 @@ abstract class AbstractTradingHistoricalSimulatorService {
      * @param fromDate
      * @param endDate
      */
-    protected void persistSimulationResults(Map<String, Map> finalResults, Date fromDate, Date endDate) {
+    protected void persistSimulationResults(Map<String, Map> finalResults, Date fromDate, Date endDate, SimulationResult.ExecutionType executionType) {
         finalResults.each {
             Simulation simulation = (it.value.get('simulation') as Simulation)
             SimulationResult simulationResult = new SimulationResult(
+                    executionType: executionType,
                     differential: (it.value.get('balance') as Double) / STARTING_BALANCE,
                     startDate: fromDate,
                     endDate: endDate,
@@ -54,8 +55,8 @@ abstract class AbstractTradingHistoricalSimulatorService {
                     probabilityCombinerStrategy: it.value.get('probabilityCombinerStrategy'),
                     buyThreshold: simulation.buyThreshold,
                     sellThreshold: simulation.sellThreshold,
-                    tradeCount: simulation.tradeCounts.get(it.value.get('purseKey'), 0),
-                    totalValue: simulation.totalBalances.get(it.value.get('purseKey'), 0)
+                    tradeCount: simulation.tradeCounts.get(it.value.get('purseKey') as String, 0d),
+                    totalValue: simulation.totalBalances.get(it.value.get('purseKey') as String, 0d)
             )
             bytesFetcherService.saveSimulation(simulationResult)
         }

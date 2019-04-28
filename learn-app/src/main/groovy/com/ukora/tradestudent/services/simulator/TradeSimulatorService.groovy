@@ -30,7 +30,7 @@ class TradeSimulatorService {
     void runFlexSimulation() {
         Instant current = Instant.now().minus(20, ChronoUnit.DAYS)
         Logger.log(String.format("Running simulation starting from %s", Date.from(current)))
-        buySellTradingHistoricalSimulatorService.runSimulation(Date.from(current))
+        flexTradingHistoricalSimulatorService.runSimulation(Date.from(current))
     }
 
 }

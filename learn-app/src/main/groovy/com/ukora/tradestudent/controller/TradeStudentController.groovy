@@ -145,8 +145,14 @@ class TradeStudentController {
     }
 
     @RequestMapping(path = '/runsimulation', method = RequestMethod.GET)
-    String runsimulation() {
+    String runSimulation() {
         tradeSimulatorService.runSimulation()
+        "STARTED"
+    }
+
+    @RequestMapping(path = '/runflexsimulation', method = RequestMethod.GET)
+    String runFlexSimulation() {
+        tradeSimulatorService.runFlexSimulation()
         "STARTED"
     }
 

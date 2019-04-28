@@ -6,6 +6,7 @@ import com.ukora.domain.beans.tags.reversal.UpDownReversalTagGroup
 import com.ukora.domain.beans.tags.trend.UpDownTagGroup
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.domain.entities.CorrelationAssociation
+import com.ukora.domain.entities.SimulationResult
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.ProbabilityCombinerService
 import com.ukora.tradestudent.services.TagService
@@ -231,7 +232,12 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
         Map<String, Map> finalResults = captureResults()
 
         /** Persist simulation results */
-        persistSimulationResults(finalResults, fromDate, Date.from(end))
+        persistSimulationResults(
+                finalResults,
+                fromDate,
+                Date.from(end),
+                SimulationResult.ExecutionType.FLEX
+        )
 
         /** Allow another simulation to be started */
         simulationRunning = false
