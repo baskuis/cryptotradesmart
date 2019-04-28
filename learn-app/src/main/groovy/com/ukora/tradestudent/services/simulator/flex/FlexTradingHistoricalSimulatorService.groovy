@@ -170,68 +170,71 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
 
             /** Get probabilities */
             CorrelationAssociation correlationAssociation = probabilityCombinerService.getCorrelationAssociations(Date.from(current))
+            correlationAssociation.tagProbabilities.each {
+                String strategy = it.key
 
-            if (!correlationAssociation.price) return
-            List<Thread> threads = []
-            partitioned.each { group ->
-                threads << Thread.start({
-                    group.findAll { it.enabled }.each {
-                        Simulation simulation = it
-                        simulation.finalPrice = correlationAssociation.price
-                        enabledTradeStrategies.each {
-                            String strategy = it.key
-                            String purseKey = String.format('%s:%s', strategy, it.key)
-                            boolean purseEnabled = simulation.pursesEnabled.get(purseKey, true)
-                            if (purseEnabled) {
-                                Double balanceProportion = (correlationAssociation.price) ? simulation.balancesA.getOrDefault(purseKey, STARTING_BALANCE) /
-                                        (simulation.balancesA.getOrDefault(purseKey, STARTING_BALANCE) + (simulation.balancesB.getOrDefault(purseKey, 0) / correlationAssociation.price)) : 1
-                                if (!NerdUtils.assertRange(balanceProportion)) {
-                                    Logger.log(String.format("balanceProportion %s is out of range", balanceProportion))
-                                    return
-                                }
-                                TradeExecution tradeExecution
+                if (!correlationAssociation.price) return
+                List<Thread> threads = []
+                partitioned.each { group ->
+                    threads << Thread.start({
+                        group.findAll { it.enabled }.each {
+                            Simulation simulation = it
+                            simulation.finalPrice = correlationAssociation.price
+                            enabledTradeStrategies.each {
+                                String purseKey = String.format('%s:%s', strategy, it.key)
+                                boolean purseEnabled = simulation.pursesEnabled.get(purseKey, true)
+                                if (purseEnabled) {
+                                    Double balanceProportion = (correlationAssociation.price) ? simulation.balancesA.getOrDefault(purseKey, STARTING_BALANCE) /
+                                            (simulation.balancesA.getOrDefault(purseKey, STARTING_BALANCE) + (simulation.balancesB.getOrDefault(purseKey, 0) / correlationAssociation.price)) : 1
+                                    if (!NerdUtils.assertRange(balanceProportion)) {
+                                        Logger.log(String.format("balanceProportion %s is out of range", balanceProportion))
+                                        return
+                                    }
+                                    TradeExecution tradeExecution
 
-                                /** balance purse - sell half of balance A for B at market price */
-                                if (newSimulation) {
-                                    tradeExecution = new TradeExecution(
-                                            date: correlationAssociation.date,
-                                            price: correlationAssociation.price,
-                                            tradeType: TradeExecution.TradeType.SELL,
-                                            amount: STARTING_BALANCE / 2
-                                    )
+                                    /** balance purse - sell half of balance A for B at market price */
+                                    if (newSimulation) {
+                                        tradeExecution = new TradeExecution(
+                                                date: correlationAssociation.date,
+                                                price: correlationAssociation.price,
+                                                tradeType: TradeExecution.TradeType.SELL,
+                                                amount: STARTING_BALANCE / 2
+                                        )
 
-                                    /** otherwise check strategy */
-                                } else {
-                                    tradeExecution = it.value.getTrade(
-                                            correlationAssociation,
-                                            simulation,
-                                            strategy,
-                                            balanceProportion)
+                                        /** otherwise check strategy */
+                                    } else {
+                                        tradeExecution = it.value.getTrade(
+                                                correlationAssociation,
+                                                simulation,
+                                                strategy,
+                                                balanceProportion)
 
-                                }
+                                    }
 
-                                /** execute trade */
-                                if (tradeExecution) {
-                                    Logger.debug(String.format("key:%s,type:%s", purseKey, tradeExecution.tradeType))
-                                    simulateTrade(
-                                            simulation,
-                                            tradeExecution,
-                                            purseKey
-                                    )
+                                    /** execute trade */
+                                    if (tradeExecution) {
+                                        Logger.debug(String.format("key:%s,type:%s", purseKey, tradeExecution.tradeType))
+                                        simulateTrade(
+                                                simulation,
+                                                tradeExecution,
+                                                purseKey
+                                        )
+                                    }
+
                                 }
 
                             }
                         }
-                    }
-                })
-            }
+                    })
+                }
 
-            /** Collect results */
-            threads*.join()
-            if (newSimulation) {
-                newSimulation = false
-            }
+                /** Collect results */
+                threads*.join()
+                if (newSimulation) {
+                    newSimulation = false
+                }
 
+            }
         }
 
         /** Flip back to false */
