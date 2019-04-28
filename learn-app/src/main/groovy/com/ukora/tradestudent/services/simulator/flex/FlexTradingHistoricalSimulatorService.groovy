@@ -9,7 +9,6 @@ import com.ukora.domain.entities.CorrelationAssociation
 import com.ukora.domain.entities.SimulationResult
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.ProbabilityCombinerService
-import com.ukora.tradestudent.services.TagService
 import com.ukora.tradestudent.services.simulator.AbstractTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.simulator.Simulation
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
@@ -35,9 +34,6 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
     ApplicationContext applicationContext
 
     @Autowired
-    TagService tagService
-
-    @Autowired
     BuySellTagGroup buySellTagGroup
     @Autowired
     UpDownTagGroup upDownTagGroup
@@ -49,16 +45,16 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
     @Autowired
     ProbabilityCombinerService probabilityCombinerService
 
-    private final static Double MAX_TRADE_INCREMENT = 1
+    private final static Double MAX_TRADE_INCREMENT = 0.8
     private final static Double TRADE_INCREMENT = 0.2
     private final static Double TRADE_TRANSACTION_COST = 0.0020
     private final static Double LOWEST_THRESHOLD = 0.49
-    private final static Double HIGHEST_THRESHOLD = 0.65
+    private final static Double HIGHEST_THRESHOLD = 0.59
     private final static Double THRESHOLD_INCREMENT = 0.01
-    private final static Double MAX_THRESHOLD_DELTA = 0.04
-    private final static Double MIN_TAG_GROUP_WEIGHT = -0.4
-    private final static Double MAX_TAG_GROUP_WEIGHT = 1
-    private final static Double TAG_GROUP_WEIGHT_INC = 0.2
+    private final static Double MAX_THRESHOLD_DELTA = 0.03
+    private final static Double MIN_TAG_GROUP_WEIGHT = -0.3
+    private final static Double MAX_TAG_GROUP_WEIGHT = 0.9
+    private final static Double TAG_GROUP_WEIGHT_INC = 0.3
 
     static class SimulationSettings {
         Double tradeIncrement = TRADE_INCREMENT
@@ -216,7 +212,7 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
 
                                 /** execute trade */
                                 if (tradeExecution) {
-                                    Logger.debug(String.format("key:%s,type:%s,probability:%s", purseKey, tradeExecution.tradeType, probability))
+                                    Logger.debug(String.format("key:%s,type:%s", purseKey, tradeExecution.tradeType))
                                     simulateTrade(
                                             simulation,
                                             tradeExecution,
