@@ -29,10 +29,15 @@ class ProbabilityCombinerStrategyConfig {
             strategyMap.each {
                 String beanName = it.key
                 ProbabilityCombinerStrategy strategy = it.value
-                strategy.enabled = simulationResults.findAll {
+                boolean performing = simulationResults.findAll {
                     it.probabilityCombinerStrategy == beanName && it.differential > MINIMAL_DIFFERENTIAL
                 }.size() > 0
-                if(!strategy.enabled) Logger.log("Disabling ${beanName} due to poor performance")
+                if (!performing) {
+                    strategy.enabled = false
+                    if (!strategy.enabled) {
+                        Logger.log("Disabling ${beanName} due to poor performance")
+                    }
+                }
             }
         }
     }
