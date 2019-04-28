@@ -5,7 +5,7 @@ import com.ukora.domain.entities.Memory
 import com.ukora.domain.entities.Metadata
 import com.ukora.domain.entities.SimulatedTradeEntry
 import com.ukora.domain.entities.SimulationResult
-import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
+import com.ukora.tradestudent.services.simulator.origin.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.simulator.Simulation
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
@@ -19,10 +19,7 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 import javax.annotation.PostConstruct
-import java.time.Instant
 import java.time.ZoneId
-import java.time.temporal.ChronoUnit
-import java.util.concurrent.TimeUnit
 
 @Service
 class LiveTradeSimulationService {

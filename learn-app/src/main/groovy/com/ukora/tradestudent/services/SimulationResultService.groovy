@@ -2,7 +2,7 @@ package com.ukora.tradestudent.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ukora.domain.entities.SimulationResult
-import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
+import com.ukora.tradestudent.services.simulator.origin.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

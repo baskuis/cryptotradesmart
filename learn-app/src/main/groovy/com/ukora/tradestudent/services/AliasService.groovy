@@ -2,7 +2,6 @@ package com.ukora.tradestudent.services
 
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
-import jdk.nashorn.internal.runtime.ECMAException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
@@ -51,11 +50,11 @@ class AliasService {
         return aliasToBean
     }
 
-    String getAliasByBeanName(String beanName){
+    String getAliasByBeanName(String beanName) {
         return beanToAlias.getOrDefault(beanName, NO_ALIAS)
     }
 
-    String getBeanNameByAlias(String alias){
+    String getBeanNameByAlias(String alias) {
         return aliasToBean.getOrDefault(alias, NO_BEAN_NAME)
     }
 

@@ -8,7 +8,8 @@ import com.ukora.tradestudent.services.associations.CaptureAssociationsService
 import com.ukora.tradestudent.services.associations.TechnicalAnalysisService
 import com.ukora.tradestudent.services.associations.text.CaptureTextAssociationsService
 import com.ukora.tradestudent.services.learner.TraverseLessonsService
-import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
+import com.ukora.tradestudent.services.simulator.flex.FlexTradingHistoricalSimulatorService
+import com.ukora.tradestudent.services.simulator.origin.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.simulator.TradeSimulatorService
 import com.ukora.tradestudent.services.text.ConcurrentTextAssociationProbabilityService
 import com.ukora.tradestudent.services.text.KeywordAssociationService
@@ -287,15 +288,22 @@ class TradeStudentController {
         "DISABLED"
     }
 
-    @RequestMapping(path = '/resetsimulator', method = RequestMethod.POST)
+    @RequestMapping(path = '/updatebuysellsimulator', method = RequestMethod.POST)
     BuySellTradingHistoricalSimulatorService.SimulationSettings updateSimulationSettings(
             @RequestBody BuySellTradingHistoricalSimulatorService.SimulationSettings simulationSettings
     ) {
         return toolkitService.updateSimulationSettings(simulationSettings)
     }
 
+    @RequestMapping(path = '/updateflexsimulator', method = RequestMethod.POST)
+    FlexTradingHistoricalSimulatorService.SimulationSettings updateFlexSimulationSettings(
+            @RequestBody FlexTradingHistoricalSimulatorService.SimulationSettings simulationSettings
+    ) {
+        return toolkitService.updateFlexSimulationSettings(simulationSettings)
+    }
+
     @RequestMapping(path = '/resetsimulator', method = RequestMethod.GET)
-    BuySellTradingHistoricalSimulatorService.SimulationSettings resetSimulationSettings() {
+    Map resetSimulationSettings() {
         return toolkitService.resetSimulationSettings()
     }
 

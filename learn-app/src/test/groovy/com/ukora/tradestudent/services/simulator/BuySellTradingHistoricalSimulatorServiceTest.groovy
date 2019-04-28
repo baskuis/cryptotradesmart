@@ -6,7 +6,7 @@ import spock.lang.Unroll
 
 class BuySellTradingHistoricalSimulatorServiceTest extends Specification {
 
-    BuySellTradingHistoricalSimulatorService buySellTradingHistoricalSimulatorService = new BuySellTradingHistoricalSimulatorService()
+    com.ukora.tradestudent.services.simulator.origin.BuySellTradingHistoricalSimulatorService buySellTradingHistoricalSimulatorService = new com.ukora.tradestudent.services.simulator.origin.BuySellTradingHistoricalSimulatorService()
 
     @Unroll
     def "test simulateTrade for accuracy #scenario"() {
@@ -25,7 +25,7 @@ class BuySellTradingHistoricalSimulatorServiceTest extends Specification {
 
 
         when:
-        BuySellTradingHistoricalSimulatorService.simulateTrade(
+        com.ukora.tradestudent.services.simulator.origin.BuySellTradingHistoricalSimulatorService.simulateTrade(
                 simulation,
                 tradeExecution,
                 purseKey

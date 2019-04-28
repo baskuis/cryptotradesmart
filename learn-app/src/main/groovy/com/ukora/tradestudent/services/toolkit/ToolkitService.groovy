@@ -1,7 +1,7 @@
 package com.ukora.tradestudent.services.toolkit
 
-import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService
-import com.ukora.tradestudent.services.simulator.BuySellTradingHistoricalSimulatorService.SimulationSettings
+import com.ukora.tradestudent.services.simulator.flex.FlexTradingHistoricalSimulatorService
+import com.ukora.tradestudent.services.simulator.origin.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,6 +21,9 @@ class ToolkitService {
 
     @Autowired
     BuySellTradingHistoricalSimulatorService buySellTradingHistoricalSimulatorService
+
+    @Autowired
+    FlexTradingHistoricalSimulatorService flexTradingHistoricalSimulatorService
 
     @PostConstruct
     def init() {
@@ -44,14 +47,23 @@ class ToolkitService {
         tradeExecutionStrategies.get(beanName)?.enabled = false
     }
 
-    SimulationSettings updateSimulationSettings(SimulationSettings simulationSettings) {
+    BuySellTradingHistoricalSimulatorService.SimulationSettings updateSimulationSettings(BuySellTradingHistoricalSimulatorService.SimulationSettings simulationSettings) {
         buySellTradingHistoricalSimulatorService.simulationSettings = simulationSettings
         return buySellTradingHistoricalSimulatorService.simulationSettings
     }
 
-    SimulationSettings resetSimulationSettings() {
+    FlexTradingHistoricalSimulatorService.SimulationSettings updateFlexSimulationSettings(FlexTradingHistoricalSimulatorService.SimulationSettings simulationSettings) {
+        flexTradingHistoricalSimulatorService.simulationSettings = simulationSettings
+        return flexTradingHistoricalSimulatorService.simulationSettings
+    }
+
+    Map resetSimulationSettings() {
         buySellTradingHistoricalSimulatorService.resetSimulationSettings()
-        return buySellTradingHistoricalSimulatorService.simulationSettings
+        flexTradingHistoricalSimulatorService.resetSimulationSettings()
+        return [
+                'buySellTradingHistoricalSimulatorService': buySellTradingHistoricalSimulatorService.simulationSettings,
+                'flexTradingHistoricalSimulatorService'   : flexTradingHistoricalSimulatorService.simulationSettings
+        ]
     }
 
 }
