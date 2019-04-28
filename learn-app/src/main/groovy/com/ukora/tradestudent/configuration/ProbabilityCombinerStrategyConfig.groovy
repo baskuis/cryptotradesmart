@@ -13,7 +13,7 @@ import javax.annotation.PostConstruct
 @Configuration
 class ProbabilityCombinerStrategyConfig {
 
-    public static final Double MINIMAL_DIFFERENTIAL = 1.1
+    public static final Double MINIMAL_DIFFERENTIAL = 1.01
 
     @Autowired
     BytesFetcherService bytesFetcherService
