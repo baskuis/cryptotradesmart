@@ -52,22 +52,23 @@ class DynamicWeightsFlexTradeExecutionStrategy implements FlexTradeExecutionStra
     @Override
     TradeExecution getTrade(CorrelationAssociation correlationAssociation, Simulation simulation, String combinerStrategy, Double balanceProportion) {
         TradeExecution tradeExecution = null
-        Double buyProbobability = correlationAssociation.tagProbabilities.get(combinerStrategy)?.get(buyTag.tagName)
-        Double upProbobability = correlationAssociation.tagProbabilities.get(combinerStrategy)?.get(upTag.tagName)
-        Double upReversalProbobability = correlationAssociation.tagProbabilities.get(combinerStrategy)?.get(upReversalTag.tagName)
-        Double upMoveProbobability = correlationAssociation.tagProbabilities.get(combinerStrategy)?.get(upMoveTag.tagName)
-        if(buyProbobability && upProbobability && upReversalProbobability && upMoveProbobability) {
-            Double buy = buyProbobability - 0.5d
-            Double up = upProbobability - 0.5d
-            Double upReversal = upReversalProbobability - 0.5d
-            Double upMove = upMoveProbobability - 0.5d
+        Double buyProbability = correlationAssociation.tagProbabilities.get(combinerStrategy)?.get(buyTag.tagName)
+        Double upProbability = correlationAssociation.tagProbabilities.get(combinerStrategy)?.get(upTag.tagName)
+        Double upReversalProbability = correlationAssociation.tagProbabilities.get(combinerStrategy)?.get(upReversalTag.tagName)
+        Double upMoveProbability = correlationAssociation.tagProbabilities.get(combinerStrategy)?.get(upMoveTag.tagName)
+        if(buyProbability && upProbability && upReversalProbability && upMoveProbability) {
+            Double buy = buyProbability - 0.5d
+            Double up = upProbability - 0.5d
+            Double upReversal = upReversalProbability - 0.5d
+            Double upMove = upMoveProbability - 0.5d
             Double aggregateBuyProbability =
-                    (
-                            (buy * simulation.tagGroupWeights.get(buySellTagGroup.name)) +
-                                    (up * simulation.tagGroupWeights.get(upDownTagGroup.name)) +
-                                    (upReversal * simulation.tagGroupWeights.get(upDownReversalTagGroup.name)) +
-                                    (upMove * simulation.tagGroupWeights.get(upDownMovesTagGroup.name))
-                    ) / 4
+                    0.5d + (
+                                (
+                                        (buy * simulation.tagGroupWeights.get(buySellTagGroup.name)) +
+                                                (up * simulation.tagGroupWeights.get(upDownTagGroup.name)) +
+                                                (upReversal * simulation.tagGroupWeights.get(upDownReversalTagGroup.name)) +
+                                                (upMove * simulation.tagGroupWeights.get(upDownMovesTagGroup.name))
+                                ) / 4)
             Double aggregateSellProbability = 1 - aggregateBuyProbability
             if (aggregateBuyProbability > simulation.buyThreshold) {
                 tradeExecution = new TradeExecution(
