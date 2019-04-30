@@ -45,12 +45,12 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
     @Autowired
     ProbabilityCombinerService probabilityCombinerService
 
-    private final static Double MAX_TRADE_INCREMENT = 0.6
-    private final static Double TRADE_INCREMENT = 0.2
+    private final static Double MAX_TRADE_INCREMENT = 0.4
+    private final static Double TRADE_INCREMENT = 0.1
     private final static Double TRADE_TRANSACTION_COST = 0.0020
-    private final static Double LOWEST_THRESHOLD = 0.49
-    private final static Double HIGHEST_THRESHOLD = 0.53
-    private final static Double THRESHOLD_INCREMENT = 0.005
+    private final static Double LOWEST_THRESHOLD = 0.495
+    private final static Double HIGHEST_THRESHOLD = 0.52
+    private final static Double THRESHOLD_INCREMENT = 0.0025
     private final static Double MAX_THRESHOLD_DELTA = 0.015
     private final static Double MIN_TAG_GROUP_WEIGHT = -0.3
     private final static Double MAX_TAG_GROUP_WEIGHT = 0.9
