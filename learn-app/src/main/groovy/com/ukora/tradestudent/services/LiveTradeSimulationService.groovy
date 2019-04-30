@@ -134,6 +134,7 @@ class LiveTradeSimulationService {
                     } else {
                         Logger.log(String.format("Not simulating trades for %s", now))
                     }
+                    return
                 }
             } else {
                 simulateTrades([new TradeExecution(
