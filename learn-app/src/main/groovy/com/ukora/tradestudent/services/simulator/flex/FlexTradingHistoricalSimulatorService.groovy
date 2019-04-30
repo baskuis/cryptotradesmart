@@ -50,11 +50,11 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
     private final static Double TRADE_TRANSACTION_COST = 0.0020
     private final static Double LOWEST_THRESHOLD = 0.49
     private final static Double HIGHEST_THRESHOLD = 0.53
-    private final static Double THRESHOLD_INCREMENT = 0.0025
-    private final static Double MAX_THRESHOLD_DELTA = 0.02
-    private final static Double MIN_TAG_GROUP_WEIGHT = -0.4
-    private final static Double MAX_TAG_GROUP_WEIGHT = 0.8
-    private final static Double TAG_GROUP_WEIGHT_INC = 0.2
+    private final static Double THRESHOLD_INCREMENT = 0.005
+    private final static Double MAX_THRESHOLD_DELTA = 0.015
+    private final static Double MIN_TAG_GROUP_WEIGHT = -0.3
+    private final static Double MAX_TAG_GROUP_WEIGHT = 0.9
+    private final static Double TAG_GROUP_WEIGHT_INC = 0.3
 
     static class SimulationSettings {
         Double tradeIncrement = TRADE_INCREMENT
