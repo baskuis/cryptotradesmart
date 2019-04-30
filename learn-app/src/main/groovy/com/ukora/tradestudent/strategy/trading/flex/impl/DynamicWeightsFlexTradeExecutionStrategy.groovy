@@ -61,14 +61,19 @@ class DynamicWeightsFlexTradeExecutionStrategy implements FlexTradeExecutionStra
             Double up = upProbability - 0.5d
             Double upReversal = upReversalProbability - 0.5d
             Double upMove = upMoveProbability - 0.5d
+            Double buyWeight = simulation.tagGroupWeights.get(buySellTagGroup.name)
+            Double upWeight = simulation.tagGroupWeights.get(upDownTagGroup.name)
+            Double upReversalWeight = simulation.tagGroupWeights.get(upDownReversalTagGroup.name)
+            Double upMoveWeight = simulation.tagGroupWeights.get(upDownMovesTagGroup.name)
             Double aggregateBuyProbability =
                     0.5d + (
                                 (
-                                        (buy * simulation.tagGroupWeights.get(buySellTagGroup.name)) +
-                                                (up * simulation.tagGroupWeights.get(upDownTagGroup.name)) +
-                                                (upReversal * simulation.tagGroupWeights.get(upDownReversalTagGroup.name)) +
-                                                (upMove * simulation.tagGroupWeights.get(upDownMovesTagGroup.name))
-                                ) / 4)
+                                        (buy * buyWeight) +
+                                                (up * upWeight) +
+                                                (upReversal * upReversalWeight) +
+                                                (upMove * upMoveWeight)
+                                ) / (Math.abs(buyWeight) + Math.abs(upWeight) + Math.abs(upReversalWeight) + Math.abs(upMoveWeight))
+                    )
             Double aggregateSellProbability = 1 - aggregateBuyProbability
             if (aggregateBuyProbability > simulation.buyThreshold) {
                 tradeExecution = new TradeExecution(
