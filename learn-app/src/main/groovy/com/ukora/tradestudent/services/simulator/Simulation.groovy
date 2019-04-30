@@ -12,7 +12,6 @@ class Simulation {
     Double tradeIncrement
     Double transactionCost
     Double finalPrice
-    Map<String, Double> tagThresholds = new ConcurrentHashMap<String, Double>()
     Map<String, Double> tagGroupWeights = new ConcurrentHashMap<String, Double>()
     Map balancesA = new ConcurrentHashMap<String, Double>()
     Map balancesB = new ConcurrentHashMap<String, Double>()

@@ -56,7 +56,8 @@ abstract class AbstractTradingHistoricalSimulatorService {
                     buyThreshold: simulation.buyThreshold,
                     sellThreshold: simulation.sellThreshold,
                     tradeCount: simulation.tradeCounts.get(it.value.get('purseKey') as String, 0d),
-                    totalValue: simulation.totalBalances.get(it.value.get('purseKey') as String, 0d)
+                    totalValue: simulation.totalBalances.get(it.value.get('purseKey') as String, 0d),
+                    tagGroupWeights: simulation.tagGroupWeights
             )
             bytesFetcherService.saveSimulation(simulationResult)
         }

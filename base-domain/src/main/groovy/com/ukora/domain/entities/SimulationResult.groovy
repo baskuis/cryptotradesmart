@@ -7,7 +7,9 @@ class SimulationResult {
     @Id
     String id
 
-    enum ExecutionType { BASIC, FLEX }
+    enum ExecutionType {
+        BASIC, FLEX
+    }
 
     ExecutionType executionType = ExecutionType.BASIC
     Exchange exchange
@@ -25,4 +27,6 @@ class SimulationResult {
     Double differential
     Integer tradeCount
     Double totalValue
+
+    Map<String, Double> tagGroupWeights = [:]
 }

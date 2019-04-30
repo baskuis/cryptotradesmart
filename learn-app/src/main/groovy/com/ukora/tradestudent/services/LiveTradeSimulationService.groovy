@@ -1,15 +1,12 @@
 package com.ukora.tradestudent.services
 
-import com.ukora.domain.entities.CorrelationAssociation
-import com.ukora.domain.entities.Memory
-import com.ukora.domain.entities.Metadata
-import com.ukora.domain.entities.SimulatedTradeEntry
-import com.ukora.domain.entities.SimulationResult
-import com.ukora.tradestudent.services.simulator.origin.BuySellTradingHistoricalSimulatorService
-import com.ukora.tradestudent.services.simulator.Simulation
-import com.ukora.domain.beans.trade.TradeExecution
-import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
 import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
+import com.ukora.domain.beans.trade.TradeExecution
+import com.ukora.domain.entities.*
+import com.ukora.tradestudent.services.simulator.Simulation
+import com.ukora.tradestudent.services.simulator.origin.BuySellTradingHistoricalSimulatorService
+import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
+import com.ukora.tradestudent.strategy.trading.flex.FlexTradeExecutionStrategy
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -79,38 +76,57 @@ class LiveTradeSimulationService {
             CorrelationAssociation correlationAssociation = probabilityCombinerService.getCorrelationAssociations(now)
             if (simulationResult) {
                 if (correlationAssociation) {
-                    TradeExecutionStrategy tradeExecutionStrategy = applicationContext.getBean(simulationResult.tradeExecutionStrategy, TradeExecutionStrategy)
                     String probabilityCombinerStrategy = simulationResult.probabilityCombinerStrategy
-                    buySellTagGroup.tags().each {
-                        String tag = it.tagName
-                        Double probability = correlationAssociation.tagProbabilities.get(probabilityCombinerStrategy).get(tag)
-                        if (probability) {
-                            SimulatedTradeEntry latestSimulatedTradeEntry = bytesFetcherService.getLatestSimulatedTradeEntry()
-                            Double balanceProportion = (
-                                    latestSimulatedTradeEntry &&
-                                            correlationAssociation.price &&
-                                            latestSimulatedTradeEntry.balanceA &&
-                                            latestSimulatedTradeEntry.balanceB
-                            ) ? latestSimulatedTradeEntry.balanceA / (latestSimulatedTradeEntry.balanceA + (latestSimulatedTradeEntry.balanceB / correlationAssociation.price)) : 1
-                            if (!NerdUtils.assertRange(balanceProportion)) {
-                                Logger.log(String.format('balanceProportion %s is not in range', balanceProportion))
-                                return
+                    SimulatedTradeEntry latestSimulatedTradeEntry = bytesFetcherService.getLatestSimulatedTradeEntry()
+                    Double balanceProportion = (
+                            latestSimulatedTradeEntry &&
+                                    correlationAssociation.price &&
+                                    latestSimulatedTradeEntry.balanceA &&
+                                    latestSimulatedTradeEntry.balanceB
+                    ) ? latestSimulatedTradeEntry.balanceA / (latestSimulatedTradeEntry.balanceA + (latestSimulatedTradeEntry.balanceB / correlationAssociation.price)) : 1
+                    if (!NerdUtils.assertRange(balanceProportion)) {
+                        Logger.log(String.format('balanceProportion %s is not in range', balanceProportion))
+                        return
+                    }
+                    switch (simulationResult.executionType) {
+                        case SimulationResult.ExecutionType.BASIC:
+                            buySellTagGroup.tags().each {
+                                String tag = it.tagName
+                                Double probability = correlationAssociation.tagProbabilities.get(probabilityCombinerStrategy).get(tag)
+                                if (probability) {
+                                    TradeExecutionStrategy tradeExecutionStrategy = applicationContext.getBean(simulationResult.tradeExecutionStrategy, TradeExecutionStrategy)
+                                    TradeExecution tradeExecution = tradeExecutionStrategy.getTrade(
+                                            correlationAssociation,
+                                            tag,
+                                            probability,
+                                            new Simulation(
+                                                    buyThreshold: simulationResult.buyThreshold,
+                                                    sellThreshold: simulationResult.sellThreshold,
+                                                    tradeIncrement: simulationResult.tradeIncrement
+                                            ),
+                                            probabilityCombinerStrategy,
+                                            balanceProportion
+                                    )
+                                    if (tradeExecution) tradeExecutions << tradeExecution
+                                }
                             }
-                            TradeExecution tradeExecution = tradeExecutionStrategy.getTrade(
+                            break
+                        case SimulationResult.ExecutionType.FLEX:
+                            FlexTradeExecutionStrategy flexTradeExecutionStrategy = applicationContext.getBean(simulationResult.tradeExecutionStrategy, FlexTradeExecutionStrategy)
+                            TradeExecution tradeExecution = flexTradeExecutionStrategy.getTrade(
                                     correlationAssociation,
-                                    tag,
-                                    probability,
                                     new Simulation(
-                                            startingBalance: BuySellTradingHistoricalSimulatorService.STARTING_BALANCE,
                                             buyThreshold: simulationResult.buyThreshold,
                                             sellThreshold: simulationResult.sellThreshold,
-                                            tradeIncrement: simulationResult.tradeIncrement
+                                            tradeIncrement: simulationResult.tradeIncrement,
+                                            tagGroupWeights: simulationResult.tagGroupWeights
                                     ),
                                     probabilityCombinerStrategy,
                                     balanceProportion
                             )
                             if (tradeExecution) tradeExecutions << tradeExecution
-                        }
+                            break
+
                     }
                     if (tradeExecutions) {
                         Logger.log(String.format("Simulating %s trades", tradeExecutions.size()))
@@ -118,7 +134,6 @@ class LiveTradeSimulationService {
                     } else {
                         Logger.log(String.format("Not simulating trades for %s", now))
                     }
-                    return
                 }
             } else {
                 simulateTrades([new TradeExecution(
