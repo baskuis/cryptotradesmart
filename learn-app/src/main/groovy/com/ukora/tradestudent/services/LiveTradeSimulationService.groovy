@@ -40,6 +40,9 @@ class LiveTradeSimulationService {
     @Autowired
     BuySellTagGroup buySellTagGroup
 
+    @Autowired
+    EmailService emailService
+
     @PostConstruct
     void init() {
 
@@ -159,12 +162,18 @@ class LiveTradeSimulationService {
      */
     private void simulateTrades(List<TradeExecution> tradeExecutions) {
         tradeExecutions.each { TradeExecution tradeExecution ->
-            Logger.log(String.format(
+            String message = String.format(
                     "Capturing simulated trade %s amount: %s, price: %s",
                     tradeExecution.tradeType,
                     tradeExecution.amount,
                     tradeExecution.price,
-            ))
+            )
+            emailService.sendEmail(
+                    "Capturing ${tradeExecution.tradeType}",
+                    message,
+                    "baskuis1@gmail.com"
+            )
+            Logger.log(message)
             SimulatedTradeEntry latestSimulatedTradeEntry = bytesFetcherService.getLatestSimulatedTradeEntry()
             if (latestSimulatedTradeEntry) {
                 SimulatedTradeEntry nextTradeEntry = getNextSimulatedTradeEntry(

@@ -2,6 +2,7 @@ package com.ukora.tradestudent.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
@@ -26,6 +27,7 @@ class EmailService {
         sendEmail('top performing simulation', objectMapper.writeValueAsString(r), 'baskuis1@gmail.com')
     }
 
+    @Async
     def sendEmail(String subject, String message, String email){
 
         def props = new Properties()
