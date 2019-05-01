@@ -2,6 +2,7 @@ package com.ukora.tradestudent.services
 
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
+import com.ukora.tradestudent.strategy.trading.flex.FlexTradeExecutionStrategy
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
@@ -36,6 +37,12 @@ class AliasService {
 
         /** Load aliases for trade executor strategies */
         applicationContext.getBeansOfType(TradeExecutionStrategy).each {
+            beanToAlias.put(it.key, it.value.alias)
+            aliasToBean.put(it.value.alias, it.key)
+        }
+
+        /** Load aliases for flex trade executor strategies */
+        applicationContext.getBeansOfType(FlexTradeExecutionStrategy).each {
             beanToAlias.put(it.key, it.value.alias)
             aliasToBean.put(it.value.alias, it.key)
         }
