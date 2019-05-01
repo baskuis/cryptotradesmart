@@ -19,14 +19,13 @@ class TradeSimulatorService {
     @Autowired
     FlexTradingHistoricalSimulatorService flexTradingHistoricalSimulatorService
 
-    @Scheduled(cron = "0 0 0,12 * * *")
     void runSimulation(){
         Instant current = Instant.now().minus(20, ChronoUnit.DAYS)
         Logger.log(String.format("Running simulation starting from %s", Date.from(current)))
         buySellTradingHistoricalSimulatorService.runSimulation(Date.from(current))
     }
 
-    @Scheduled(cron = "0 0 3,15 * * *")
+    @Scheduled(cron = "0 0 3,9,15,21 * * *")
     void runFlexSimulation() {
         Instant current = Instant.now().minus(20, ChronoUnit.DAYS)
         Logger.log(String.format("Running simulation starting from %s", Date.from(current)))
