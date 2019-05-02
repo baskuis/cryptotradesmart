@@ -12,6 +12,8 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 
+import java.util.concurrent.ConcurrentHashMap
+
 @Service
 class BytesFetcherService {
 
@@ -445,10 +447,9 @@ class BytesFetcherService {
         def r = correlationAssociationRepository.findByDate(correlationAssociation?.memory?.metadata?.datetime)
         CorrelationAssociation existing = r.size() > 0 ? r.first() : null
         if (existing) {
-            correlationAssociation.properties.each { key, value ->
-                if (existing.hasProperty(key as String) && !((key as String) in ['class', 'metaClass']))
-                    existing[key as String] = value
-            }
+            existing.tagProbabilities = correlationAssociation.tagProbabilities
+            existing.tagScores = correlationAssociation.tagScores
+            existing.tagProbabilities = correlationAssociation.tagProbabilities
             existing.date = correlationAssociation?.memory?.metadata?.datetime
             correlationAssociationRepository.save(existing)
         } else {

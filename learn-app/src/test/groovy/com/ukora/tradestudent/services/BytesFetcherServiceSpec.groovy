@@ -2,6 +2,7 @@ package com.ukora.tradestudent.services
 
 import com.ukora.domain.beans.tags.buysell.BuyTag
 import com.ukora.domain.entities.*
+import com.ukora.domain.repositories.CorrelationAssociationRepository
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,6 +15,9 @@ class BytesFetcherServiceSpec {
 
     @Autowired
     BytesFetcherService bytesFetcherService
+
+    @Autowired
+    CorrelationAssociationRepository correlationAssociationRepository
 
     @Test
     void testInsertThenReadProperty() {
@@ -244,6 +248,37 @@ class BytesFetcherServiceSpec {
         then:
         memory != null
         memory.metadata.datetime != null
+
+    }
+
+    @Test
+    void testCaptureCorrelationAssociation() {
+
+        setup:
+        Date date = new Date()
+        CorrelationAssociation correlationAssociation = new CorrelationAssociation(
+                memory: new Memory(
+                        metadata: new Metadata(
+                                datetime: date
+                        )
+                )
+        )
+
+        when:
+        bytesFetcherService.captureCorrelationAssociation(correlationAssociation)
+
+        and:
+        correlationAssociation.tagProbabilities = [combiner: [tag: 2d]]
+        bytesFetcherService.captureCorrelationAssociation(correlationAssociation)
+
+        and:
+        def r = correlationAssociationRepository.findByDate(date)
+
+        then:
+        r != null
+        r.size() == 1
+        r.first().date == date
+        r.first().tagProbabilities.combiner.tag == 2d
 
     }
 
