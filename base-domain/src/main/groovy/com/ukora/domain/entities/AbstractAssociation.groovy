@@ -21,6 +21,7 @@ abstract class AbstractAssociation {
             '9minute',
             '10minute',
             '15minute',
+            '20minute',
             '30minute',
             '45minute',
             '1hour',

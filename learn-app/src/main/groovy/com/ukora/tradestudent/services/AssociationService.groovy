@@ -85,6 +85,9 @@ class AssociationService {
                 case '15minute':
                     calendar.add(Calendar.MINUTE, -15)
                     break
+                case '20minute':
+                    calendar.add(Calendar.MINUTE, -20)
+                    break
                 case '30minute':
                     calendar.add(Calendar.MINUTE, -30)
                     break
