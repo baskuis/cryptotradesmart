@@ -31,10 +31,12 @@ class ConcurrentTextAssociationProbabilityService {
         cal.setTime(eventDate)
         cal.set(Calendar.SECOND, 0)
         cal.set(Calendar.MILLISECOND, 0)
-        def strategyProbabilities = textAssociationProbabilityService.tagCorrelationByText(Date.from(cal.toInstant()))
+        Date d = Date.from(cal.toInstant())
+        def strategyProbabilities = textAssociationProbabilityService.tagCorrelationByText(d)
         TextCorrelationAssociation textCorrelationAssociation = null
         if (strategyProbabilities) {
             textCorrelationAssociation = new TextCorrelationAssociation(
+                    date: d,
                     strategyProbabilities: strategyProbabilities
             )
             bytesFetcherService.captureTextCorrelationAssociation(textCorrelationAssociation)
