@@ -7,11 +7,15 @@ import com.ukora.domain.beans.tags.trend.UpDownTagGroup
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.domain.entities.CorrelationAssociation
 import com.ukora.domain.entities.SimulationResult
+import com.ukora.domain.entities.TextCorrelationAssociation
 import com.ukora.tradestudent.services.BytesFetcherService
 import com.ukora.tradestudent.services.ProbabilityCombinerService
 import com.ukora.tradestudent.services.simulator.AbstractTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.simulator.Simulation
+import com.ukora.tradestudent.services.text.ConcurrentTextAssociationProbabilityService
+import com.ukora.tradestudent.services.text.TextAssociationProbabilityService
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
+import com.ukora.tradestudent.strategy.text.probablitity.TextProbabilityCombinerStrategy
 import com.ukora.tradestudent.strategy.trading.flex.FlexTradeExecutionStrategy
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
@@ -44,6 +48,9 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
 
     @Autowired
     ProbabilityCombinerService probabilityCombinerService
+
+    @Autowired
+    ConcurrentTextAssociationProbabilityService concurrentTextAssociationProbabilityService
 
     private final static Double MAX_TRADE_INCREMENT = 0.3
     private final static Double TRADE_INCREMENT = 0.1
@@ -167,13 +174,33 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
         while (current.isBefore(end)) {
             end = Instant.now()
             current = current + gap
+            Date d = Date.from(current)
 
-            /** Get probabilities */
-            CorrelationAssociation correlationAssociation = probabilityCombinerService.getCorrelationAssociations(Date.from(current))
-            correlationAssociation.tagProbabilities.each {
+            /**
+             * Get p values for numerical associations
+             *
+             * and also
+             *
+             * text associations
+             *
+             */
+            List<Thread> retrieveThreads = []
+            CorrelationAssociation correlationAssociation = null
+            TextCorrelationAssociation textCorrelationAssociation = null
+            retrieveThreads << Thread.start {
+                correlationAssociation = probabilityCombinerService.getCorrelationAssociations(d)
+            }
+            retrieveThreads << Thread.start {
+                textCorrelationAssociation = concurrentTextAssociationProbabilityService.getCorrelationAssociations(d)
+            }
+            retrieveThreads*.join()
+
+            /** check */
+            if (!correlationAssociation.price) return
+            if (!textCorrelationAssociation.strategyProbabilities) return
+
+            correlationAssociation?.tagProbabilities?.each {
                 String strategy = it.key
-
-                if (!correlationAssociation.price) return
                 List<Thread> threads = []
                 partitioned.each { group ->
                     threads << Thread.start({
@@ -205,6 +232,7 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
                                     } else {
                                         tradeExecution = it.value.getTrade(
                                                 correlationAssociation,
+                                                textCorrelationAssociation,
                                                 simulation,
                                                 strategy,
                                                 balanceProportion)

@@ -10,6 +10,7 @@ import com.ukora.domain.beans.tags.trend.UpDownTagGroup
 import com.ukora.domain.beans.tags.trend.UpTag
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.domain.entities.CorrelationAssociation
+import com.ukora.domain.entities.TextCorrelationAssociation
 import com.ukora.tradestudent.services.simulator.Simulation
 import com.ukora.tradestudent.strategy.trading.flex.FlexTradeExecutionStrategy
 import org.springframework.beans.factory.annotation.Autowired
@@ -50,7 +51,13 @@ class DynamicWeightsFlexTradeExecutionStrategy implements FlexTradeExecutionStra
     }
 
     @Override
-    TradeExecution getTrade(CorrelationAssociation correlationAssociation, Simulation simulation, String combinerStrategy, Double balanceProportion) {
+    TradeExecution getTrade(
+            CorrelationAssociation correlationAssociation,
+            TextCorrelationAssociation textCorrelationAssociation,
+            Simulation simulation,
+            String combinerStrategy,
+            Double balanceProportion
+    ) {
         TradeExecution tradeExecution = null
         Double buyProbability = correlationAssociation.tagProbabilities.get(combinerStrategy)?.get(buyTag.tagName)
         Double upProbability = correlationAssociation.tagProbabilities.get(combinerStrategy)?.get(upTag.tagName)

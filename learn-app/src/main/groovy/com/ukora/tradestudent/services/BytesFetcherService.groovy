@@ -37,6 +37,8 @@ class BytesFetcherService {
     MemoryRepository memoryRepository
     @Autowired
     CorrelationAssociationRepository correlationAssociationRepository
+    @Autowired
+    TextCorrelationAssociationRepository textCorrelationAssociationRepository
 
     @Autowired
     TagService tagService
@@ -441,7 +443,7 @@ class BytesFetcherService {
     /**
      * Capture correlation association
      *
-     * @param correlationAssociation
+     * @param CorrelationAssociation correlationAssociation
      */
     void captureCorrelationAssociation(CorrelationAssociation correlationAssociation) {
         def r = correlationAssociationRepository.findByDate(correlationAssociation?.memory?.metadata?.datetime)
@@ -455,6 +457,22 @@ class BytesFetcherService {
         } else {
             correlationAssociation.date = correlationAssociation?.memory?.metadata?.datetime
             correlationAssociationRepository.save(correlationAssociation)
+        }
+    }
+
+    /**
+     * Capture text correlation association
+     *
+     * @param TextCorrelationAssociation textCorrelationAssociation
+     */
+    void captureTextCorrelationAssociation(TextCorrelationAssociation textCorrelationAssociation) {
+        def r = textCorrelationAssociationRepository.findByDate(textCorrelationAssociation?.date)
+        TextCorrelationAssociation existing = r.size() > 0 ? r.first() : null
+        if (existing) {
+            existing.strategyProbabilities = textCorrelationAssociation.strategyProbabilities
+            correlationAssociationRepository.save(existing)
+        } else {
+            textCorrelationAssociationRepository.save(textCorrelationAssociation)
         }
     }
 

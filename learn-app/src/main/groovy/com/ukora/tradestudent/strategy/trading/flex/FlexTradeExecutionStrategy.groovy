@@ -2,6 +2,7 @@ package com.ukora.tradestudent.strategy.trading.flex
 
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.domain.entities.CorrelationAssociation
+import com.ukora.domain.entities.TextCorrelationAssociation
 import com.ukora.tradestudent.services.simulator.Simulation
 
 interface FlexTradeExecutionStrategy {
@@ -24,6 +25,7 @@ interface FlexTradeExecutionStrategy {
      * all combinations of implementations of this interface will be tested
      *
      * @param correlationAssociation The correlation association object
+     * @param textCorrelationAssociation The text correlation association object
      * @param simulation The winning simulation configuration
      * @param combinerStrategy The bean name of the combiner strategy
      * @param balanceProportion The proportion of balance A vs balance A + B priced in A
@@ -31,6 +33,7 @@ interface FlexTradeExecutionStrategy {
      */
     TradeExecution getTrade(
             CorrelationAssociation correlationAssociation,
+            TextCorrelationAssociation textCorrelationAssociation,
             Simulation simulation,
             String combinerStrategy,
             Double balanceProportion
