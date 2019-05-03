@@ -470,7 +470,7 @@ class BytesFetcherService {
         TextCorrelationAssociation existing = r.size() > 0 ? r.first() : null
         if (existing) {
             existing.strategyProbabilities = textCorrelationAssociation.strategyProbabilities
-            correlationAssociationRepository.save(existing)
+            textCorrelationAssociationRepository.save(existing)
         } else {
             textCorrelationAssociationRepository.save(textCorrelationAssociation)
         }
