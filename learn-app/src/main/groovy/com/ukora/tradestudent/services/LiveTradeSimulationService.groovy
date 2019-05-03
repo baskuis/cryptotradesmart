@@ -5,6 +5,7 @@ import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.domain.entities.*
 import com.ukora.tradestudent.services.simulator.Simulation
 import com.ukora.tradestudent.services.simulator.origin.BuySellTradingHistoricalSimulatorService
+import com.ukora.tradestudent.services.text.ConcurrentTextAssociationProbabilityService
 import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
 import com.ukora.tradestudent.strategy.trading.flex.FlexTradeExecutionStrategy
 import com.ukora.tradestudent.utils.Logger
@@ -30,6 +31,9 @@ class LiveTradeSimulationService {
 
     @Autowired
     ProbabilityCombinerService probabilityCombinerService
+
+    @Autowired
+    ConcurrentTextAssociationProbabilityService concurrentTextAssociationProbabilityService
 
     @Autowired
     SimulationResultService simulationResultService
@@ -77,8 +81,9 @@ class LiveTradeSimulationService {
             List<TradeExecution> tradeExecutions = []
             SimulationResult simulationResult = simulationResultService.getTopPerformingSimulation()
             CorrelationAssociation correlationAssociation = probabilityCombinerService.getCorrelationAssociations(now)
+            TextCorrelationAssociation textCorrelationAssociation = concurrentTextAssociationProbabilityService.getCorrelationAssociations(now)
             if (simulationResult) {
-                if (correlationAssociation) {
+                if (correlationAssociation && textCorrelationAssociation) {
                     String probabilityCombinerStrategy = simulationResult.probabilityCombinerStrategy
                     SimulatedTradeEntry latestSimulatedTradeEntry = bytesFetcherService.getLatestSimulatedTradeEntry()
                     Double balanceProportion = (
@@ -118,6 +123,7 @@ class LiveTradeSimulationService {
                             FlexTradeExecutionStrategy flexTradeExecutionStrategy = applicationContext.getBean(simulationResult.tradeExecutionStrategy, FlexTradeExecutionStrategy)
                             TradeExecution tradeExecution = flexTradeExecutionStrategy.getTrade(
                                     correlationAssociation,
+                                    textCorrelationAssociation,
                                     new Simulation(
                                             buyThreshold: simulationResult.buyThreshold,
                                             sellThreshold: simulationResult.sellThreshold,
