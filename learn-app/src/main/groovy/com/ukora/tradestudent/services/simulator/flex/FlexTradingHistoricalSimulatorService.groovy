@@ -196,8 +196,8 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
             retrieveThreads*.join()
 
             /** check */
-            if (!correlationAssociation.price) return
-            if (!textCorrelationAssociation.strategyProbabilities) return
+            if (!correlationAssociation.price) continue
+            if (!textCorrelationAssociation.strategyProbabilities) continue
 
             correlationAssociation?.tagProbabilities?.each {
                 String strategy = it.key
