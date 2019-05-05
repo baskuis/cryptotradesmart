@@ -8,6 +8,7 @@ import com.ukora.tradestudent.services.associations.CaptureAssociationsService
 import com.ukora.tradestudent.services.associations.TechnicalAnalysisService
 import com.ukora.tradestudent.services.associations.text.CaptureTextAssociationsService
 import com.ukora.tradestudent.services.learner.TraverseLessonsService
+import com.ukora.tradestudent.services.simulator.combined.CombinedTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.simulator.flex.FlexTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.simulator.origin.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.simulator.TradeSimulatorService
@@ -153,6 +154,12 @@ class TradeStudentController {
     @RequestMapping(path = '/runflexsimulation', method = RequestMethod.GET)
     String runFlexSimulation() {
         tradeSimulatorService.runFlexSimulation()
+        "STARTED"
+    }
+
+    @RequestMapping(path = '/runcombinedsimulation', method = RequestMethod.GET)
+    String runCombinedSimulation() {
+        tradeSimulatorService.runCombinedSimulation()
         "STARTED"
     }
 

@@ -1,5 +1,6 @@
 package com.ukora.tradestudent.services.simulator
 
+import com.ukora.tradestudent.services.simulator.combined.CombinedTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.simulator.flex.FlexTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.simulator.origin.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.utils.Logger
@@ -19,6 +20,9 @@ class TradeSimulatorService {
     @Autowired
     FlexTradingHistoricalSimulatorService flexTradingHistoricalSimulatorService
 
+    @Autowired
+    CombinedTradingHistoricalSimulatorService combinedTradingHistoricalSimulatorService
+
     void runSimulation(){
         Instant current = Instant.now().minus(20, ChronoUnit.DAYS)
         Logger.log(String.format("Running simulation starting from %s", Date.from(current)))
@@ -28,8 +32,14 @@ class TradeSimulatorService {
     @Scheduled(cron = "0 0 3,9,15,21 * * *")
     void runFlexSimulation() {
         Instant current = Instant.now().minus(20, ChronoUnit.DAYS)
-        Logger.log(String.format("Running simulation starting from %s", Date.from(current)))
+        Logger.log(String.format("Running flex simulation starting from %s", Date.from(current)))
         flexTradingHistoricalSimulatorService.runSimulation(Date.from(current))
+    }
+
+    void runCombinedSimulation() {
+        Instant current = Instant.now().minus(20, ChronoUnit.DAYS)
+        Logger.log(String.format("Running combined simulation starting from %s", Date.from(current)))
+        combinedTradingHistoricalSimulatorService.runSimulation(Date.from(current))
     }
 
 }
