@@ -36,6 +36,11 @@ class DynamicWeightsFlexTradeExecutionStrategy implements FlexTradeExecutionStra
     private boolean enabled = true
 
     @Override
+    FlexTradeExecutionStrategy.Type getType() {
+        return FlexTradeExecutionStrategy.Type.NUMERIC
+    }
+
+    @Override
     boolean isEnabled() {
         return enabled
     }

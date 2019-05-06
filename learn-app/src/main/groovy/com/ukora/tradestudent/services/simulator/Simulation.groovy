@@ -19,6 +19,7 @@ class Simulation {
     Map totalBalances = new ConcurrentHashMap<String, Double>()
     Map pursesEnabled = new ConcurrentHashMap<String, Boolean>()
     Map result = [:]
+    Double simulationWeight = 1d
 
     @Override
     String toString() {

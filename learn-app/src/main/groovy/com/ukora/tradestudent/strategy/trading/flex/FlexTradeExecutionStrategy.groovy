@@ -18,6 +18,9 @@ interface FlexTradeExecutionStrategy {
 
     void setEnabled(boolean enabled)
 
+    enum Type { NUMERIC, TEXT }
+    Type getType()
+
     /**
      * This method will product a buy/sell trade order based on the following
      * inputs. Each strategy which implements this interface can handle

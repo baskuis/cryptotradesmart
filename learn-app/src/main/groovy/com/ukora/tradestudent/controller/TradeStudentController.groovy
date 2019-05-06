@@ -210,6 +210,26 @@ class TradeStudentController {
         simulationResultService.getTopPerformingSimulation()
     }
 
+    @RequestMapping(path = '/bestnumericalflexsimulation', method = RequestMethod.GET)
+    SimulationResult getTopPerformingNumericalFlexSimulation() {
+        simulationResultService.getTopPerformingNumericalFlexSimulation()
+    }
+
+    @RequestMapping(path = '/besttextflexsimulation', method = RequestMethod.GET)
+    SimulationResult getTopPerformingTextFlexSimulation() {
+        simulationResultService.getTopPerformingTextFlexSimulation()
+    }
+
+    @RequestMapping(path = '/textsimulationrange', method = RequestMethod.GET)
+    SimulationResultService.SimulationRange getFlexTextSimulationRange() {
+        simulationResultService.getFlexTextSimulationRange()
+    }
+
+    @RequestMapping(path = '/numericalsimulationrange', method = RequestMethod.GET)
+    SimulationResultService.SimulationRange getFlexNumericalSimulationRange() {
+        simulationResultService.getFlexNumericalSimulationRange()
+    }
+
     @RequestMapping(path = '/bestsimulations', method = RequestMethod.GET)
     List<SimulationResult> getBestSimulations() {
         simulationResultService.getTopPerformingSimulations()

@@ -42,6 +42,11 @@ class DynamicTwitterWeightsFlexTradeExecutionStrategy implements FlexTradeExecut
     private boolean enabled = true
 
     @Override
+    FlexTradeExecutionStrategy.Type getType() {
+        return FlexTradeExecutionStrategy.Type.TEXT
+    }
+
+    @Override
     boolean isEnabled() {
         return enabled
     }

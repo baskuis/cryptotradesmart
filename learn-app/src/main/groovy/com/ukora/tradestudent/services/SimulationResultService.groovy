@@ -3,10 +3,15 @@ package com.ukora.tradestudent.services
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ukora.domain.entities.SimulationResult
 import com.ukora.tradestudent.services.simulator.origin.BuySellTradingHistoricalSimulatorService
+import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
+import com.ukora.tradestudent.strategy.text.probablitity.TextProbabilityCombinerStrategy
+import com.ukora.tradestudent.strategy.trading.flex.FlexTradeExecutionStrategy
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
 
+import javax.annotation.PostConstruct
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
@@ -14,6 +19,9 @@ import java.time.temporal.ChronoUnit
 class SimulationResultService {
 
     public final Integer MAX_AGE_IN_HOURS = 24
+
+    @Autowired
+    ApplicationContext applicationContext
 
     @Autowired
     BytesFetcherService bytesFetcherService
@@ -24,6 +32,23 @@ class SimulationResultService {
     static final Double TRADE_COUNT_DIMINISHING_POWER = 0.30
 
     final int SECONDS_IN_HOUR = 3600
+
+    List<String> textCombinerStrategies
+    List<String> numericalCombinerStrategies
+    List<String> textFlexTradeStrategies
+    List<String> numericalFlexTradeStrategies
+
+    @PostConstruct
+    def init() {
+        textCombinerStrategies = applicationContext.getBeansOfType(TextProbabilityCombinerStrategy)?.keySet()?.toList()
+        numericalCombinerStrategies = applicationContext.getBeansOfType(ProbabilityCombinerStrategy)?.keySet()?.toList()
+        textFlexTradeStrategies = applicationContext.getBeansOfType(FlexTradeExecutionStrategy)?.findAll {
+            it.value.getType() == FlexTradeExecutionStrategy.Type.TEXT
+        }?.keySet()?.toList()
+        numericalFlexTradeStrategies = applicationContext.getBeansOfType(FlexTradeExecutionStrategy)?.findAll {
+            it.value.getType() == FlexTradeExecutionStrategy.Type.NUMERIC
+        }?.keySet()?.toList()
+    }
 
     /**
      * Get top performing simulation
@@ -66,6 +91,133 @@ class SimulationResultService {
         performingTradeExecutionStrategies
     }
 
+    static class SimulationRange {
+        Map<String, Double> topTagGroupWeights
+        Map<String, Double> bottomTagGroupWeights
+        Double bottomBuyThreshold
+        Double topBuyThreshold
+        Double bottomSellThreshold
+        Double topSellThreshold
+    }
+
+    SimulationRange getFlexTextSimulationRange() {
+        SimulationRange simulationRange = new SimulationRange()
+        bytesFetcherService.getSimulations()?.findAll({
+            it.executionType == SimulationResult.ExecutionType.FLEX &&
+                    it.differential > MINIMUM_DIFFERENTIAL &&
+                    this.textCombinerStrategies?.contains(it.probabilityCombinerStrategy) &&
+                    this.textFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
+        })?.sort({ SimulationResult a, SimulationResult b ->
+            b.endDate <=> a.endDate
+        })?.take(20)?.each({
+            if (!simulationRange.topTagGroupWeights) {
+                simulationRange.topTagGroupWeights = it.tagGroupWeights
+            }
+            if (!simulationRange.bottomTagGroupWeights) {
+                simulationRange.bottomTagGroupWeights = it.tagGroupWeights
+            }
+            if (!simulationRange.bottomBuyThreshold) {
+                simulationRange.bottomBuyThreshold = it.buyThreshold
+            }
+            if (!simulationRange.bottomSellThreshold) {
+                simulationRange.bottomSellThreshold = it.buyThreshold
+            }
+            if (!simulationRange.topBuyThreshold) {
+                simulationRange.topBuyThreshold = it.sellThreshold
+            }
+            if (!simulationRange.topSellThreshold) {
+                simulationRange.topSellThreshold = it.sellThreshold
+            }
+            it.tagGroupWeights.each {
+                simulationRange.topTagGroupWeights.put(it.key, (it.value > simulationRange.topTagGroupWeights.get(it.key)) ? it.value : simulationRange.topTagGroupWeights.get(it.key))
+                simulationRange.bottomTagGroupWeights.put(it.key, (it.value > simulationRange.bottomTagGroupWeights.get(it.key)) ? it.value : simulationRange.bottomTagGroupWeights.get(it.key))
+            }
+            simulationRange.bottomBuyThreshold = (it.buyThreshold < simulationRange.bottomBuyThreshold) ? it.buyThreshold : simulationRange.bottomBuyThreshold
+            simulationRange.bottomSellThreshold = (it.sellThreshold < simulationRange.bottomSellThreshold) ? it.sellThreshold : simulationRange.bottomSellThreshold
+            simulationRange.topBuyThreshold = (it.buyThreshold > simulationRange.topBuyThreshold) ? it.buyThreshold : simulationRange.topBuyThreshold
+            simulationRange.topSellThreshold = (it.sellThreshold > simulationRange.bottomSellThreshold) ? it.sellThreshold : simulationRange.bottomSellThreshold
+
+        })
+        return simulationRange
+    }
+
+    SimulationRange getFlexNumericalSimulationRange() {
+        SimulationRange simulationRange = new SimulationRange()
+        bytesFetcherService.getSimulations()?.findAll({
+            it.executionType == SimulationResult.ExecutionType.FLEX &&
+                    it.differential > MINIMUM_DIFFERENTIAL &&
+                    this.numericalCombinerStrategies?.contains(it.probabilityCombinerStrategy) &&
+                    this.numericalFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
+        })?.sort({ SimulationResult a, SimulationResult b ->
+            b.endDate <=> a.endDate
+        })?.take(20)?.each({
+            if (!simulationRange.topTagGroupWeights) {
+                simulationRange.topTagGroupWeights = it.tagGroupWeights
+            }
+            if (!simulationRange.bottomTagGroupWeights) {
+                simulationRange.bottomTagGroupWeights = it.tagGroupWeights
+            }
+            if (!simulationRange.bottomBuyThreshold) {
+                simulationRange.bottomBuyThreshold = it.buyThreshold
+            }
+            if (!simulationRange.bottomSellThreshold) {
+                simulationRange.bottomSellThreshold = it.buyThreshold
+            }
+            if (!simulationRange.topBuyThreshold) {
+                simulationRange.topBuyThreshold = it.sellThreshold
+            }
+            if (!simulationRange.topSellThreshold) {
+                simulationRange.topSellThreshold = it.sellThreshold
+            }
+            it.tagGroupWeights.each {
+                simulationRange.topTagGroupWeights.put(it.key, (it.value > simulationRange.topTagGroupWeights.get(it.key)) ? it.value : simulationRange.topTagGroupWeights.get(it.key))
+                simulationRange.bottomTagGroupWeights.put(it.key, (it.value > simulationRange.bottomTagGroupWeights.get(it.key)) ? it.value : simulationRange.bottomTagGroupWeights.get(it.key))
+            }
+            simulationRange.bottomBuyThreshold = (it.buyThreshold < simulationRange.bottomBuyThreshold) ? it.buyThreshold : simulationRange.bottomBuyThreshold
+            simulationRange.bottomSellThreshold = (it.sellThreshold < simulationRange.bottomSellThreshold) ? it.sellThreshold : simulationRange.bottomSellThreshold
+            simulationRange.topBuyThreshold = (it.buyThreshold > simulationRange.topBuyThreshold) ? it.buyThreshold : simulationRange.topBuyThreshold
+            simulationRange.topSellThreshold = (it.sellThreshold > simulationRange.bottomSellThreshold) ? it.sellThreshold : simulationRange.bottomSellThreshold
+
+        })
+        return simulationRange
+    }
+
+    /**
+     * Get top performing numerical flex simulation
+     *
+     * @return
+     */
+    SimulationResult getTopPerformingNumericalFlexSimulation() {
+        return bytesFetcherService.getSimulations()?.findAll({
+            it.executionType == SimulationResult.ExecutionType.FLEX &&
+                    it.differential > MINIMUM_DIFFERENTIAL &&
+                    this.numericalCombinerStrategies?.contains(it.probabilityCombinerStrategy) &&
+                    this.numericalFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
+        })?.sort({ SimulationResult a, SimulationResult b ->
+            b.endDate <=> a.endDate
+        })?.take(20)?.sort({ SimulationResult a, SimulationResult b ->
+            getScore(b) <=> getScore(a)
+        })?.first()
+    }
+
+    /**
+     * Get top performing text flex simulation
+     *
+     * @return
+     */
+    SimulationResult getTopPerformingTextFlexSimulation() {
+        return bytesFetcherService.getSimulations()?.findAll({
+            it.executionType == SimulationResult.ExecutionType.FLEX &&
+                    it.differential > MINIMUM_DIFFERENTIAL &&
+                    this.textCombinerStrategies?.contains(it.probabilityCombinerStrategy) &&
+                    this.textFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
+        })?.sort({ SimulationResult a, SimulationResult b ->
+            b.endDate <=> a.endDate
+        })?.take(20)?.sort({ SimulationResult a, SimulationResult b ->
+            getScore(b) <=> getScore(a)
+        })?.first()
+    }
+
     /**
      * Get top performing simulations
      *
@@ -88,7 +240,7 @@ class SimulationResultService {
      * @return
      */
     static getScore(SimulationResult simulationResult) {
-        if(!simulationResult || !simulationResult?.tradeCount) {
+        if (!simulationResult || !simulationResult?.tradeCount) {
             Logger.debug(String.format('Unable to get score for %s', new ObjectMapper().writeValueAsString(simulationResult)))
             return 0d
         }

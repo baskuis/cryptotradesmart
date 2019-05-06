@@ -3,6 +3,7 @@ package com.ukora.tradestudent.strategy.trading.combined
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.domain.entities.CorrelationAssociation
 import com.ukora.domain.entities.TextCorrelationAssociation
+import com.ukora.tradestudent.services.simulator.CombinedSimulation
 import com.ukora.tradestudent.services.simulator.Simulation
 
 interface CombinedTradeExecutionStrategy {
@@ -35,8 +36,7 @@ interface CombinedTradeExecutionStrategy {
     TradeExecution getTrade(
             CorrelationAssociation correlationAssociation,
             TextCorrelationAssociation textCorrelationAssociation,
-            Simulation simulationA,
-            Simulation simulationB,
+            CombinedSimulation combinedSimulation,
             String combinerStrategy,
             Double balanceProportion
     )

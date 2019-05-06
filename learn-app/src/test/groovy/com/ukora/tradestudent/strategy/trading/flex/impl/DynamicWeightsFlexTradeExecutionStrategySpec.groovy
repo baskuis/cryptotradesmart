@@ -9,6 +9,7 @@ import com.ukora.domain.beans.tags.reversal.UpReversalTag
 import com.ukora.domain.beans.tags.trend.UpDownTagGroup
 import com.ukora.domain.beans.tags.trend.UpTag
 import com.ukora.domain.entities.CorrelationAssociation
+import com.ukora.domain.entities.TextCorrelationAssociation
 import com.ukora.tradestudent.services.simulator.Simulation
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -42,6 +43,7 @@ class DynamicWeightsFlexTradeExecutionStrategySpec extends Specification {
     def "test #scenario"() {
 
         setup:
+        TextCorrelationAssociation textCorrelationAssociation = new TextCorrelationAssociation()
         CorrelationAssociation correlationAssociation = new CorrelationAssociation(
                 tagProbabilities: [
                         'combiner1': [
@@ -67,7 +69,7 @@ class DynamicWeightsFlexTradeExecutionStrategySpec extends Specification {
         Double balanceProportion = 0.5d
 
         when:
-        def r = dynamicWeightsFlexTradeExecutionStrategy.getTrade(correlationAssociation, simulation, combinerStrategy, balanceProportion)
+        def r = dynamicWeightsFlexTradeExecutionStrategy.getTrade(correlationAssociation, textCorrelationAssociation, simulation, combinerStrategy, balanceProportion)
 
         then:
         if (expected) {
