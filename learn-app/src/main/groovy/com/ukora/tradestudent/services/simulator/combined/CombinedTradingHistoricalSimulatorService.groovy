@@ -124,6 +124,7 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                 }
             }
         }
+
     }
 
     /**
