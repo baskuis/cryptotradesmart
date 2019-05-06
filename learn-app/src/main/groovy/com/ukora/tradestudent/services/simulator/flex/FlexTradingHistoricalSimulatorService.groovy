@@ -50,7 +50,7 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
     @Autowired
     ConcurrentTextAssociationProbabilityService concurrentTextAssociationProbabilityService
 
-    private final static Double MAX_TRADE_INCREMENT = 0.2
+    private final static Double MAX_TRADE_INCREMENT = 0.1
     private final static Double TRADE_INCREMENT = 0.1
     private final static Double TRADE_TRANSACTION_COST = 0.0020
     private final static Double LOWEST_THRESHOLD = 0.5000
