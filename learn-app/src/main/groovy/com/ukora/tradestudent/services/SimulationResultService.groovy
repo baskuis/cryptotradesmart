@@ -208,7 +208,6 @@ class SimulationResultService {
         def r = bytesFetcherService.getSimulations()?.findAll({
             it.executionType == SimulationResult.ExecutionType.FLEX &&
                     it.differential > MINIMUM_DIFFERENTIAL &&
-                    this.textCombinerStrategies?.contains(it.probabilityCombinerStrategy) &&
                     this.textFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
