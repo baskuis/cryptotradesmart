@@ -108,7 +108,7 @@ class SimulationResultService {
                     this.textFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
-        })?.take(20)?.each({
+        })?.take(100)?.each({
             if (!simulationRange.topTagGroupWeights) {
                 simulationRange.topTagGroupWeights = it.tagGroupWeights
             }
@@ -148,7 +148,7 @@ class SimulationResultService {
                     this.numericalFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
-        })?.take(20)?.each({
+        })?.take(100)?.each({
             if (!simulationRange.topTagGroupWeights) {
                 simulationRange.topTagGroupWeights = it.tagGroupWeights
             }
@@ -193,7 +193,7 @@ class SimulationResultService {
                     this.numericalFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
-        })?.take(20)?.sort({ SimulationResult a, SimulationResult b ->
+        })?.take(100)?.sort({ SimulationResult a, SimulationResult b ->
             getScore(b) <=> getScore(a)
         })
         return r.size() > 0 ? r.first() : null
@@ -212,7 +212,7 @@ class SimulationResultService {
                     this.textFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
-        })?.take(20)?.sort({ SimulationResult a, SimulationResult b ->
+        })?.take(100)?.sort({ SimulationResult a, SimulationResult b ->
             getScore(b) <=> getScore(a)
         })
         return r.size() > 0 ? r.first() : null
