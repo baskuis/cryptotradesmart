@@ -105,7 +105,6 @@ class SimulationResultService {
         bytesFetcherService.getSimulations()?.findAll({
             it.executionType == SimulationResult.ExecutionType.FLEX &&
                     it.differential > MINIMUM_DIFFERENTIAL &&
-                    this.textCombinerStrategies?.contains(it.probabilityCombinerStrategy) &&
                     this.textFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
@@ -146,7 +145,6 @@ class SimulationResultService {
         bytesFetcherService.getSimulations()?.findAll({
             it.executionType == SimulationResult.ExecutionType.FLEX &&
                     it.differential > MINIMUM_DIFFERENTIAL &&
-                    this.numericalCombinerStrategies?.contains(it.probabilityCombinerStrategy) &&
                     this.numericalFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
