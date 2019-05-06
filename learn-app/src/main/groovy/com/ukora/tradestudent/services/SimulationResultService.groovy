@@ -188,7 +188,7 @@ class SimulationResultService {
      * @return
      */
     SimulationResult getTopPerformingNumericalFlexSimulation() {
-        return bytesFetcherService.getSimulations()?.findAll({
+        def r = bytesFetcherService.getSimulations()?.findAll({
             it.executionType == SimulationResult.ExecutionType.FLEX &&
                     it.differential > MINIMUM_DIFFERENTIAL &&
                     this.numericalCombinerStrategies?.contains(it.probabilityCombinerStrategy) &&
@@ -197,7 +197,8 @@ class SimulationResultService {
             b.endDate <=> a.endDate
         })?.take(20)?.sort({ SimulationResult a, SimulationResult b ->
             getScore(b) <=> getScore(a)
-        })?.first()
+        })
+        return r.size() > 0 ? r.first() : null
     }
 
     /**
@@ -206,7 +207,7 @@ class SimulationResultService {
      * @return
      */
     SimulationResult getTopPerformingTextFlexSimulation() {
-        return bytesFetcherService.getSimulations()?.findAll({
+        def r = bytesFetcherService.getSimulations()?.findAll({
             it.executionType == SimulationResult.ExecutionType.FLEX &&
                     it.differential > MINIMUM_DIFFERENTIAL &&
                     this.textCombinerStrategies?.contains(it.probabilityCombinerStrategy) &&
@@ -215,7 +216,8 @@ class SimulationResultService {
             b.endDate <=> a.endDate
         })?.take(20)?.sort({ SimulationResult a, SimulationResult b ->
             getScore(b) <=> getScore(a)
-        })?.first()
+        })
+        return r.size() > 0 ? r.first() : null
     }
 
     /**
