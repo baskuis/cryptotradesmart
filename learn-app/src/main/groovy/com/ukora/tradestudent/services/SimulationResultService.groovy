@@ -129,7 +129,7 @@ class SimulationResultService {
             }
             it.tagGroupWeights.each {
                 simulationRange.topTagGroupWeights.put(it.key, (it.value > simulationRange.topTagGroupWeights.get(it.key)) ? it.value : simulationRange.topTagGroupWeights.get(it.key))
-                simulationRange.bottomTagGroupWeights.put(it.key, (it.value > simulationRange.bottomTagGroupWeights.get(it.key)) ? it.value : simulationRange.bottomTagGroupWeights.get(it.key))
+                simulationRange.bottomTagGroupWeights.put(it.key, (it.value < simulationRange.bottomTagGroupWeights.get(it.key)) ? it.value : simulationRange.bottomTagGroupWeights.get(it.key))
             }
             simulationRange.bottomBuyThreshold = (it.buyThreshold < simulationRange.bottomBuyThreshold) ? it.buyThreshold : simulationRange.bottomBuyThreshold
             simulationRange.bottomSellThreshold = (it.sellThreshold < simulationRange.bottomSellThreshold) ? it.sellThreshold : simulationRange.bottomSellThreshold
