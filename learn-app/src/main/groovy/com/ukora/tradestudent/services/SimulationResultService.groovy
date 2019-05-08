@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class SimulationResultService {
@@ -92,8 +93,8 @@ class SimulationResultService {
     }
 
     static class SimulationRange {
-        Map<String, Double> topTagGroupWeights
-        Map<String, Double> bottomTagGroupWeights
+        Map<String, Double> topTagGroupWeights = new ConcurrentHashMap<>()
+        Map<String, Double> bottomTagGroupWeights = new ConcurrentHashMap<>()
         Double bottomBuyThreshold
         Double topBuyThreshold
         Double bottomSellThreshold
@@ -105,37 +106,11 @@ class SimulationResultService {
         bytesFetcherService.getSimulations()?.findAll({
             it.executionType == SimulationResult.ExecutionType.FLEX &&
                     it.differential > MINIMUM_DIFFERENTIAL &&
-                    this.textFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
+                    textFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
         })?.take(100)?.each({
-            if (!simulationRange.topTagGroupWeights) {
-                simulationRange.topTagGroupWeights = it.tagGroupWeights
-            }
-            if (!simulationRange.bottomTagGroupWeights) {
-                simulationRange.bottomTagGroupWeights = it.tagGroupWeights
-            }
-            if (!simulationRange.bottomBuyThreshold) {
-                simulationRange.bottomBuyThreshold = it.buyThreshold
-            }
-            if (!simulationRange.bottomSellThreshold) {
-                simulationRange.bottomSellThreshold = it.buyThreshold
-            }
-            if (!simulationRange.topBuyThreshold) {
-                simulationRange.topBuyThreshold = it.sellThreshold
-            }
-            if (!simulationRange.topSellThreshold) {
-                simulationRange.topSellThreshold = it.sellThreshold
-            }
-            it.tagGroupWeights.each {
-                simulationRange.topTagGroupWeights.put(it.key, (it.value > simulationRange.topTagGroupWeights.get(it.key)) ? it.value : simulationRange.topTagGroupWeights.get(it.key))
-                simulationRange.bottomTagGroupWeights.put(it.key, (it.value < simulationRange.bottomTagGroupWeights.get(it.key)) ? it.value : simulationRange.bottomTagGroupWeights.get(it.key))
-            }
-            simulationRange.bottomBuyThreshold = (it.buyThreshold < simulationRange.bottomBuyThreshold) ? it.buyThreshold : simulationRange.bottomBuyThreshold
-            simulationRange.bottomSellThreshold = (it.sellThreshold < simulationRange.bottomSellThreshold) ? it.sellThreshold : simulationRange.bottomSellThreshold
-            simulationRange.topBuyThreshold = (it.buyThreshold > simulationRange.topBuyThreshold) ? it.buyThreshold : simulationRange.topBuyThreshold
-            simulationRange.topSellThreshold = (it.sellThreshold > simulationRange.bottomSellThreshold) ? it.sellThreshold : simulationRange.bottomSellThreshold
-
+            adjustRange(it, simulationRange)
         })
         return simulationRange
     }
@@ -149,35 +124,44 @@ class SimulationResultService {
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
         })?.take(100)?.each({
-            if (!simulationRange.topTagGroupWeights) {
-                simulationRange.topTagGroupWeights = it.tagGroupWeights
-            }
-            if (!simulationRange.bottomTagGroupWeights) {
-                simulationRange.bottomTagGroupWeights = it.tagGroupWeights
-            }
-            if (!simulationRange.bottomBuyThreshold) {
-                simulationRange.bottomBuyThreshold = it.buyThreshold
-            }
-            if (!simulationRange.bottomSellThreshold) {
-                simulationRange.bottomSellThreshold = it.buyThreshold
-            }
-            if (!simulationRange.topBuyThreshold) {
-                simulationRange.topBuyThreshold = it.sellThreshold
-            }
-            if (!simulationRange.topSellThreshold) {
-                simulationRange.topSellThreshold = it.sellThreshold
-            }
-            it.tagGroupWeights.each {
-                simulationRange.topTagGroupWeights.put(it.key, (it.value > simulationRange.topTagGroupWeights.get(it.key)) ? it.value : simulationRange.topTagGroupWeights.get(it.key))
-                simulationRange.bottomTagGroupWeights.put(it.key, (it.value < simulationRange.bottomTagGroupWeights.get(it.key)) ? it.value : simulationRange.bottomTagGroupWeights.get(it.key))
-            }
-            simulationRange.bottomBuyThreshold = (it.buyThreshold < simulationRange.bottomBuyThreshold) ? it.buyThreshold : simulationRange.bottomBuyThreshold
-            simulationRange.bottomSellThreshold = (it.sellThreshold < simulationRange.bottomSellThreshold) ? it.sellThreshold : simulationRange.bottomSellThreshold
-            simulationRange.topBuyThreshold = (it.buyThreshold > simulationRange.topBuyThreshold) ? it.buyThreshold : simulationRange.topBuyThreshold
-            simulationRange.topSellThreshold = (it.sellThreshold > simulationRange.bottomSellThreshold) ? it.sellThreshold : simulationRange.bottomSellThreshold
-
+            adjustRange(it, simulationRange)
         })
         return simulationRange
+    }
+
+    static adjustRange(SimulationResult simulationResult, SimulationRange simulationRange) {
+        if (simulationRange.topTagGroupWeights?.size() == 0) {
+            simulationRange.topTagGroupWeights.putAll(simulationResult.tagGroupWeights)
+        }
+        if (simulationRange.bottomTagGroupWeights?.size() == 0) {
+            simulationRange.bottomTagGroupWeights.putAll(simulationResult.tagGroupWeights)
+        }
+        if (!simulationRange.bottomBuyThreshold) {
+            simulationRange.bottomBuyThreshold = simulationResult.sellThreshold
+        }
+        if (!simulationRange.bottomSellThreshold) {
+            simulationRange.bottomSellThreshold = simulationResult.sellThreshold
+        }
+        if (!simulationRange.topBuyThreshold) {
+            simulationRange.topBuyThreshold = simulationResult.buyThreshold
+        }
+        if (!simulationRange.topSellThreshold) {
+            simulationRange.topSellThreshold = simulationResult.buyThreshold
+        }
+        simulationResult.tagGroupWeights.each {
+            def tv = simulationRange.topTagGroupWeights.get(it.key)
+            def bv = simulationRange.bottomTagGroupWeights.get(it.key)
+            if (it.value > tv) {
+                simulationRange.topTagGroupWeights.put(it.key, it.value)
+            }
+            if (it.value < bv) {
+                simulationRange.bottomTagGroupWeights.put(it.key, it.value)
+            }
+        }
+        simulationRange.bottomBuyThreshold = (simulationResult.buyThreshold < simulationRange.bottomBuyThreshold) ? simulationResult.buyThreshold : simulationRange.bottomBuyThreshold
+        simulationRange.bottomSellThreshold = (simulationResult.sellThreshold < simulationRange.bottomSellThreshold) ? simulationResult.sellThreshold : simulationRange.bottomSellThreshold
+        simulationRange.topBuyThreshold = (simulationResult.buyThreshold > simulationRange.topBuyThreshold) ? simulationResult.buyThreshold : simulationRange.topBuyThreshold
+        simulationRange.topSellThreshold = (simulationResult.sellThreshold > simulationRange.topSellThreshold) ? simulationResult.sellThreshold : simulationRange.topSellThreshold
     }
 
     /**
