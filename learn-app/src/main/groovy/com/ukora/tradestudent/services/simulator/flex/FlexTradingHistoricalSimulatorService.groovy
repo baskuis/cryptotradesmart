@@ -6,6 +6,7 @@ import com.ukora.domain.beans.tags.reversal.UpDownReversalTagGroup
 import com.ukora.domain.beans.tags.trend.UpDownTagGroup
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.domain.entities.CorrelationAssociation
+import com.ukora.domain.entities.ExtractedText
 import com.ukora.domain.entities.SimulationResult
 import com.ukora.domain.entities.TextCorrelationAssociation
 import com.ukora.tradestudent.services.BytesFetcherService
@@ -151,7 +152,7 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
      * @return
      */
     @Async
-    runSimulation(Date fromDate) {
+    runSimulation(Date fromDate, FlexTradeExecutionStrategy.Type type, ExtractedText.TextSource textSource) {
         if (!fromDate) return
         if (simulationRunning) {
             Logger.log("There is already a simulation running. Not starting flex simulation.")
@@ -165,7 +166,15 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
         if (multiThreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
         simulationRunning = true
         resetSimulations()
-        def enabledTradeStrategies = flexTradeExecutionStrategyMap.findAll { it.value.enabled }
+        def enabledTradeStrategies = flexTradeExecutionStrategyMap.findAll {
+            it.value.enabled &&
+                (!type || type == it.value.type) &&
+                    (!textSource || textSource == it.value.textSource)
+        }
+        if (!enabledTradeStrategies) {
+            Logger.log("No qualified tradeStrategies found.")
+            return
+        }
         Instant end = Instant.now()
         Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
         Instant current = Instant.ofEpochMilli(fromDate.time)

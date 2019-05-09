@@ -10,6 +10,7 @@ import com.ukora.domain.beans.tags.trend.UpDownTagGroup
 import com.ukora.domain.beans.tags.trend.UpTag
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.domain.entities.CorrelationAssociation
+import com.ukora.domain.entities.ExtractedText
 import com.ukora.domain.entities.TextCorrelationAssociation
 import com.ukora.tradestudent.services.simulator.Simulation
 import com.ukora.tradestudent.strategy.trading.flex.FlexTradeExecutionStrategy
@@ -44,6 +45,11 @@ class DynamicNewsWeightsFlexTradeExecutionStrategy implements FlexTradeExecution
     @Override
     FlexTradeExecutionStrategy.Type getType() {
         return FlexTradeExecutionStrategy.Type.TEXT
+    }
+
+    @Override
+    ExtractedText.TextSource getTextSource() {
+        return ExtractedText.TextSource.NEWS
     }
 
     @Override

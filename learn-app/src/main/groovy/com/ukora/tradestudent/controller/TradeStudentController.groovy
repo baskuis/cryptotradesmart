@@ -8,10 +8,9 @@ import com.ukora.tradestudent.services.associations.CaptureAssociationsService
 import com.ukora.tradestudent.services.associations.TechnicalAnalysisService
 import com.ukora.tradestudent.services.associations.text.CaptureTextAssociationsService
 import com.ukora.tradestudent.services.learner.TraverseLessonsService
-import com.ukora.tradestudent.services.simulator.combined.CombinedTradingHistoricalSimulatorService
+import com.ukora.tradestudent.services.simulator.TradeSimulatorService
 import com.ukora.tradestudent.services.simulator.flex.FlexTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.simulator.origin.BuySellTradingHistoricalSimulatorService
-import com.ukora.tradestudent.services.simulator.TradeSimulatorService
 import com.ukora.tradestudent.services.text.ConcurrentTextAssociationProbabilityService
 import com.ukora.tradestudent.services.text.KeywordAssociationService
 import com.ukora.tradestudent.services.text.TextAssociationProbabilityService
@@ -154,6 +153,24 @@ class TradeStudentController {
     @RequestMapping(path = '/runflexsimulation', method = RequestMethod.GET)
     String runFlexSimulation() {
         tradeSimulatorService.runFlexSimulation()
+        "STARTED"
+    }
+
+    @RequestMapping(path = '/runtwitterflexsimulation', method = RequestMethod.GET)
+    String runTwitterFlexSimulation() {
+        tradeSimulatorService.runTwitterFlexSimulation()
+        "STARTED"
+    }
+
+    @RequestMapping(path = '/runnewsflexsimulation', method = RequestMethod.GET)
+    String runNewsFlexSimulation() {
+        tradeSimulatorService.runNewsFlexSimulation()
+        "STARTED"
+    }
+
+    @RequestMapping(path = '/runnumericalflexsimulation', method = RequestMethod.GET)
+    String runNumericalFlexSimulation() {
+        tradeSimulatorService.runNumericalFlexSimulation()
         "STARTED"
     }
 

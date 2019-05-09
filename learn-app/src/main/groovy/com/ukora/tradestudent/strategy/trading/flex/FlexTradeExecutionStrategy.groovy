@@ -2,6 +2,7 @@ package com.ukora.tradestudent.strategy.trading.flex
 
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.domain.entities.CorrelationAssociation
+import com.ukora.domain.entities.ExtractedText
 import com.ukora.domain.entities.TextCorrelationAssociation
 import com.ukora.tradestudent.services.simulator.Simulation
 
@@ -20,6 +21,8 @@ interface FlexTradeExecutionStrategy {
 
     enum Type { NUMERIC, TEXT }
     Type getType()
+
+    ExtractedText.TextSource getTextSource()
 
     /**
      * This method will product a buy/sell trade order based on the following

@@ -247,7 +247,7 @@ class SimulationResultServiceSpec extends Specification {
 
         0 * _
         noExceptionThrown()
-        
+
     }
 
 }
