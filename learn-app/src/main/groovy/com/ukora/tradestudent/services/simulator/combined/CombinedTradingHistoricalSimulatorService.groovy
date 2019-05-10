@@ -104,21 +104,24 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
          *
          */
         for (Double numericalWeight = simulationSettings.minNumericalWeight; numericalWeight <= simulationSettings.maxNumericalWeight; numericalWeight += simulationSettings.tagGroupInc) {
-            for (Double textWeight = simulationSettings.minTextWeight; textWeight <= simulationSettings.maxTextWeight; textWeight += simulationSettings.tagGroupInc) {
-                for (Double tradeIncrement = simulationSettings.tradeIncrement; tradeIncrement <= simulationSettings.maxTradeIncrement; tradeIncrement += simulationSettings.tradeIncrement) {
-                    for (Double thresholdBuy = simulationSettings.lowestThreshold; thresholdBuy <= simulationSettings.highestThreshold; thresholdBuy += simulationSettings.thresholdIncrement) {
-                        Double maxBuyThreshold = (thresholdBuy + simulationSettings.maxThresholdDelta < simulationSettings.highestThreshold) ? thresholdBuy + simulationSettings.maxThresholdDelta : simulationSettings.highestThreshold
-                        Double minBuyThreshold = (thresholdBuy - simulationSettings.maxThresholdDelta > simulationSettings.lowestThreshold) ? thresholdBuy - simulationSettings.maxThresholdDelta : simulationSettings.lowestThreshold
-                        for (Double thresholdSell = minBuyThreshold; thresholdSell <= maxBuyThreshold; thresholdSell += simulationSettings.thresholdIncrement) {
-                            combinedSimulations << new CombinedSimulation(
-                                    numericalWeight: numericalWeight,
-                                    textWeight: textWeight,
-                                    buyThreshold: thresholdBuy,
-                                    numericalSimulation: numericalSimulationResult,
-                                    textSimulation: textSimulationResult,
-                                    sellThreshold: thresholdSell,
-                                    transactionCost: TRADE_TRANSACTION_COST
-                            )
+            for (Double textNewsWeight = simulationSettings.minTextWeight; textNewsWeight <= simulationSettings.maxTextWeight; textNewsWeight += simulationSettings.tagGroupInc) {
+                for (Double textTwitterWeight = simulationSettings.minTextWeight; textTwitterWeight <= simulationSettings.maxTextWeight; textTwitterWeight += simulationSettings.tagGroupInc) {
+                    for (Double tradeIncrement = simulationSettings.tradeIncrement; tradeIncrement <= simulationSettings.maxTradeIncrement; tradeIncrement += simulationSettings.tradeIncrement) {
+                        for (Double thresholdBuy = simulationSettings.lowestThreshold; thresholdBuy <= simulationSettings.highestThreshold; thresholdBuy += simulationSettings.thresholdIncrement) {
+                            Double maxBuyThreshold = (thresholdBuy + simulationSettings.maxThresholdDelta < simulationSettings.highestThreshold) ? thresholdBuy + simulationSettings.maxThresholdDelta : simulationSettings.highestThreshold
+                            Double minBuyThreshold = (thresholdBuy - simulationSettings.maxThresholdDelta > simulationSettings.lowestThreshold) ? thresholdBuy - simulationSettings.maxThresholdDelta : simulationSettings.lowestThreshold
+                            for (Double thresholdSell = minBuyThreshold; thresholdSell <= maxBuyThreshold; thresholdSell += simulationSettings.thresholdIncrement) {
+                                combinedSimulations << new CombinedSimulation(
+                                        numericalWeight: numericalWeight,
+                                        textNewsWeight: textNewsWeight,
+                                        textTwitterWeight: textTwitterWeight,
+                                        buyThreshold: thresholdBuy,
+                                        numericalSimulation: numericalSimulationResult,
+                                        textSimulation: textSimulationResult,
+                                        sellThreshold: thresholdSell,
+                                        transactionCost: TRADE_TRANSACTION_COST
+                                )
+                            }
                         }
                     }
                 }

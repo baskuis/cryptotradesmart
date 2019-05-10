@@ -234,7 +234,17 @@ class TradeStudentController {
 
     @RequestMapping(path = '/besttextflexsimulation', method = RequestMethod.GET)
     SimulationResult getTopPerformingTextFlexSimulation() {
-        simulationResultService.getTopPerformingTextFlexSimulation()
+        simulationResultService.getTopPerformingTextFlexSimulation(null)
+    }
+
+    @RequestMapping(path = '/besttextnewsflexsimulation', method = RequestMethod.GET)
+    SimulationResult getTopPerformingTextNewsFlexSimulation() {
+        simulationResultService.getTopPerformingTextFlexSimulation(ExtractedText.TextSource.NEWS)
+    }
+
+    @RequestMapping(path = '/besttexttwitterflexsimulation', method = RequestMethod.GET)
+    SimulationResult getTopPerformingTextTwitterFlexSimulation() {
+        simulationResultService.getTopPerformingTextFlexSimulation(ExtractedText.TextSource.TWITTER)
     }
 
     @RequestMapping(path = '/textsimulationrange', method = RequestMethod.GET)

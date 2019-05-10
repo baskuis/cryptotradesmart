@@ -14,7 +14,8 @@ class CombinedSimulation {
     Double sellThreshold
 
     Double numericalWeight = 1d
-    Double textWeight = 1d
+    Double textNewsWeight = 1d
+    Double textTwitterWeight = 1d
 
     Double tradeIncrement
     Double transactionCost

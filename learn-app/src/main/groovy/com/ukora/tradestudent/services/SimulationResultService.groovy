@@ -1,8 +1,9 @@
 package com.ukora.tradestudent.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ukora.domain.entities.ExtractedText
+import com.ukora.domain.entities.ExtractedText.TextSource
 import com.ukora.domain.entities.SimulationResult
-import com.ukora.tradestudent.services.simulator.origin.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.strategy.text.probablitity.TextProbabilityCombinerStrategy
 import com.ukora.tradestudent.strategy.trading.flex.FlexTradeExecutionStrategy
@@ -37,6 +38,8 @@ class SimulationResultService {
     List<String> textCombinerStrategies
     List<String> numericalCombinerStrategies
     List<String> textFlexTradeStrategies
+    List<String> twitterFlexTradeStrategies
+    List<String> newsFlexTradeStrategies
     List<String> numericalFlexTradeStrategies
 
     @PostConstruct
@@ -48,6 +51,14 @@ class SimulationResultService {
         }?.keySet()?.toList()
         numericalFlexTradeStrategies = applicationContext.getBeansOfType(FlexTradeExecutionStrategy)?.findAll {
             it.value.getType() == FlexTradeExecutionStrategy.Type.NUMERIC
+        }?.keySet()?.toList()
+        twitterFlexTradeStrategies = applicationContext.getBeansOfType(FlexTradeExecutionStrategy)?.findAll {
+            it.value.getType() == FlexTradeExecutionStrategy.Type.TEXT &&
+                    it.value.getTextSource() == ExtractedText.TextSource.TWITTER
+        }?.keySet()?.toList()
+        newsFlexTradeStrategies = applicationContext.getBeansOfType(FlexTradeExecutionStrategy)?.findAll {
+            it.value.getType() == FlexTradeExecutionStrategy.Type.TEXT &&
+                    it.value.getTextSource() == ExtractedText.TextSource.NEWS
         }?.keySet()?.toList()
     }
 
@@ -188,11 +199,15 @@ class SimulationResultService {
      *
      * @return
      */
-    SimulationResult getTopPerformingTextFlexSimulation() {
+    SimulationResult getTopPerformingTextFlexSimulation(TextSource textSource) {
         def r = bytesFetcherService.getSimulations()?.findAll({
             it.executionType == SimulationResult.ExecutionType.FLEX &&
                     it.differential > MINIMUM_DIFFERENTIAL &&
-                    this.textFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
+                    this.textFlexTradeStrategies?.contains(it.tradeExecutionStrategy) &&
+                    (!textSource || (
+                            (textSource == TextSource.NEWS && this.newsFlexTradeStrategies?.contains(it.tradeExecutionStrategy)) ||
+                                    (textSource == TextSource.TWITTER && this.twitterFlexTradeStrategies?.contains(it.tradeExecutionStrategy))
+                    ))
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
         })?.take(100)?.sort({ SimulationResult a, SimulationResult b ->
