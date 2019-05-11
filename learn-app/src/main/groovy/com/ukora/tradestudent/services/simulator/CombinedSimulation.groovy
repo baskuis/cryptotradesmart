@@ -8,7 +8,8 @@ class CombinedSimulation {
     boolean enabled = true
 
     SimulationResult numericalSimulation
-    SimulationResult textSimulation
+    SimulationResult textNewsSimulation
+    SimulationResult textTwitterSimulation
 
     Double buyThreshold
     Double sellThreshold
@@ -24,5 +25,6 @@ class CombinedSimulation {
     Double tradeCount = 0
     Double balanceA
     Double balanceB
+    Double totalBalance
 
 }

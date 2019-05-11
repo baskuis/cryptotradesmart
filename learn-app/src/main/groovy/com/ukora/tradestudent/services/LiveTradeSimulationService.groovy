@@ -174,11 +174,6 @@ class LiveTradeSimulationService {
                     tradeExecution.amount,
                     tradeExecution.price,
             )
-            emailService.sendEmail(
-                    "Capturing ${tradeExecution.tradeType}",
-                    message,
-                    "baskuis1@gmail.com"
-            )
             Logger.log(message)
             SimulatedTradeEntry latestSimulatedTradeEntry = bytesFetcherService.getLatestSimulatedTradeEntry()
             if (latestSimulatedTradeEntry) {
@@ -187,7 +182,7 @@ class LiveTradeSimulationService {
                         tradeExecution
                 )
                 if (nextTradeEntry) {
-                    Logger.log(String.format(
+                    message = String.format(
                             "Inserting trade %s amount: %s, price: %s, balanceA: %s, balanceB: %s, totalValueA: %s, date: %s",
                             nextTradeEntry.tradeType,
                             nextTradeEntry.amount,
@@ -196,8 +191,14 @@ class LiveTradeSimulationService {
                             nextTradeEntry.balanceB,
                             nextTradeEntry.totalValueA,
                             nextTradeEntry.date
-                    ))
+                    )
+                    Logger.log(message)
                     bytesFetcherService.insertSimulatedTradeEntry(nextTradeEntry)
+                    emailService.sendEmail(
+                            "Capturing ${tradeExecution.tradeType}",
+                            message,
+                            "baskuis1@gmail.com"
+                    )
                 }
             }
         }

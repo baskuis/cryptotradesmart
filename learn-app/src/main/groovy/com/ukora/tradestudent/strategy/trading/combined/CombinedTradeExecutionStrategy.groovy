@@ -29,7 +29,6 @@ interface CombinedTradeExecutionStrategy {
      * @param textCorrelationAssociation The text correlation association object
      * @param simulationA The winning simulation configuration
      * @param simulationB The winning simulation configuration
-     * @param combinerStrategy The bean name of the combiner strategy
      * @param balanceProportion The proportion of balance A vs balance A + B priced in A
      * @return
      */
@@ -37,7 +36,6 @@ interface CombinedTradeExecutionStrategy {
             CorrelationAssociation correlationAssociation,
             TextCorrelationAssociation textCorrelationAssociation,
             CombinedSimulation combinedSimulation,
-            String combinerStrategy,
             Double balanceProportion
     )
 

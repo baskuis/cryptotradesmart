@@ -2,6 +2,7 @@ package com.ukora.tradestudent.services.simulator.combined
 
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.domain.entities.CorrelationAssociation
+import com.ukora.domain.entities.ExtractedText
 import com.ukora.domain.entities.SimulationResult
 import com.ukora.domain.entities.TextCorrelationAssociation
 import com.ukora.tradestudent.services.BytesFetcherService
@@ -9,7 +10,6 @@ import com.ukora.tradestudent.services.ProbabilityCombinerService
 import com.ukora.tradestudent.services.SimulationResultService
 import com.ukora.tradestudent.services.simulator.AbstractTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.simulator.CombinedSimulation
-import com.ukora.tradestudent.services.simulator.Simulation
 import com.ukora.tradestudent.services.text.ConcurrentTextAssociationProbabilityService
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.strategy.trading.combined.CombinedTradeExecutionStrategy
@@ -95,9 +95,20 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
         SimulationResult numericalSimulationResult = simulationResultService.getTopPerformingNumericalFlexSimulation()
 
         /**
-         * Get best text simulation
+         * Get best text news simulation
          */
-        SimulationResult textSimulationResult = simulationResultService.getTopPerformingTextFlexSimulation()
+        SimulationResult textNewsSimulationResult = simulationResultService.getTopPerformingTextFlexSimulation(ExtractedText.TextSource.NEWS)
+
+        /**
+         * Get best text twitter simulation
+         */
+        SimulationResult textTwitterSimulationResult = simulationResultService.getTopPerformingTextFlexSimulation(ExtractedText.TextSource.TWITTER)
+
+
+        if (!numericalSimulationResult || !textTwitterSimulationResult || !textNewsSimulationResult) {
+            Logger.log('[CRITICAL] Missing one of more top simulation results for combined simulation')
+            return
+        }
 
         /**
          * Build simulations
@@ -117,9 +128,13 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                                         textTwitterWeight: textTwitterWeight,
                                         buyThreshold: thresholdBuy,
                                         numericalSimulation: numericalSimulationResult,
-                                        textSimulation: textSimulationResult,
+                                        textNewsSimulation: textNewsSimulationResult,
+                                        textTwitterSimulation: textTwitterSimulationResult,
                                         sellThreshold: thresholdSell,
-                                        transactionCost: TRADE_TRANSACTION_COST
+                                        transactionCost: TRADE_TRANSACTION_COST,
+                                        balanceA: STARTING_BALANCE,
+                                        balanceB: 0D,
+                                        tradeCount: 0
                                 )
                             }
                         }
@@ -191,67 +206,57 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
             /** check */
             if (!correlationAssociation.price) continue
             if (!textCorrelationAssociation.strategyProbabilities) continue
+            
+            List<Thread> threads = []
+            partitioned.each { group ->
+                threads << Thread.start({
+                    group.findAll { it.enabled }.each {
+                        CombinedSimulation simulation = it
+                        simulation.finalPrice = correlationAssociation.price
+                        enabledTradeStrategies.each {
+                            Double balanceProportion = (correlationAssociation.price) ? simulation.balanceA ?: STARTING_BALANCE /
+                                    (simulation.balanceA ?: STARTING_BALANCE + (simulation.balanceB / correlationAssociation.price)) : 1
+                            if (!NerdUtils.assertRange(balanceProportion)) {
+                                Logger.log(String.format("balanceProportion %s is out of range", balanceProportion))
+                                return
+                            }
+                            TradeExecution tradeExecution
 
-            correlationAssociation?.tagProbabilities?.each {
-                String strategy = it.key
-                List<Thread> threads = []
-                partitioned.each { group ->
-                    threads << Thread.start({
-                        group.findAll { it.enabled }.each {
-                            CombinedSimulation simulation = it
-                            simulation.finalPrice = correlationAssociation.price
-                            enabledTradeStrategies.each {
-                                String purseKey = String.format('%s:%s', strategy, it.key)
-                                Double balanceProportion = (correlationAssociation.price) ? simulation.balanceA ?: STARTING_BALANCE /
-                                        (simulation.balanceA ?: STARTING_BALANCE + (simulation.balanceB / correlationAssociation.price)) : 1
-                                if (!NerdUtils.assertRange(balanceProportion)) {
-                                    Logger.log(String.format("balanceProportion %s is out of range", balanceProportion))
-                                    return
-                                }
-                                TradeExecution tradeExecution
+                            /** balance purse - sell half of balance A for B at market price */
+                            if (newSimulation) {
+                                tradeExecution = new TradeExecution(
+                                        date: correlationAssociation.date,
+                                        price: correlationAssociation.price,
+                                        tradeType: TradeExecution.TradeType.SELL,
+                                        amount: STARTING_BALANCE / 2
+                                )
 
-                                /** balance purse - sell half of balance A for B at market price */
-                                if (newSimulation) {
-                                    tradeExecution = new TradeExecution(
-                                            date: correlationAssociation.date,
-                                            price: correlationAssociation.price,
-                                            tradeType: TradeExecution.TradeType.SELL,
-                                            amount: STARTING_BALANCE / 2
-                                    )
-
-                                    /** otherwise check strategy */
-                                } else {
-                                    tradeExecution = it.value.getTrade(
-                                            correlationAssociation,
-                                            textCorrelationAssociation,
-                                            simulation,
-                                            strategy,
-                                            balanceProportion)
-
-                                }
-
-                                /** execute trade */
-                                if (tradeExecution) {
-                                    Logger.debug(String.format("key:%s,type:%s", purseKey, tradeExecution.tradeType))
-//                                    simulateTrade(
-//                                            simulation,
-//                                            tradeExecution,
-//                                            purseKey
-//                                    )
-                                }
+                                /** otherwise check strategy */
+                            } else {
+                                tradeExecution = it.value.getTrade(
+                                        correlationAssociation,
+                                        textCorrelationAssociation,
+                                        simulation,
+                                        balanceProportion)
 
                             }
+
+                            /** execute trade */
+                            if (tradeExecution) {
+                                simulateTrade(simulation, tradeExecution)
+                            }
+
                         }
-                    })
-                }
-
-                /** Collect results */
-                threads*.join()
-                if (newSimulation) {
-                    newSimulation = false
-                }
-
+                    }
+                })
             }
+
+            /** Collect results */
+            threads*.join()
+            if (newSimulation) {
+                newSimulation = false
+            }
+
         }
 
         /** Flip back to false */
@@ -271,6 +276,91 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
         /** Allow another simulation to be started */
         simulationRunning = false
 
+    }
+
+    /**
+     * Simulate a trade
+     *
+     * @param simulation
+     * @param tradeExecution
+     * @param purseKey
+     * @return
+     */
+    static simulateTrade(CombinedSimulation simulation, TradeExecution tradeExecution) {
+        if (!tradeExecution) return
+        if (tradeExecution.amount < 0) {
+            Logger.debug(String.format("Ignoring %s trade execution with negative amount %s on date %s, %s, buy:%s, sell:%s",
+                    tradeExecution.tradeType,
+                    tradeExecution.amount,
+                    tradeExecution.date,
+                    simulation.buyThreshold,
+                    simulation.sellThreshold
+            ))
+            return
+        }
+        Double balanceA = simulation.balanceA
+        Double balanceB = simulation.balanceB
+        switch (tradeExecution.tradeType) {
+            case TradeExecution.TradeType.BUY:
+                Double maxAmount = balanceB / tradeExecution.price
+                Double amount
+                Double newBalanceA
+                Double newBalanceB
+                if (balanceB > tradeExecution.amount * tradeExecution.price) {
+                    amount = tradeExecution.amount * (1 - simulation.transactionCost)
+                    newBalanceA = balanceA + amount
+                    newBalanceB = balanceB - (tradeExecution.amount * tradeExecution.price)
+                } else {
+                    amount = maxAmount * (1 - simulation.transactionCost)
+                    newBalanceA = balanceA + amount
+                    newBalanceB = balanceB - (maxAmount * tradeExecution.price)
+                }
+                if (amount < MINIMUM_AMOUNT) {
+                    Logger.debug(String.format("Not enough balanceB:%s left to buy amount:%s ", balanceB, amount))
+                } else {
+                    simulation.balanceA = newBalanceA
+                    simulation.balanceB = newBalanceB
+                    simulation.tradeCount++
+                    simulation.totalBalance = newBalanceA + (newBalanceB / tradeExecution.price)
+                    Logger.debug(String.format('On %s performing BUY at price:%s Had a:%s, b:%s now have a:%s, b:%s',
+                            tradeExecution.date,
+                            tradeExecution.price,
+                            balanceA,
+                            balanceB,
+                            newBalanceA,
+                            newBalanceB))
+                }
+                break
+            case TradeExecution.TradeType.SELL:
+                Double amount
+                Double newBalanceA
+                Double newBalanceB
+                if (balanceA > tradeExecution.amount) {
+                    amount = tradeExecution.amount * (1 - simulation.transactionCost)
+                    newBalanceA = balanceA - tradeExecution.amount
+                    newBalanceB = balanceB + (amount * tradeExecution.price)
+                } else {
+                    amount = balanceA * (1 - simulation.transactionCost)
+                    newBalanceA = 0
+                    newBalanceB = balanceB + (amount * tradeExecution.price)
+                }
+                if (amount < MINIMUM_AMOUNT) {
+                    Logger.debug(String.format("Not enough balanceA:%s left ", balanceA))
+                } else {
+                    simulation.balanceA = newBalanceA
+                    simulation.balanceB = newBalanceB
+                    simulation.tradeCount++
+                    simulation.totalBalance = newBalanceA + (newBalanceB / tradeExecution.price)
+                    Logger.debug(String.format('On %s performing SELL at price:%s Had a:%s, b:%s now have a:%s, b:%s',
+                            tradeExecution.date,
+                            tradeExecution.price,
+                            balanceA,
+                            balanceB,
+                            newBalanceA,
+                            newBalanceB))
+                }
+                break
+        }
     }
 
     /**
