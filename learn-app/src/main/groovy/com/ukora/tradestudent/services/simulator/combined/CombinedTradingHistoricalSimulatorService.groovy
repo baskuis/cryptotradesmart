@@ -303,8 +303,8 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
             ))
             return
         }
-        Double balanceA = simulation.balanceA
-        Double balanceB = simulation.balanceB
+        Double balanceA = simulation.balanceA ?: STARTING_BALANCE
+        Double balanceB = simulation.balanceB ?: 0d
         switch (tradeExecution.tradeType) {
             case TradeExecution.TradeType.BUY:
                 Double maxAmount = balanceB / tradeExecution.price
