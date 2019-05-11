@@ -294,7 +294,7 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
     static simulateTrade(CombinedSimulation simulation, TradeExecution tradeExecution) {
         if (!tradeExecution) return
         if (tradeExecution.amount < 0) {
-            Logger.debug(String.format("Ignoring %s trade execution with negative amount %s on date %s, %s, buy:%s, sell:%s",
+            Logger.debug(String.format("Ignoring %s trade execution with negative amount %s on date %s, buy:%s, sell:%s",
                     tradeExecution.tradeType,
                     tradeExecution.amount,
                     tradeExecution.date,
@@ -333,7 +333,8 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                             balanceA,
                             balanceB,
                             newBalanceA,
-                            newBalanceB))
+                            newBalanceB)
+                    )
                 }
                 break
             case TradeExecution.TradeType.SELL:
@@ -362,7 +363,8 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                             balanceA,
                             balanceB,
                             newBalanceA,
-                            newBalanceB))
+                            newBalanceB)
+                    )
                 }
                 break
         }
