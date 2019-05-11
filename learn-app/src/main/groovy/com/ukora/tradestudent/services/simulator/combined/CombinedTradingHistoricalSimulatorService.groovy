@@ -218,7 +218,7 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                                     (simulation.balanceA ?: STARTING_BALANCE) /
                                     (
                                             (simulation.balanceA ?: STARTING_BALANCE) +
-                                                    (simulation.balanceB / correlationAssociation.price)
+                                                    ((simulation.balanceB ?: 0) / correlationAssociation.price)
                                     )
                             ) : 1
                             if (!NerdUtils.assertRange(balanceProportion)) {
