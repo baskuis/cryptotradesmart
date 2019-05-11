@@ -214,8 +214,13 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                         CombinedSimulation simulation = it
                         simulation.finalPrice = correlationAssociation.price
                         enabledTradeStrategies.each {
-                            Double balanceProportion = (correlationAssociation.price) ? (simulation.balanceA ?: STARTING_BALANCE) /
-                                    (simulation.balanceA ?: STARTING_BALANCE + (simulation.balanceB / correlationAssociation.price)) : 1
+                            Double balanceProportion = (correlationAssociation.price) ? (
+                                    (simulation.balanceA ?: STARTING_BALANCE) /
+                                    (
+                                            (simulation.balanceA ?: STARTING_BALANCE) +
+                                                    (simulation.balanceB / correlationAssociation.price)
+                                    )
+                            ) : 1
                             if (!NerdUtils.assertRange(balanceProportion)) {
                                 Logger.log(String.format("balanceProportion %s is out of range", balanceProportion))
                                 return
