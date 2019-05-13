@@ -269,6 +269,9 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                 newSimulation = false
             }
 
+            /** Force complete simulation if requested */
+            if (forceCompleteSimulation) break
+
         }
 
         /** Flip back to false */

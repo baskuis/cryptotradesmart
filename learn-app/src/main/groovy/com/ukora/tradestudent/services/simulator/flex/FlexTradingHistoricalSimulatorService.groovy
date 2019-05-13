@@ -270,6 +270,10 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
                 }
 
             }
+
+            /** Force complete simulation if requested */
+            if (forceCompleteSimulation) break
+
         }
 
         /** Flip back to false */
