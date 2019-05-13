@@ -213,10 +213,12 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
             if (!correlationAssociation.price) continue
             if (!textCorrelationAssociation.strategyProbabilities) continue
 
+            Logger.log('Running combined simulations')
             List<Thread> threads = []
             partitioned.each { group ->
                 threads << Thread.start({
                     group.findAll { it.enabled }.each {
+                        Logger.log('.')
                         CombinedSimulation simulation = it
                         simulation.finalPrice = correlationAssociation.price
                         CombinedTradeExecutionStrategy combinedTradeExecutionStrategy = combinedTradeExecutionStrategyMap.get(simulation.combinedTradeExecutionStrategy)
