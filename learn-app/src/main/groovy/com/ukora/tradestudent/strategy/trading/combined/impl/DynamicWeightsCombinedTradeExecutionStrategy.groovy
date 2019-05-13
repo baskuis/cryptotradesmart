@@ -102,7 +102,7 @@ class DynamicWeightsCombinedTradeExecutionStrategy implements CombinedTradeExecu
         }
 
         boolean isValid() {
-            return (buy && up && upReversal && upMove && weight && simulationResult)
+            return (buy && up && upReversal && upMove && weight != null && simulationResult != null)
         }
     }
 
