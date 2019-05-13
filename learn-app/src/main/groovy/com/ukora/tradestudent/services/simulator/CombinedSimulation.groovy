@@ -25,18 +25,11 @@ class CombinedSimulation {
 
     Double tradeIncrement
     Double transactionCost
-    Double finalPrice
+    Double finalPrice = 0d
 
-    Double tradeCount = 0
+    Double tradeCount = 0d
     Double balanceA
     Double balanceB
-    Double totalBalance
-
-    Map balancesA = new ConcurrentHashMap<String, Double>()
-    Map balancesB = new ConcurrentHashMap<String, Double>()
-    Map tradeCounts = new ConcurrentHashMap<String, Double>()
-    Map totalBalances = new ConcurrentHashMap<String, Double>()
-    Map pursesEnabled = new ConcurrentHashMap<String, Boolean>()
-    Map result = [:]
+    Double totalBalance = 0d
 
 }
