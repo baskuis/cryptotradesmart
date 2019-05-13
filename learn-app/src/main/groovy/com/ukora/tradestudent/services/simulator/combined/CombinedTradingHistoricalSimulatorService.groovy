@@ -219,7 +219,7 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                     group.findAll { it.enabled }.each {
                         CombinedSimulation simulation = it
                         simulation.finalPrice = correlationAssociation.price
-                        Logger.log(simulation.toString())
+                        Logger.log('simulation.finalPrice:' + simulation.finalPrice)
                         CombinedTradeExecutionStrategy combinedTradeExecutionStrategy = combinedTradeExecutionStrategyMap.get(simulation.combinedTradeExecutionStrategy)
                         if (!combinedTradeExecutionStrategy) {
                             Logger.log(String.format('Not able to find %s', combinedTradeExecutionStrategy))
