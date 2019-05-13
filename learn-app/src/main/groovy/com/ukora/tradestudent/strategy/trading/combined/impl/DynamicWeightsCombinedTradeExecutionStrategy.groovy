@@ -1,5 +1,6 @@
 package com.ukora.tradestudent.strategy.trading.combined.impl
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
 import com.ukora.domain.beans.tags.buysell.BuyTag
 import com.ukora.domain.beans.tags.moves.UpDownMovesTagGroup
@@ -187,17 +188,19 @@ class DynamicWeightsCombinedTradeExecutionStrategy implements CombinedTradeExecu
                 )
             }
         } else {
-            if (numerical.valid) {
-                Logger.log('Numerical aggregate not valid')
+            if (!numerical.valid) {
+                Logger.log(String.format('Numerical aggregate not valid. %s', objectMapper.writeValueAsString(numerical)))
             }
-            if (twitter.valid) {
-                Logger.log('Twitter aggregate not valid')
+            if (!twitter.valid) {
+                Logger.log(String.format('Twitter aggregate not valid', objectMapper.writeValueAsString(twitter)))
             }
-            if (news.valid) {
-                Logger.log('News aggregate not valid')
+            if (!news.valid) {
+                Logger.log(String.format('News aggregate not valid', objectMapper.writeValueAsString(news)))
             }
         }
         return tradeExecution
     }
+
+    ObjectMapper objectMapper = new ObjectMapper()
 
 }
