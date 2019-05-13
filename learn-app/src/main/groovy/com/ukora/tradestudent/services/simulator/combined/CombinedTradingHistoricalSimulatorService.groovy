@@ -126,6 +126,16 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                                 Double minBuyThreshold = (thresholdBuy - simulationSettings.maxThresholdDelta > simulationSettings.lowestThreshold) ? thresholdBuy - simulationSettings.maxThresholdDelta : simulationSettings.lowestThreshold
                                 for (Double thresholdSell = minBuyThreshold; thresholdSell <= maxBuyThreshold; thresholdSell += simulationSettings.thresholdIncrement) {
                                     combinedSimulations << new CombinedSimulation(
+                                            key: String.format(
+                                                    "b:%s,s:%s,i:%s,nw:%s,tnw:%s,ttw:%s",
+                                                    thresholdBuy,
+                                                    thresholdSell,
+                                                    tradeIncrement,
+                                                    combinedTradeExecutionStrategy,
+                                                    numericalWeight,
+                                                    textNewsWeight,
+                                                    textTwitterWeight,
+                                            ),
                                             combinedTradeExecutionStrategy: combinedTradeExecutionStrategy,
                                             probabilityCombinerStrategy: 'weights',
                                             numericalWeight: numericalWeight,
