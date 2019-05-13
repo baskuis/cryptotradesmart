@@ -10,21 +10,21 @@ abstract class AbstractTradingHistoricalSimulatorService {
 
     abstract BytesFetcherService getBytesFetcherService()
 
-    final static Double STARTING_BALANCE = 10
+    public final static Double STARTING_BALANCE = 10
 
-    static Double MINIMUM_AMOUNT = 0.01
+    public final static Double MINIMUM_AMOUNT = 0.01
 
-    final static int STORE_NUMBER_OF_RESULTS = 20
+    public final static int STORE_NUMBER_OF_RESULTS = 20
 
-    final static long INTERVAL_SECONDS = 60
+    public final static long INTERVAL_SECONDS = 60
 
     public final static int numCores = Runtime.getRuntime().availableProcessors()
 
-    static boolean multiThreadingEnabled = true
+    public static boolean multiThreadingEnabled = true
 
-    static boolean simulationRunning = false
+    public static boolean simulationRunning = false
 
-    static boolean forceCompleteSimulation = false
+    public static boolean forceCompleteSimulation = false
 
     /** For better performance - we'll stop losing/hyper simulation */
     final static MAXIMUM_LOSS_TILL_QUIT = 0.6

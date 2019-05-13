@@ -28,5 +28,10 @@ class SimulationResult {
     Integer tradeCount
     Double totalValue
 
+    Double numericalWeight
+    Double textNewsWeight
+    Double textTwitterWeight
+
     Map<String, Double> tagGroupWeights = [:]
+
 }

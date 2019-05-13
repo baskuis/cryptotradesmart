@@ -10,6 +10,7 @@ import com.ukora.tradestudent.services.ProbabilityCombinerService
 import com.ukora.tradestudent.services.SimulationResultService
 import com.ukora.tradestudent.services.simulator.AbstractTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.simulator.CombinedSimulation
+import com.ukora.tradestudent.services.simulator.Simulation
 import com.ukora.tradestudent.services.text.ConcurrentTextAssociationProbabilityService
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.strategy.trading.combined.CombinedTradeExecutionStrategy
@@ -114,28 +115,33 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
          * Build simulations
          *
          */
-        for (Double numericalWeight = simulationSettings.minNumericalWeight; numericalWeight <= simulationSettings.maxNumericalWeight; numericalWeight += simulationSettings.tagGroupInc) {
-            for (Double textNewsWeight = simulationSettings.minTextWeight; textNewsWeight <= simulationSettings.maxTextWeight; textNewsWeight += simulationSettings.tagGroupInc) {
-                for (Double textTwitterWeight = simulationSettings.minTextWeight; textTwitterWeight <= simulationSettings.maxTextWeight; textTwitterWeight += simulationSettings.tagGroupInc) {
-                    for (Double tradeIncrement = simulationSettings.tradeIncrement; tradeIncrement <= simulationSettings.maxTradeIncrement; tradeIncrement += simulationSettings.tradeIncrement) {
-                        for (Double thresholdBuy = simulationSettings.lowestThreshold; thresholdBuy <= simulationSettings.highestThreshold; thresholdBuy += simulationSettings.thresholdIncrement) {
-                            Double maxBuyThreshold = (thresholdBuy + simulationSettings.maxThresholdDelta < simulationSettings.highestThreshold) ? thresholdBuy + simulationSettings.maxThresholdDelta : simulationSettings.highestThreshold
-                            Double minBuyThreshold = (thresholdBuy - simulationSettings.maxThresholdDelta > simulationSettings.lowestThreshold) ? thresholdBuy - simulationSettings.maxThresholdDelta : simulationSettings.lowestThreshold
-                            for (Double thresholdSell = minBuyThreshold; thresholdSell <= maxBuyThreshold; thresholdSell += simulationSettings.thresholdIncrement) {
-                                combinedSimulations << new CombinedSimulation(
-                                        numericalWeight: numericalWeight,
-                                        textNewsWeight: textNewsWeight,
-                                        textTwitterWeight: textTwitterWeight,
-                                        buyThreshold: thresholdBuy,
-                                        numericalSimulation: numericalSimulationResult,
-                                        textNewsSimulation: textNewsSimulationResult,
-                                        textTwitterSimulation: textTwitterSimulationResult,
-                                        sellThreshold: thresholdSell,
-                                        transactionCost: TRADE_TRANSACTION_COST,
-                                        balanceA: STARTING_BALANCE,
-                                        balanceB: 0D,
-                                        tradeCount: 0
-                                )
+        combinedTradeExecutionStrategyMap.each {
+            String combinedTradeExecutionStrategy = it.key
+            for (Double numericalWeight = simulationSettings.minNumericalWeight; numericalWeight <= simulationSettings.maxNumericalWeight; numericalWeight += simulationSettings.tagGroupInc) {
+                for (Double textNewsWeight = simulationSettings.minTextWeight; textNewsWeight <= simulationSettings.maxTextWeight; textNewsWeight += simulationSettings.tagGroupInc) {
+                    for (Double textTwitterWeight = simulationSettings.minTextWeight; textTwitterWeight <= simulationSettings.maxTextWeight; textTwitterWeight += simulationSettings.tagGroupInc) {
+                        for (Double tradeIncrement = simulationSettings.tradeIncrement; tradeIncrement <= simulationSettings.maxTradeIncrement; tradeIncrement += simulationSettings.tradeIncrement) {
+                            for (Double thresholdBuy = simulationSettings.lowestThreshold; thresholdBuy <= simulationSettings.highestThreshold; thresholdBuy += simulationSettings.thresholdIncrement) {
+                                Double maxBuyThreshold = (thresholdBuy + simulationSettings.maxThresholdDelta < simulationSettings.highestThreshold) ? thresholdBuy + simulationSettings.maxThresholdDelta : simulationSettings.highestThreshold
+                                Double minBuyThreshold = (thresholdBuy - simulationSettings.maxThresholdDelta > simulationSettings.lowestThreshold) ? thresholdBuy - simulationSettings.maxThresholdDelta : simulationSettings.lowestThreshold
+                                for (Double thresholdSell = minBuyThreshold; thresholdSell <= maxBuyThreshold; thresholdSell += simulationSettings.thresholdIncrement) {
+                                    combinedSimulations << new CombinedSimulation(
+                                            combinedTradeExecutionStrategy: combinedTradeExecutionStrategy,
+                                            probabilityCombinerStrategy: 'weights',
+                                            numericalWeight: numericalWeight,
+                                            textNewsWeight: textNewsWeight,
+                                            textTwitterWeight: textTwitterWeight,
+                                            buyThreshold: thresholdBuy,
+                                            numericalSimulation: numericalSimulationResult,
+                                            textNewsSimulation: textNewsSimulationResult,
+                                            textTwitterSimulation: textTwitterSimulationResult,
+                                            sellThreshold: thresholdSell,
+                                            transactionCost: TRADE_TRANSACTION_COST,
+                                            balanceA: STARTING_BALANCE,
+                                            balanceB: 0D,
+                                            tradeCount: 0
+                                    )
+                                }
                             }
                         }
                     }
@@ -213,44 +219,45 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                     group.findAll { it.enabled }.each {
                         CombinedSimulation simulation = it
                         simulation.finalPrice = correlationAssociation.price
-                        enabledTradeStrategies.each {
-                            Double balanceProportion = (correlationAssociation.price) ? (
-                                    (simulation.balanceA ?: STARTING_BALANCE) /
-                                    (
-                                            (simulation.balanceA ?: STARTING_BALANCE) +
-                                                    ((simulation.balanceB ?: 0) / correlationAssociation.price)
-                                    )
-                            ) : 1
-                            if (!NerdUtils.assertRange(balanceProportion)) {
-                                Logger.log(String.format("balanceProportion %s is out of range", balanceProportion))
-                                return
-                            }
-                            TradeExecution tradeExecution
-
-                            /** balance purse - sell half of balance A for B at market price */
-                            if (newSimulation) {
-                                tradeExecution = new TradeExecution(
-                                        date: correlationAssociation.date,
-                                        price: correlationAssociation.price,
-                                        tradeType: TradeExecution.TradeType.SELL,
-                                        amount: STARTING_BALANCE / 2
+                        CombinedTradeExecutionStrategy combinedTradeExecutionStrategy = combinedTradeExecutionStrategyMap.get(simulation.combinedTradeExecutionStrategy)
+                        if (!combinedTradeExecutionStrategy) {
+                            Logger.log(String.format('Not able to find %s', combinedTradeExecutionStrategy))
+                        }
+                        Double balanceProportion = (correlationAssociation.price) ? (
+                                (simulation.balanceA ?: STARTING_BALANCE) /
+                                (
+                                        (simulation.balanceA ?: STARTING_BALANCE) +
+                                                ((simulation.balanceB ?: 0) / correlationAssociation.price)
                                 )
+                        ) : 1
+                        if (!NerdUtils.assertRange(balanceProportion)) {
+                            Logger.log(String.format("balanceProportion %s is out of range", balanceProportion))
+                            return
+                        }
+                        TradeExecution tradeExecution
 
-                                /** otherwise check strategy */
-                            } else {
-                                tradeExecution = it.value.getTrade(
-                                        correlationAssociation,
-                                        textCorrelationAssociation,
-                                        simulation,
-                                        balanceProportion)
+                        /** balance purse - sell half of balance A for B at market price */
+                        if (newSimulation) {
+                            tradeExecution = new TradeExecution(
+                                    date: correlationAssociation.date,
+                                    price: correlationAssociation.price,
+                                    tradeType: TradeExecution.TradeType.SELL,
+                                    amount: STARTING_BALANCE / 2
+                            )
 
-                            }
+                            /** otherwise check strategy */
+                        } else {
+                            tradeExecution = combinedTradeExecutionStrategy.getTrade(
+                                    correlationAssociation,
+                                    textCorrelationAssociation,
+                                    simulation,
+                                    balanceProportion)
 
-                            /** execute trade */
-                            if (tradeExecution) {
-                                simulateTrade(simulation, tradeExecution)
-                            }
+                        }
 
+                        /** execute trade */
+                        if (tradeExecution) {
+                            simulateTrade(simulation, tradeExecution)
                         }
                     }
                 })
@@ -281,6 +288,42 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
         /** Allow another simulation to be started */
         simulationRunning = false
 
+    }
+
+    /**
+     * Extract results from simulations
+     * organized into a map for output and persistence
+     *
+     * @return
+     */
+    protected Map<String, Map> extractResult() {
+        Map<String, Map> result = [:]
+        combinedSimulations.each {
+            CombinedSimulation simulation = it
+            String probabilityCombinerStrategy = 'combinedWeights'
+            String tradeExecutionStrategy = it.combinedTradeExecutionStrategy
+            it.totalBalance = it.balanceA + simulation.balanceB / simulation.finalPrice
+            result.put(String.format('%s:%s', simulation.key, it.key), [
+                    'probabilityCombinerStrategy': probabilityCombinerStrategy,
+                    'tradeExecutionStrategy'     : tradeExecutionStrategy,
+                    'balance'                    : it.totalBalance,
+                    'simulation'                 : simulation,
+                    'purseKey'                   : it.key
+            ])
+        }
+        return result
+    }
+
+    /**
+     * Capture the final results
+     *
+     * @return
+     */
+    protected Map<String, Map> captureResults() {
+        Logger.log('results are in')
+        Map<String, Map> finalResults = extractResult().sort { -it.value.get('balance') }.take(STORE_NUMBER_OF_RESULTS)
+        Logger.log(finalResults as String)
+        return finalResults
     }
 
     /**
@@ -367,6 +410,36 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                     )
                 }
                 break
+        }
+    }
+
+    /**
+     * Persist result of simulation
+     *
+     * @param finalResults
+     * @param fromDate
+     * @param endDate
+     */
+    protected void persistSimulationResults(Map<String, Map> finalResults, Date fromDate, Date endDate, SimulationResult.ExecutionType executionType) {
+        finalResults.each {
+            CombinedSimulation simulation = (it.value.get('simulation') as CombinedSimulation)
+            SimulationResult simulationResult = new SimulationResult(
+                    executionType: executionType,
+                    differential: (it.value.get('balance') as Double) / STARTING_BALANCE,
+                    startDate: fromDate,
+                    endDate: endDate,
+                    tradeIncrement: simulation.tradeIncrement,
+                    tradeExecutionStrategy: it.value.get('tradeExecutionStrategy'),
+                    probabilityCombinerStrategy: it.value.get('probabilityCombinerStrategy'),
+                    buyThreshold: simulation.buyThreshold,
+                    sellThreshold: simulation.sellThreshold,
+                    tradeCount: simulation.tradeCounts.get(it.value.get('purseKey') as String, 0d),
+                    totalValue: simulation.totalBalances.get(it.value.get('purseKey') as String, 0d),
+                    numericalWeight: simulation.numericalWeight,
+                    textNewsWeight: simulation.textNewsWeight,
+                    textTwitterWeight: simulation.textTwitterWeight
+            )
+            bytesFetcherService.saveSimulation(simulationResult)
         }
     }
 
