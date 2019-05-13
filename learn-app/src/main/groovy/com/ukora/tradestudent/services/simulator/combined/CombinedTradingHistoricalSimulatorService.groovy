@@ -175,13 +175,12 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
         }
         def newSimulation = true
         def partitioned = multiThreadingEnabled ? (0..<numCores).collect {
-            combinedSimulations[(it..<simulations.size()).step(numCores)]
+            combinedSimulations[(it..<combinedSimulations.size()).step(numCores)]
         } : [combinedSimulations]
         if (multiThreadingEnabled) Logger.debug(String.format("Delegating simulation to %s threads", numCores))
         if (multiThreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
         simulationRunning = true
         resetSimulations()
-        def enabledTradeStrategies = combinedTradeExecutionStrategyMap.findAll { it.value.enabled }
         Instant end = Instant.now()
         Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
         Instant current = Instant.ofEpochMilli(fromDate.time)
