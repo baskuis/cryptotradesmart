@@ -218,7 +218,6 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                     group.findAll { it.enabled }.each {
                         CombinedSimulation simulation = it
                         simulation.finalPrice = correlationAssociation.price
-                        Logger.log('simulation.finalPrice:' + simulation.finalPrice)
                         CombinedTradeExecutionStrategy combinedTradeExecutionStrategy = combinedTradeExecutionStrategyMap.get(simulation.combinedTradeExecutionStrategy)
                         if (!combinedTradeExecutionStrategy) {
                             Logger.log(String.format('Not able to find %s', combinedTradeExecutionStrategy))
@@ -303,11 +302,6 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
         Map<String, Map> result = [:]
         combinedSimulations.each {
             CombinedSimulation simulation = it
-            Logger.log(String.format('it.balanceA: %s, simulation.balanceB: %s, simulation.finalPrice: %s',
-                    it.balanceA,
-                    simulation.balanceB,
-                    simulation.finalPrice)
-            )
             String probabilityCombinerStrategy = 'combinedWeights'
             String tradeExecutionStrategy = it.combinedTradeExecutionStrategy
             it.totalBalance = it.balanceA + simulation.balanceB / simulation.finalPrice
