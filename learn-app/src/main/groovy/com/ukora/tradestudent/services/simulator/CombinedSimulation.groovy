@@ -2,8 +2,6 @@ package com.ukora.tradestudent.services.simulator
 
 import com.ukora.domain.entities.SimulationResult
 
-import java.util.concurrent.ConcurrentHashMap
-
 class CombinedSimulation {
 
     String key
