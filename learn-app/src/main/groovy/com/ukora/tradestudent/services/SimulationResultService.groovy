@@ -195,6 +195,28 @@ class SimulationResultService {
     }
 
     /**
+     * Get top performing combined simulation
+     *
+     * @return
+     */
+    SimulationResult getTopPerformingCombinedSimulation(TextSource textSource) {
+        def r = bytesFetcherService.getSimulations()?.findAll({
+            it.executionType == SimulationResult.ExecutionType.COMBINED &&
+                    it.differential > MINIMUM_DIFFERENTIAL &&
+                    this.textFlexTradeStrategies?.contains(it.tradeExecutionStrategy) &&
+                    (!textSource || (
+                            (textSource == TextSource.NEWS && this.newsFlexTradeStrategies?.contains(it.tradeExecutionStrategy)) ||
+                                    (textSource == TextSource.TWITTER && this.twitterFlexTradeStrategies?.contains(it.tradeExecutionStrategy))
+                    ))
+        })?.sort({ SimulationResult a, SimulationResult b ->
+            b.endDate <=> a.endDate
+        })?.take(100)?.sort({ SimulationResult a, SimulationResult b ->
+            getScore(b) <=> getScore(a)
+        })
+        return r.size() > 0 ? r.first() : null
+    }
+
+    /**
      * Get top performing text flex simulation
      *
      * @return

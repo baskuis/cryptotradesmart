@@ -282,7 +282,7 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                 finalResults,
                 fromDate,
                 Date.from(end),
-                SimulationResult.ExecutionType.FLEX
+                SimulationResult.ExecutionType.COMBINED
         )
 
         /** Allow another simulation to be started */
@@ -437,7 +437,10 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                     totalValue: simulation.totalBalances.get(it.value.get('purseKey') as String, 0d),
                     numericalWeight: simulation.numericalWeight,
                     textNewsWeight: simulation.textNewsWeight,
-                    textTwitterWeight: simulation.textTwitterWeight
+                    textTwitterWeight: simulation.textTwitterWeight,
+                    numericalSimulation: simulation.numericalSimulation,
+                    textTwitterSimulation: simulation.textTwitterSimulation,
+                    textNewsSimulation: simulation.textNewsSimulation
             )
             bytesFetcherService.saveSimulation(simulationResult)
         }

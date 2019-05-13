@@ -227,6 +227,11 @@ class TradeStudentController {
         simulationResultService.getTopPerformingSimulation()
     }
 
+    @RequestMapping(path = '/bestcombinedsimulation', method = RequestMethod.GET)
+    SimulationResult getTopPerformingCombinedSimulation() {
+        simulationResultService.getTopPerformingCombinedSimulation()
+    }
+
     @RequestMapping(path = '/bestnumericalflexsimulation', method = RequestMethod.GET)
     SimulationResult getTopPerformingNumericalFlexSimulation() {
         simulationResultService.getTopPerformingNumericalFlexSimulation()

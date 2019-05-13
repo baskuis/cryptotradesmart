@@ -8,7 +8,7 @@ class SimulationResult {
     String id
 
     enum ExecutionType {
-        BASIC, FLEX
+        BASIC, FLEX, COMBINED
     }
 
     ExecutionType executionType = ExecutionType.BASIC
@@ -31,6 +31,10 @@ class SimulationResult {
     Double numericalWeight
     Double textNewsWeight
     Double textTwitterWeight
+
+    SimulationResult numericalSimulation
+    SimulationResult textTwitterSimulation
+    SimulationResult textNewsSimulation
 
     Map<String, Double> tagGroupWeights = [:]
 
