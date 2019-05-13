@@ -303,6 +303,11 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
         Map<String, Map> result = [:]
         combinedSimulations.each {
             CombinedSimulation simulation = it
+            Logger.log(String.format('it.balanceA: %s, simulation.balanceB: %s, simulation.finalPrice: %s',
+                    it.balanceA,
+                    simulation.balanceB,
+                    simulation.finalPrice)
+            )
             String probabilityCombinerStrategy = 'combinedWeights'
             String tradeExecutionStrategy = it.combinedTradeExecutionStrategy
             it.totalBalance = it.balanceA + simulation.balanceB / simulation.finalPrice
