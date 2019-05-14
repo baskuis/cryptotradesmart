@@ -81,7 +81,7 @@ class DynamicWeightsCombinedTradeExecutionStrategy implements CombinedTradeExecu
             Double upReversalWeight = simulationResult.tagGroupWeights.get(upDownReversalTagGroup.name)
             Double upMoveWeight = simulationResult.tagGroupWeights.get(upDownMovesTagGroup.name)
             0.5d + (
-                    weight * (
+                    (
                             (
                                     ((buy - 0.5d) * buyWeight) +
                                             ((up - 0.5d) * upWeight) +
