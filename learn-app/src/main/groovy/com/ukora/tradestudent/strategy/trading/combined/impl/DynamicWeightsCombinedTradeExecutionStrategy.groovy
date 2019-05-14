@@ -76,10 +76,6 @@ class DynamicWeightsCombinedTradeExecutionStrategy implements CombinedTradeExecu
         SimulationResult simulationResult
 
         Double getAggregateProbability() {
-            Double buyD = buy - 0.5d
-            Double upD = up - 0.5d
-            Double upReversalD = upReversal - 0.5d
-            Double upMoveD = upMove - 0.5d
             Double buyWeight = simulationResult.tagGroupWeights.get(buySellTagGroup.name)
             Double upWeight = simulationResult.tagGroupWeights.get(upDownTagGroup.name)
             Double upReversalWeight = simulationResult.tagGroupWeights.get(upDownReversalTagGroup.name)
@@ -87,10 +83,10 @@ class DynamicWeightsCombinedTradeExecutionStrategy implements CombinedTradeExecu
             0.5d + (
                     weight * (
                             (
-                                    (buyD * buyWeight) +
-                                            (upD * upWeight) +
-                                            (upReversalD * upReversalWeight) +
-                                            (upMoveD * upMoveWeight)
+                                    ((buy - 0.5d) * buyWeight) +
+                                            ((up - 0.5d) * upWeight) +
+                                            ((upReversal - 0.5d) * upReversalWeight) +
+                                            ((upMove - 0.5d) * upMoveWeight)
                             ) / (
                                     Math.abs(buyWeight) +
                                             Math.abs(upWeight) +
@@ -161,9 +157,9 @@ class DynamicWeightsCombinedTradeExecutionStrategy implements CombinedTradeExecu
             Double aggregateBuyProbability =
                     0.5d + (
                             (
-                                    (numericalProbability * numerical.weight) +
-                                            (textNewsProbability * news.weight) +
-                                            (textTwitterProbability * twitter.weight)
+                                    ((numericalProbability - 0.5d) * numerical.weight) +
+                                            ((textNewsProbability - 0.5d) * news.weight) +
+                                            ((textTwitterProbability - 0.5d) * twitter.weight)
                             ) / (
                                     Math.abs(numerical.weight) +
                                             Math.abs(news.weight) +

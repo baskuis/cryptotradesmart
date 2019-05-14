@@ -199,15 +199,10 @@ class SimulationResultService {
      *
      * @return
      */
-    SimulationResult getTopPerformingCombinedSimulation(TextSource textSource) {
+    SimulationResult getTopPerformingCombinedSimulation() {
         def r = bytesFetcherService.getSimulations()?.findAll({
             it.executionType == SimulationResult.ExecutionType.COMBINED &&
-                    it.differential > MINIMUM_DIFFERENTIAL &&
-                    this.textFlexTradeStrategies?.contains(it.tradeExecutionStrategy) &&
-                    (!textSource || (
-                            (textSource == TextSource.NEWS && this.newsFlexTradeStrategies?.contains(it.tradeExecutionStrategy)) ||
-                                    (textSource == TextSource.TWITTER && this.twitterFlexTradeStrategies?.contains(it.tradeExecutionStrategy))
-                    ))
+                    it.differential > MINIMUM_DIFFERENTIAL
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
         })?.take(100)?.sort({ SimulationResult a, SimulationResult b ->
