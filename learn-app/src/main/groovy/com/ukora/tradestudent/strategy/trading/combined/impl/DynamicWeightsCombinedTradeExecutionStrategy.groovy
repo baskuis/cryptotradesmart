@@ -168,6 +168,7 @@ class DynamicWeightsCombinedTradeExecutionStrategy implements CombinedTradeExecu
                     )
 
             Double aggregateSellProbability = 1 - aggregateBuyProbability
+            Logger.log(String.format('buy:%s, sell:%s', aggregateBuyProbability, aggregateSellProbability))
             if (aggregateBuyProbability > simulation.buyThreshold) {
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.BUY,
