@@ -116,10 +116,10 @@ class DynamicWeightsCombinedTradeExecutionStrategy implements CombinedTradeExecu
                 upDownReversalTagGroup: upDownReversalTagGroup,
                 upDownTagGroup: upDownTagGroup,
                 upDownMovesTagGroup: upDownMovesTagGroup,
-                buy: nca.tagProbabilities.get(simulation.numericalSimulation?.probabilityCombinerStrategy)?.get(buyTag.tagName),
-                up: nca.tagProbabilities.get(simulation.numericalSimulation?.probabilityCombinerStrategy)?.get(upTag.tagName),
-                upReversal: nca.tagProbabilities.get(simulation.numericalSimulation?.probabilityCombinerStrategy)?.get(upReversalTag.tagName),
-                upMove: nca.tagProbabilities.get(simulation.numericalSimulation?.probabilityCombinerStrategy)?.get(upMoveTag.tagName),
+                buy: nca.tagProbabilities?.get(simulation.numericalSimulation?.probabilityCombinerStrategy)?.get(buyTag.tagName),
+                up: nca.tagProbabilities?.get(simulation.numericalSimulation?.probabilityCombinerStrategy)?.get(upTag.tagName),
+                upReversal: nca.tagProbabilities?.get(simulation.numericalSimulation?.probabilityCombinerStrategy)?.get(upReversalTag.tagName),
+                upMove: nca.tagProbabilities?.get(simulation.numericalSimulation?.probabilityCombinerStrategy)?.get(upMoveTag.tagName),
                 weight: simulation.numericalWeight,
                 simulationResult: simulation.numericalSimulation
         )
@@ -168,7 +168,8 @@ class DynamicWeightsCombinedTradeExecutionStrategy implements CombinedTradeExecu
                     )
 
             Double aggregateSellProbability = 1 - aggregateBuyProbability
-            Logger.log(String.format('buy:%s, sell:%s', aggregateBuyProbability, aggregateSellProbability))
+            Logger.log(String.format('buy:%s, sell:%s, numericalProbability:%s, textNewsProbability:%s, textTwitterProbability: %s',
+                    aggregateBuyProbability, aggregateSellProbability, numericalProbability, textNewsProbability, textTwitterProbability))
             if (aggregateBuyProbability > simulation.buyThreshold) {
                 tradeExecution = new TradeExecution(
                         tradeType: TradeExecution.TradeType.BUY,
