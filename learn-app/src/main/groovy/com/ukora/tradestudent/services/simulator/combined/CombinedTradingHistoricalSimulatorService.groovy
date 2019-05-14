@@ -140,6 +140,7 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                                             probabilityCombinerStrategy: 'weights',
                                             numericalWeight: numericalWeight,
                                             textNewsWeight: textNewsWeight,
+                                            tradeIncrement: tradeIncrement,
                                             textTwitterWeight: textTwitterWeight,
                                             buyThreshold: thresholdBuy,
                                             numericalSimulation: numericalSimulationResult,
