@@ -1,5 +1,6 @@
 package com.ukora.tradestudent.services.simulator.combined
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.domain.entities.CorrelationAssociation
 import com.ukora.domain.entities.ExtractedText
@@ -171,6 +172,8 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
         simulationSettings = new SimulationSettings()
     }
 
+    ObjectMapper objectMapper = new ObjectMapper()
+
     /**
      * Start a trading simulation from the requested date
      * to the present
@@ -234,8 +237,9 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                             Logger.log(String.format('Not able to find %s', combinedTradeExecutionStrategy))
                         }
 
-                        Logger.log(String.format('simulation.balanceA:%s, simulation.balanceB:%s, correlationAssociation.price:%s',
-                            simulation.balanceA, simulation.balanceB, correlationAssociation.price
+                        Logger.log(String.format('simulation.balanceA:%s, simulation.balanceB:%s, correlationAssociation.price:%s, simulation:%s',
+                            simulation.balanceA, simulation.balanceB, correlationAssociation.price,
+                                objectMapper.writeValueAsString(simulation)
                         ))
 
                         Double balanceProportion = (correlationAssociation.price) ? (
