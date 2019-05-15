@@ -184,7 +184,6 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
             Logger.log("There is already a simulation running. Not starting flex simulation.")
             return
         }
-        def newSimulation = true
         def partitioned = multiThreadingEnabled ? (0..<numCores).collect {
             combinedSimulations[(it..<combinedSimulations.size()).step(numCores)]
         } : [combinedSimulations]
@@ -234,36 +233,18 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                             Logger.log(String.format('Not able to find %s', combinedTradeExecutionStrategy))
                         }
                         Double balanceProportion = (correlationAssociation.price) ? (
-                                (simulation.balanceA ?: STARTING_BALANCE) /
-                                (
-                                        (simulation.balanceA ?: STARTING_BALANCE) +
-                                                ((simulation.balanceB ?: 0) / correlationAssociation.price)
-                                )
+                                simulation.balanceA /
+                                (simulation.balanceA + (simulation.balanceB / correlationAssociation.price))
                         ) : 1
                         if (!NerdUtils.assertRange(balanceProportion)) {
                             Logger.log(String.format("balanceProportion %s is out of range", balanceProportion))
                             return
                         }
-                        TradeExecution tradeExecution
-
-                        /** balance purse - sell half of balance A for B at market price */
-                        if (newSimulation) {
-                            tradeExecution = new TradeExecution(
-                                    date: correlationAssociation.date,
-                                    price: correlationAssociation.price,
-                                    tradeType: TradeExecution.TradeType.SELL,
-                                    amount: STARTING_BALANCE / 2
-                            )
-
-                            /** otherwise check strategy */
-                        } else {
-                            tradeExecution = combinedTradeExecutionStrategy.getTrade(
-                                    correlationAssociation,
-                                    textCorrelationAssociation,
-                                    simulation,
-                                    balanceProportion)
-
-                        }
+                        TradeExecution tradeExecution = combinedTradeExecutionStrategy.getTrade(
+                                correlationAssociation,
+                                textCorrelationAssociation,
+                                simulation,
+                                balanceProportion)
 
                         /** execute trade */
                         if (tradeExecution) {
@@ -275,9 +256,6 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
 
             /** Collect results */
             threads*.join()
-            if (newSimulation) {
-                newSimulation = false
-            }
 
             /** Force complete simulation if requested */
             if (forceCompleteSimulation) break
@@ -362,6 +340,7 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
         Double balanceB = simulation.balanceB
         switch (tradeExecution.tradeType) {
             case TradeExecution.TradeType.BUY:
+                Logger.log(String.format('balanceB:%s, tradeExecution.price:%s', balanceB, tradeExecution.price))
                 Double maxAmount = balanceB / tradeExecution.price
                 Double amount
                 Double newBalanceA
