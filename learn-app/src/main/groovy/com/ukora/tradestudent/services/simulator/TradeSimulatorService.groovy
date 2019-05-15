@@ -27,13 +27,13 @@ class TradeSimulatorService {
 
     @Deprecated
     void runSimulation() {
-        Instant from = Instant.now().minus(20, ChronoUnit.DAYS)
+        Instant from = Instant.now().minus(30, ChronoUnit.DAYS)
         Logger.log(String.format("Running simulation starting from %s", Date.from(from)))
         buySellTradingHistoricalSimulatorService.runSimulation(Date.from(from))
     }
 
     void runFlexSimulation() {
-        Instant from = Instant.now().minus(20, ChronoUnit.DAYS)
+        Instant from = Instant.now().minus(30, ChronoUnit.DAYS)
         Logger.log(String.format("Running flex simulation starting from %s", Date.from(from)))
         flexTradingHistoricalSimulatorService.runSimulation(
                 Date.from(from),
@@ -44,7 +44,7 @@ class TradeSimulatorService {
 
     @Scheduled(cron = "0 0 9 * * *")
     void runTwitterFlexSimulation() {
-        Instant from = Instant.now().minus(20, ChronoUnit.DAYS)
+        Instant from = Instant.now().minus(30, ChronoUnit.DAYS)
         Logger.log(String.format("Running twitter flex simulation starting from %s", Date.from(from)))
         flexTradingHistoricalSimulatorService.runSimulation(
                 Date.from(from),
@@ -55,7 +55,7 @@ class TradeSimulatorService {
 
     @Scheduled(cron = "0 0 15 * * *")
     void runNewsFlexSimulation() {
-        Instant from = Instant.now().minus(20, ChronoUnit.DAYS)
+        Instant from = Instant.now().minus(30, ChronoUnit.DAYS)
         Logger.log(String.format("Running news flex simulation starting from %s", Date.from(from)))
         flexTradingHistoricalSimulatorService.runSimulation(
                 Date.from(from),
@@ -66,7 +66,7 @@ class TradeSimulatorService {
 
     @Scheduled(cron = "0 0 21 * * *")
     void runNumericalFlexSimulation() {
-        Instant from = Instant.now().minus(20, ChronoUnit.DAYS)
+        Instant from = Instant.now().minus(30, ChronoUnit.DAYS)
         Logger.log(String.format("Running numerical flex simulation starting from %s", Date.from(from)))
         flexTradingHistoricalSimulatorService.runSimulation(
                 Date.from(from),
@@ -75,9 +75,9 @@ class TradeSimulatorService {
         )
     }
 
-    // @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 0 3 * * *")
     void runCombinedSimulation() {
-        Instant from = Instant.now().minus(20, ChronoUnit.DAYS)
+        Instant from = Instant.now().minus(30, ChronoUnit.DAYS)
         Logger.log(String.format("Running combined simulation starting from %s", Date.from(from)))
         combinedTradingHistoricalSimulatorService.runSimulation(Date.from(from))
     }
