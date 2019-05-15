@@ -196,7 +196,7 @@ abstract class AbstractTradingHistoricalSimulatorService {
                 if (keys.size() != 2) return
                 String probabilityCombinerStrategy = keys[0]
                 String tradeExecutionStrategy = keys[1]
-                Double finalBalance = it.value + (simulation.balancesA.get(it.key) / simulation.finalPrice)
+                Double finalBalance = simulation.totalBalances.get(it.key)
                 simulation.result.put(it.key, finalBalance)
                 result.put(String.format('%s:%s', simulation.key, it.key), [
                         'probabilityCombinerStrategy': probabilityCombinerStrategy,

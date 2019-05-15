@@ -315,7 +315,6 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
             CombinedSimulation simulation = it
             String probabilityCombinerStrategy = 'combinedWeights'
             String tradeExecutionStrategy = it.combinedTradeExecutionStrategy
-            it.totalBalance = it.balanceA + simulation.balanceB / simulation.finalPrice
             result.put(String.format('%s:%s', simulation.key, it.key), [
                     'probabilityCombinerStrategy': probabilityCombinerStrategy,
                     'tradeExecutionStrategy'     : tradeExecutionStrategy,
@@ -359,8 +358,8 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
             ))
             return
         }
-        Double balanceA = simulation.balanceA ?: STARTING_BALANCE
-        Double balanceB = simulation.balanceB ?: 0d
+        Double balanceA = simulation.balanceA
+        Double balanceB = simulation.balanceB
         switch (tradeExecution.tradeType) {
             case TradeExecution.TradeType.BUY:
                 Double maxAmount = balanceB / tradeExecution.price
