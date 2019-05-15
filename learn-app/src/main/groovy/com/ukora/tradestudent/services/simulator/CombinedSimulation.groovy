@@ -26,8 +26,8 @@ class CombinedSimulation {
     Double finalPrice = 0d
 
     Double tradeCount = 0d
-    Double balanceA
-    Double balanceB
+    Double balanceA = 0d
+    Double balanceB = 0d
     Double totalBalance = 0d
 
 }
