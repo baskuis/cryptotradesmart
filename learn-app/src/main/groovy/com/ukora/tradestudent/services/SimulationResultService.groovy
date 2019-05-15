@@ -54,11 +54,11 @@ class SimulationResultService {
         }?.keySet()?.toList()
         twitterFlexTradeStrategies = applicationContext.getBeansOfType(FlexTradeExecutionStrategy)?.findAll {
             it.value.getType() == FlexTradeExecutionStrategy.Type.TEXT &&
-                    it.value.getTextSource() == ExtractedText.TextSource.TWITTER
+                    it.value.getTextSource() == TextSource.TWITTER
         }?.keySet()?.toList()
         newsFlexTradeStrategies = applicationContext.getBeansOfType(FlexTradeExecutionStrategy)?.findAll {
             it.value.getType() == FlexTradeExecutionStrategy.Type.TEXT &&
-                    it.value.getTextSource() == ExtractedText.TextSource.NEWS
+                    it.value.getTextSource() == TextSource.NEWS
         }?.keySet()?.toList()
     }
 
@@ -188,7 +188,7 @@ class SimulationResultService {
                     this.numericalFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
-        })?.take(100)?.sort({ SimulationResult a, SimulationResult b ->
+        })?.take(20)?.sort({ SimulationResult a, SimulationResult b ->
             getScore(b) <=> getScore(a)
         })
         return r.size() > 0 ? r.first() : null
@@ -205,7 +205,7 @@ class SimulationResultService {
                     it.differential > MINIMUM_DIFFERENTIAL
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
-        })?.take(100)?.sort({ SimulationResult a, SimulationResult b ->
+        })?.take(20)?.sort({ SimulationResult a, SimulationResult b ->
             getScore(b) <=> getScore(a)
         })
         return r.size() > 0 ? r.first() : null
@@ -227,7 +227,7 @@ class SimulationResultService {
                     ))
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
-        })?.take(100)?.sort({ SimulationResult a, SimulationResult b ->
+        })?.take(20)?.sort({ SimulationResult a, SimulationResult b ->
             getScore(b) <=> getScore(a)
         })
         return r.size() > 0 ? r.first() : null
@@ -243,7 +243,7 @@ class SimulationResultService {
             it.endDate > Date.from(Instant.now().minusSeconds(MAX_AGE_IN_HOURS * SECONDS_IN_HOUR)) && it.differential > MINIMUM_DIFFERENTIAL
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
-        })?.take(100)?.sort({ SimulationResult a, SimulationResult b ->
+        })?.take(20)?.sort({ SimulationResult a, SimulationResult b ->
             getScore(b) <=> getScore(a)
         })
     }
