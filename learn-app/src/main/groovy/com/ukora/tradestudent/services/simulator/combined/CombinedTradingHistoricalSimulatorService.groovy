@@ -80,6 +80,8 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
     @PostConstruct
     void init() {
 
+        combinedSimulations = []
+
         /**
          * Get probability combiner strategies
          */
@@ -159,7 +161,6 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                 }
             }
         }
-
     }
 
     /**
@@ -232,10 +233,16 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                         if (!combinedTradeExecutionStrategy) {
                             Logger.log(String.format('Not able to find %s', combinedTradeExecutionStrategy))
                         }
+
+                        Logger.log(String.format('simulation.balanceA:%s, simulation.balanceB:%s, correlationAssociation.price:%s',
+                            simulation.balanceA, simulation.balanceB, correlationAssociation.price
+                        ))
+
                         Double balanceProportion = (correlationAssociation.price) ? (
                                 simulation.balanceA /
                                 (simulation.balanceA + (simulation.balanceB / correlationAssociation.price))
                         ) : 1
+
                         if (!NerdUtils.assertRange(balanceProportion)) {
                             Logger.log(String.format("balanceProportion %s is out of range", balanceProportion))
                             return
