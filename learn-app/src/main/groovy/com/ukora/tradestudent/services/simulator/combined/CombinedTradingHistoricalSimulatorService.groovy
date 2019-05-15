@@ -236,17 +236,10 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                         if (!combinedTradeExecutionStrategy) {
                             Logger.log(String.format('Not able to find %s', combinedTradeExecutionStrategy))
                         }
-
-                        Logger.log(String.format('simulation.balanceA:%s, simulation.balanceB:%s, correlationAssociation.price:%s, simulation:%s',
-                            simulation.balanceA, simulation.balanceB, correlationAssociation.price,
-                                objectMapper.writeValueAsString(simulation)
-                        ))
-
                         Double balanceProportion = (correlationAssociation.price) ? (
                                 simulation.balanceA /
                                 (simulation.balanceA + (simulation.balanceB / correlationAssociation.price))
                         ) : 1
-
                         if (!NerdUtils.assertRange(balanceProportion)) {
                             Logger.log(String.format("balanceProportion %s is out of range", balanceProportion))
                             return
@@ -351,7 +344,6 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
         Double balanceB = simulation.balanceB
         switch (tradeExecution.tradeType) {
             case TradeExecution.TradeType.BUY:
-                Logger.log(String.format('balanceB:%s, tradeExecution.price:%s', balanceB, tradeExecution.price))
                 Double maxAmount = balanceB / tradeExecution.price
                 Double amount
                 Double newBalanceA
@@ -455,8 +447,8 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
     void resetSimulations() {
         combinedSimulations.each {
             it.enabled = true
-            it.balanceA = null
-            it.balanceB = null
+            it.balanceA = STARTING_BALANCE
+            it.balanceB = 0D
         }
     }
 
