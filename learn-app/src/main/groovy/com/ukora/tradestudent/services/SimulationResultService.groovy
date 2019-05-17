@@ -1,7 +1,6 @@
 package com.ukora.tradestudent.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ukora.domain.entities.ExtractedText
 import com.ukora.domain.entities.ExtractedText.TextSource
 import com.ukora.domain.entities.SimulationResult
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
@@ -20,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
 @Service
 class SimulationResultService {
 
-    public final Integer MAX_AGE_IN_HOURS = 24
+    public final Integer MAX_AGE_IN_HOURS = 36
 
     @Autowired
     ApplicationContext applicationContext
