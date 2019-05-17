@@ -3,10 +3,12 @@ package com.ukora.tradestudent.services
 import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.domain.entities.*
+import com.ukora.tradestudent.services.simulator.CombinedSimulation
 import com.ukora.tradestudent.services.simulator.Simulation
 import com.ukora.tradestudent.services.simulator.origin.BuySellTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.text.ConcurrentTextAssociationProbabilityService
 import com.ukora.tradestudent.strategy.trading.TradeExecutionStrategy
+import com.ukora.tradestudent.strategy.trading.combined.CombinedTradeExecutionStrategy
 import com.ukora.tradestudent.strategy.trading.flex.FlexTradeExecutionStrategy
 import com.ukora.tradestudent.utils.Logger
 import com.ukora.tradestudent.utils.NerdUtils
@@ -131,6 +133,28 @@ class LiveTradeSimulationService {
                                             tagGroupWeights: simulationResult.tagGroupWeights
                                     ),
                                     probabilityCombinerStrategy,
+                                    balanceProportion
+                            )
+                            if (tradeExecution) tradeExecutions << tradeExecution
+                            break
+                        case SimulationResult.ExecutionType.COMBINED:
+                            CombinedTradeExecutionStrategy combinedTradeExecutionStrategy = applicationContext.getBean(simulationResult.tradeExecutionStrategy, CombinedTradeExecutionStrategy)
+                            TradeExecution tradeExecution = combinedTradeExecutionStrategy.getTrade(
+                                    correlationAssociation,
+                                    textCorrelationAssociation,
+                                    new CombinedSimulation(
+                                            buyThreshold: simulationResult.buyThreshold,
+                                            sellThreshold: simulationResult.sellThreshold,
+                                            tradeIncrement: simulationResult.tradeIncrement,
+                                            numericalSimulation: simulationResult.numericalSimulation,
+                                            textNewsSimulation: simulationResult.textNewsSimulation,
+                                            textTwitterSimulation: simulationResult.textTwitterSimulation,
+                                            numericalWeight: simulationResult.numericalWeight,
+                                            textTwitterWeight: simulationResult.textTwitterWeight,
+                                            textNewsWeight: simulationResult.textNewsWeight,
+                                            combinedTradeExecutionStrategy: simulationResult.tradeExecutionStrategy,
+                                            probabilityCombinerStrategy: simulationResult.probabilityCombinerStrategy,
+                                    ),
                                     balanceProportion
                             )
                             if (tradeExecution) tradeExecutions << tradeExecution
