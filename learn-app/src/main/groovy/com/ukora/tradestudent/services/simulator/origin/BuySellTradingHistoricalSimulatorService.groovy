@@ -116,129 +116,137 @@ class BuySellTradingHistoricalSimulatorService extends AbstractTradingHistorical
      */
     @Async
     runSimulation(Date fromDate) {
-        if (!fromDate) return
-        if (simulationRunning) {
-            Logger.log("There is already a simulation running. Not starting simulation.")
-            return
-        }
-        def newSimulation = true
-        def partitioned = multiThreadingEnabled ? (0..<numCores).collect {
-            simulations[(it..<simulations.size()).step(numCores)]
-        } : [simulations]
-        if (multiThreadingEnabled) Logger.debug(String.format("Delegating simulation to %s threads", numCores))
-        if (multiThreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
-        simulationRunning = true
-        resetSimulations()
-        def enabledTradeStrategies = tradeExecutionStrategyMap.findAll { it.value.enabled }
-        Instant end = Instant.now()
-        Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
-        Instant current = Instant.ofEpochMilli(fromDate.time)
-        while (current.isBefore(end)) {
-            end = Instant.now()
-            current = current + gap
-
-            /** Get probabilities */
-            CorrelationAssociation correlationAssociation = probabilityCombinerService.getCorrelationAssociations(Date.from(current))
-            correlationAssociation.tagProbabilities.each {
-                String strategy = it.key
-                it.value.each {
-                    if (!correlationAssociation.price) return
-                    if (!it.value) return
-                    String tag = it.key
-                    if (!buySellTagGroup.tags().find { it.tagName == tag }) return
-                    Double probability = it.value
-                    List<Thread> threads = []
-                    partitioned.each { group ->
-                        threads << Thread.start({
-                            group.findAll { it.enabled }.each {
-
-                                /** Run simulation */
-                                Simulation simulation = it
-                                simulation.finalPrice = correlationAssociation.price
-                                enabledTradeStrategies.each {
-                                    String purseKey = String.format('%s:%s', strategy, it.key)
-                                    boolean purseEnabled = simulation.pursesEnabled.get(purseKey, true)
-                                    if (purseEnabled) {
-                                        Double balanceProportion = (correlationAssociation.price) ? simulation.balancesA.getOrDefault(purseKey, STARTING_BALANCE) /
-                                                (simulation.balancesA.getOrDefault(purseKey, STARTING_BALANCE) + (simulation.balancesB.getOrDefault(purseKey, 0) / correlationAssociation.price)) : 1
-                                        if (!NerdUtils.assertRange(balanceProportion)) {
-                                            Logger.log(String.format("balanceProportion %s is out of range", balanceProportion))
-                                            return
-                                        }
-                                        TradeExecution tradeExecution
-
-                                        /** balance purse - sell half of balance A for B at market price */
-                                        if (newSimulation) {
-                                            tradeExecution = new TradeExecution(
-                                                    date: correlationAssociation.date,
-                                                    price: correlationAssociation.price,
-                                                    tradeType: TradeExecution.TradeType.SELL,
-                                                    amount: STARTING_BALANCE / 2
-                                            )
-
-                                            /** otherwise check strategy */
-                                        } else {
-                                            tradeExecution = it.value.getTrade(
-                                                    correlationAssociation,
-                                                    tag,
-                                                    probability,
-                                                    simulation,
-                                                    strategy,
-                                                    balanceProportion)
-
-                                        }
-
-                                        /** execute trade */
-                                        if (tradeExecution) {
-                                            Logger.debug(String.format("key:%s,type:%s,probability:%s", purseKey, tradeExecution.tradeType, probability))
-                                            simulateTrade(
-                                                    simulation,
-                                                    tradeExecution,
-                                                    purseKey
-                                            )
-                                        }
-
-                                    }
-                                }
-
-                                /** Disable simulation when all purses are disabled */
-                                if (simulation.pursesEnabled.collect { it.value }.size() == 0) {
-                                    Logger.debug(String.format("Disabling on simulation %s all purses disabled", simulation))
-                                    simulation.enabled = false
-                                }
-
-                            }
-                        })
-                    }
-                    threads*.join()
-
-
-                    if (newSimulation) {
-                        newSimulation = false
-                    }
-
-                }
+        try {
+            if (!fromDate) return
+            if (simulationRunning) {
+                Logger.log("There is already a simulation running. Not starting simulation.")
+                return
             }
-            newSimulation = false
-            if (forceCompleteSimulation) break
+            def newSimulation = true
+            def partitioned = multiThreadingEnabled ? (0..<numCores).collect {
+                simulations[(it..<simulations.size()).step(numCores)]
+            } : [simulations]
+            if (multiThreadingEnabled) Logger.debug(String.format("Delegating simulation to %s threads", numCores))
+            if (multiThreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
+            simulationRunning = true
+            resetSimulations()
+            def enabledTradeStrategies = tradeExecutionStrategyMap.findAll { it.value.enabled }
+            Instant end = Instant.now()
+            Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
+            Instant current = Instant.ofEpochMilli(fromDate.time)
+            while (current.isBefore(end)) {
+                end = Instant.now()
+                current = current + gap
+
+                /** Get probabilities */
+                CorrelationAssociation correlationAssociation = probabilityCombinerService.getCorrelationAssociations(Date.from(current))
+                correlationAssociation.tagProbabilities.each {
+                    String strategy = it.key
+                    it.value.each {
+                        if (!correlationAssociation.price) return
+                        if (!it.value) return
+                        String tag = it.key
+                        if (!buySellTagGroup.tags().find { it.tagName == tag }) return
+                        Double probability = it.value
+                        List<Thread> threads = []
+                        partitioned.each { group ->
+                            threads << Thread.start({
+                                group.findAll { it.enabled }.each {
+
+                                    /** Run simulation */
+                                    Simulation simulation = it
+                                    simulation.finalPrice = correlationAssociation.price
+                                    enabledTradeStrategies.each {
+                                        String purseKey = String.format('%s:%s', strategy, it.key)
+                                        boolean purseEnabled = simulation.pursesEnabled.get(purseKey, true)
+                                        if (purseEnabled) {
+                                            Double balanceProportion = (correlationAssociation.price) ? simulation.balancesA.getOrDefault(purseKey, STARTING_BALANCE) /
+                                                    (simulation.balancesA.getOrDefault(purseKey, STARTING_BALANCE) + (simulation.balancesB.getOrDefault(purseKey, 0) / correlationAssociation.price)) : 1
+                                            if (!NerdUtils.assertRange(balanceProportion)) {
+                                                Logger.log(String.format("balanceProportion %s is out of range", balanceProportion))
+                                                return
+                                            }
+                                            TradeExecution tradeExecution
+
+                                            /** balance purse - sell half of balance A for B at market price */
+                                            if (newSimulation) {
+                                                tradeExecution = new TradeExecution(
+                                                        date: correlationAssociation.date,
+                                                        price: correlationAssociation.price,
+                                                        tradeType: TradeExecution.TradeType.SELL,
+                                                        amount: STARTING_BALANCE / 2
+                                                )
+
+                                                /** otherwise check strategy */
+                                            } else {
+                                                tradeExecution = it.value.getTrade(
+                                                        correlationAssociation,
+                                                        tag,
+                                                        probability,
+                                                        simulation,
+                                                        strategy,
+                                                        balanceProportion)
+
+                                            }
+
+                                            /** execute trade */
+                                            if (tradeExecution) {
+                                                Logger.debug(String.format("key:%s,type:%s,probability:%s", purseKey, tradeExecution.tradeType, probability))
+                                                simulateTrade(
+                                                        simulation,
+                                                        tradeExecution,
+                                                        purseKey
+                                                )
+                                            }
+
+                                        }
+                                    }
+
+                                    /** Disable simulation when all purses are disabled */
+                                    if (simulation.pursesEnabled.collect { it.value }.size() == 0) {
+                                        Logger.debug(String.format("Disabling on simulation %s all purses disabled", simulation))
+                                        simulation.enabled = false
+                                    }
+
+                                }
+                            })
+                        }
+                        threads*.join()
+
+
+                        if (newSimulation) {
+                            newSimulation = false
+                        }
+
+                    }
+                }
+                newSimulation = false
+                if (forceCompleteSimulation) break
+            }
+
+            /** Flip back to false */
+            forceCompleteSimulation = false
+
+            /** Capture the results */
+            Map<String, Map> finalResults = captureResults()
+
+            /** Persist simulation results */
+            persistSimulationResults(
+                    finalResults,
+                    fromDate,
+                    Date.from(end),
+                    SimulationResult.ExecutionType.BASIC
+            )
+
+        } catch (Exception e) {
+            Logger.log('[CRITICAL] Unable to complete simulation. Info:' + e.message)
+            e.printStackTrace()
+        } finally {
+
+            /** Allow another simulation to be started */
+            simulationRunning = false
+
         }
-
-        /** Flip back to false */
-        forceCompleteSimulation = false
-
-        /** Capture the results */
-        Map<String, Map> finalResults = captureResults()
-
-        /** Persist simulation results */
-        persistSimulationResults(
-                finalResults,
-                fromDate,
-                Date.from(end),
-                SimulationResult.ExecutionType.BASIC
-        )
-
-        /** Allow another simulation to be started */
-        simulationRunning = false
 
     }
 

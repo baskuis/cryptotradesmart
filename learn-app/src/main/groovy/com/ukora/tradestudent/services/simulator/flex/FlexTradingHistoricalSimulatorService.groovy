@@ -153,145 +153,153 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
      */
     @Async
     runSimulation(Date fromDate, FlexTradeExecutionStrategy.Type type, ExtractedText.TextSource textSource) {
-        if (!fromDate) return
-        if (simulationRunning) {
-            Logger.log("There is already a simulation running. Not starting flex simulation.")
-            return
-        }
-        def newSimulation = true
-        def partitioned = multiThreadingEnabled ? (0..<numCores).collect {
-            simulations[(it..<simulations.size()).step(numCores)]
-        } : [simulations]
-        if (multiThreadingEnabled) Logger.debug(String.format("Delegating simulation to %s threads", numCores))
-        if (multiThreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
-        simulationRunning = true
-        resetSimulations()
-        def enabledTradeStrategies = flexTradeExecutionStrategyMap.findAll {
-            it.value.enabled &&
-                (!type || type == it.value.type) &&
-                    (!textSource || textSource == it.value.textSource)
-        }
-        if (!enabledTradeStrategies) {
-            Logger.log("No qualified tradeStrategies found.")
-            return
-        }
-        Instant end = Instant.now()
-        Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
-        Instant current = Instant.ofEpochMilli(fromDate.time)
-        while (current.isBefore(end)) {
-            end = Instant.now()
-            current = current + gap
-            Date d = Date.from(current)
-
-            /**
-             * Get p values for numerical associations
-             *
-             * and also
-             *
-             * text associations
-             *
-             */
-            List<Thread> retrieveThreads = []
-            CorrelationAssociation correlationAssociation = null
-            TextCorrelationAssociation textCorrelationAssociation = null
-            retrieveThreads << Thread.start {
-                correlationAssociation = probabilityCombinerService.getCorrelationAssociations(d)
+        try {
+            if (!fromDate) return
+            if (simulationRunning) {
+                Logger.log("There is already a simulation running. Not starting flex simulation.")
+                return
             }
-            retrieveThreads << Thread.start {
-                textCorrelationAssociation = concurrentTextAssociationProbabilityService.getCorrelationAssociations(d)
+            def newSimulation = true
+            def partitioned = multiThreadingEnabled ? (0..<numCores).collect {
+                simulations[(it..<simulations.size()).step(numCores)]
+            } : [simulations]
+            if (multiThreadingEnabled) Logger.debug(String.format("Delegating simulation to %s threads", numCores))
+            if (multiThreadingEnabled) Logger.debug(String.format("Split up simulations into %s groups", partitioned?.size()))
+            simulationRunning = true
+            resetSimulations()
+            def enabledTradeStrategies = flexTradeExecutionStrategyMap.findAll {
+                it.value.enabled &&
+                        (!type || type == it.value.type) &&
+                        (!textSource || textSource == it.value.textSource)
             }
-            retrieveThreads*.join()
+            if (!enabledTradeStrategies) {
+                Logger.log("No qualified tradeStrategies found.")
+                return
+            }
+            Instant end = Instant.now()
+            Duration gap = Duration.ofSeconds(INTERVAL_SECONDS)
+            Instant current = Instant.ofEpochMilli(fromDate.time)
+            while (current.isBefore(end)) {
+                end = Instant.now()
+                current = current + gap
+                Date d = Date.from(current)
 
-            /** check */
-            if (!correlationAssociation.price) continue
-            if (!textCorrelationAssociation.strategyProbabilities) continue
+                /**
+                 * Get p values for numerical associations
+                 *
+                 * and also
+                 *
+                 * text associations
+                 *
+                 */
+                List<Thread> retrieveThreads = []
+                CorrelationAssociation correlationAssociation = null
+                TextCorrelationAssociation textCorrelationAssociation = null
+                retrieveThreads << Thread.start {
+                    correlationAssociation = probabilityCombinerService.getCorrelationAssociations(d)
+                }
+                retrieveThreads << Thread.start {
+                    textCorrelationAssociation = concurrentTextAssociationProbabilityService.getCorrelationAssociations(d)
+                }
+                retrieveThreads*.join()
 
-            correlationAssociation?.tagProbabilities?.each {
-                String strategy = it.key
-                List<Thread> threads = []
-                partitioned.each { group ->
-                    threads << Thread.start({
-                        group.findAll { it.enabled }.each {
-                            Simulation simulation = it
-                            simulation.finalPrice = correlationAssociation.price
-                            enabledTradeStrategies.each {
-                                String purseKey = String.format('%s:%s', strategy, it.key)
-                                boolean purseEnabled = simulation.pursesEnabled.get(purseKey, true)
-                                if (purseEnabled) {
-                                    Double balanceProportion = (correlationAssociation.price) ? simulation.balancesA.getOrDefault(purseKey, STARTING_BALANCE) /
-                                            (simulation.balancesA.getOrDefault(purseKey, STARTING_BALANCE) + (simulation.balancesB.getOrDefault(purseKey, 0) / correlationAssociation.price)) : 1
-                                    if (!NerdUtils.assertRange(balanceProportion)) {
-                                        Logger.log(String.format("balanceProportion %s is out of range", balanceProportion))
-                                        return
-                                    }
-                                    TradeExecution tradeExecution
+                /** check */
+                if (!correlationAssociation.price) continue
+                if (!textCorrelationAssociation.strategyProbabilities) continue
 
-                                    /** balance purse - sell half of balance A for B at market price */
-                                    if (newSimulation) {
-                                        tradeExecution = new TradeExecution(
-                                                date: correlationAssociation.date,
-                                                price: correlationAssociation.price,
-                                                tradeType: TradeExecution.TradeType.SELL,
-                                                amount: STARTING_BALANCE / 2
-                                        )
+                correlationAssociation?.tagProbabilities?.each {
+                    String strategy = it.key
+                    List<Thread> threads = []
+                    partitioned.each { group ->
+                        threads << Thread.start({
+                            group.findAll { it.enabled }.each {
+                                Simulation simulation = it
+                                simulation.finalPrice = correlationAssociation.price
+                                enabledTradeStrategies.each {
+                                    String purseKey = String.format('%s:%s', strategy, it.key)
+                                    boolean purseEnabled = simulation.pursesEnabled.get(purseKey, true)
+                                    if (purseEnabled) {
+                                        Double balanceProportion = (correlationAssociation.price) ? simulation.balancesA.getOrDefault(purseKey, STARTING_BALANCE) /
+                                                (simulation.balancesA.getOrDefault(purseKey, STARTING_BALANCE) + (simulation.balancesB.getOrDefault(purseKey, 0) / correlationAssociation.price)) : 1
+                                        if (!NerdUtils.assertRange(balanceProportion)) {
+                                            Logger.log(String.format("balanceProportion %s is out of range", balanceProportion))
+                                            return
+                                        }
+                                        TradeExecution tradeExecution
 
-                                        /** otherwise check strategy */
-                                    } else {
-                                        tradeExecution = it.value.getTrade(
-                                                correlationAssociation,
-                                                textCorrelationAssociation,
-                                                simulation,
-                                                strategy,
-                                                balanceProportion)
+                                        /** balance purse - sell half of balance A for B at market price */
+                                        if (newSimulation) {
+                                            tradeExecution = new TradeExecution(
+                                                    date: correlationAssociation.date,
+                                                    price: correlationAssociation.price,
+                                                    tradeType: TradeExecution.TradeType.SELL,
+                                                    amount: STARTING_BALANCE / 2
+                                            )
 
-                                    }
+                                            /** otherwise check strategy */
+                                        } else {
+                                            tradeExecution = it.value.getTrade(
+                                                    correlationAssociation,
+                                                    textCorrelationAssociation,
+                                                    simulation,
+                                                    strategy,
+                                                    balanceProportion)
 
-                                    /** execute trade */
-                                    if (tradeExecution) {
-                                        Logger.debug(String.format("key:%s,type:%s", purseKey, tradeExecution.tradeType))
-                                        simulateTrade(
-                                                simulation,
-                                                tradeExecution,
-                                                purseKey
-                                        )
+                                        }
+
+                                        /** execute trade */
+                                        if (tradeExecution) {
+                                            Logger.debug(String.format("key:%s,type:%s", purseKey, tradeExecution.tradeType))
+                                            simulateTrade(
+                                                    simulation,
+                                                    tradeExecution,
+                                                    purseKey
+                                            )
+                                        }
+
                                     }
 
                                 }
-
                             }
-                        }
-                    })
+                        })
+                    }
+
+                    /** Collect results */
+                    threads*.join()
+                    if (newSimulation) {
+                        newSimulation = false
+                    }
+
                 }
 
-                /** Collect results */
-                threads*.join()
-                if (newSimulation) {
-                    newSimulation = false
-                }
+                /** Force complete simulation if requested */
+                if (forceCompleteSimulation) break
 
             }
 
-            /** Force complete simulation if requested */
-            if (forceCompleteSimulation) break
+            /** Flip back to false */
+            forceCompleteSimulation = false
+
+            /** Capture the results */
+            Map<String, Map> finalResults = captureResults()
+
+            /** Persist simulation results */
+            persistSimulationResults(
+                    finalResults,
+                    fromDate,
+                    Date.from(end),
+                    SimulationResult.ExecutionType.FLEX
+            )
+
+        } catch (Exception e) {
+            Logger.log('[CRITICAL] Unable to complete simulation. Info:' + e.message)
+            e.printStackTrace()
+        } finally {
+
+            /** Allow another simulation to be started */
+            simulationRunning = false
 
         }
-
-        /** Flip back to false */
-        forceCompleteSimulation = false
-
-        /** Capture the results */
-        Map<String, Map> finalResults = captureResults()
-
-        /** Persist simulation results */
-        persistSimulationResults(
-                finalResults,
-                fromDate,
-                Date.from(end),
-                SimulationResult.ExecutionType.FLEX
-        )
-
-        /** Allow another simulation to be started */
-        simulationRunning = false
 
     }
 
