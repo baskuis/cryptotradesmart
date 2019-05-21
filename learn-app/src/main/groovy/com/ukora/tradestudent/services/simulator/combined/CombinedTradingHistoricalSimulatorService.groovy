@@ -1,6 +1,5 @@
 package com.ukora.tradestudent.services.simulator.combined
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.domain.entities.CorrelationAssociation
 import com.ukora.domain.entities.ExtractedText
@@ -11,7 +10,6 @@ import com.ukora.tradestudent.services.ProbabilityCombinerService
 import com.ukora.tradestudent.services.SimulationResultService
 import com.ukora.tradestudent.services.simulator.AbstractTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.simulator.CombinedSimulation
-import com.ukora.tradestudent.services.simulator.Simulation
 import com.ukora.tradestudent.services.text.ConcurrentTextAssociationProbabilityService
 import com.ukora.tradestudent.strategy.probability.ProbabilityCombinerStrategy
 import com.ukora.tradestudent.strategy.trading.combined.CombinedTradeExecutionStrategy
@@ -47,11 +45,11 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
     private final static Double MAX_TRADE_INCREMENT = 0.2
     private final static Double TRADE_INCREMENT = 0.1
     private final static Double TRADE_TRANSACTION_COST = 0.0020
-    private final static Double LOWEST_THRESHOLD = 0.5000
-    private final static Double HIGHEST_THRESHOLD = 0.5400
+    private final static Double LOWEST_THRESHOLD = 0.4950
+    private final static Double HIGHEST_THRESHOLD = 0.5300
     private final static Double THRESHOLD_INCREMENT = 0.0050
     private final static Double MAX_THRESHOLD_DELTA = 0.0200
-    private final static Double MIN_NUMERICAL_WEIGHT = -0.3
+    private final static Double MIN_NUMERICAL_WEIGHT = -0.4
     private final static Double MAX_NUMERICAL_WEIGHT = 1.2
     private final static Double MIN_TEXT_WEIGHT = -0.4
     private final static Double MAX_TEXT_WEIGHT = 1.2
@@ -279,7 +277,7 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                     SimulationResult.ExecutionType.COMBINED
             )
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             Logger.log('[CRITICAL] Unable to complete simulation. Info:' + e.message)
             e.printStackTrace()
         } finally {

@@ -159,7 +159,6 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
                 Logger.log("There is already a simulation running. Not starting flex simulation.")
                 return
             }
-            def newSimulation = true
             def partitioned = multiThreadingEnabled ? (0..<numCores).collect {
                 simulations[(it..<simulations.size()).step(numCores)]
             } : [simulations]
@@ -225,27 +224,13 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
                                             Logger.log(String.format("balanceProportion %s is out of range", balanceProportion))
                                             return
                                         }
-                                        TradeExecution tradeExecution
 
-                                        /** balance purse - sell half of balance A for B at market price */
-                                        if (newSimulation) {
-                                            tradeExecution = new TradeExecution(
-                                                    date: correlationAssociation.date,
-                                                    price: correlationAssociation.price,
-                                                    tradeType: TradeExecution.TradeType.SELL,
-                                                    amount: STARTING_BALANCE / 2
-                                            )
-
-                                            /** otherwise check strategy */
-                                        } else {
-                                            tradeExecution = it.value.getTrade(
+                                        TradeExecution tradeExecution = it.value.getTrade(
                                                     correlationAssociation,
                                                     textCorrelationAssociation,
                                                     simulation,
                                                     strategy,
                                                     balanceProportion)
-
-                                        }
 
                                         /** execute trade */
                                         if (tradeExecution) {
@@ -266,9 +251,6 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
 
                     /** Collect results */
                     threads*.join()
-                    if (newSimulation) {
-                        newSimulation = false
-                    }
 
                 }
 
