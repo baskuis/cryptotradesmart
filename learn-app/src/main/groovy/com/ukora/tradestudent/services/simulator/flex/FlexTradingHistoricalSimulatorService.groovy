@@ -1,5 +1,6 @@
 package com.ukora.tradestudent.services.simulator.flex
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ukora.domain.beans.tags.buysell.BuySellTagGroup
 import com.ukora.domain.beans.tags.moves.UpDownMovesTagGroup
 import com.ukora.domain.beans.tags.reversal.UpDownReversalTagGroup
@@ -10,6 +11,7 @@ import com.ukora.domain.entities.ExtractedText
 import com.ukora.domain.entities.SimulationResult
 import com.ukora.domain.entities.TextCorrelationAssociation
 import com.ukora.tradestudent.services.BytesFetcherService
+import com.ukora.tradestudent.services.EmailService
 import com.ukora.tradestudent.services.ProbabilityCombinerService
 import com.ukora.tradestudent.services.simulator.AbstractTradingHistoricalSimulatorService
 import com.ukora.tradestudent.services.simulator.Simulation
@@ -37,6 +39,9 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
     ApplicationContext applicationContext
 
     @Autowired
+    EmailService emailService
+
+    @Autowired
     BuySellTagGroup buySellTagGroup
     @Autowired
     UpDownTagGroup upDownTagGroup
@@ -50,6 +55,8 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
 
     @Autowired
     ConcurrentTextAssociationProbabilityService concurrentTextAssociationProbabilityService
+
+    ObjectMapper objectMapper = new ObjectMapper()
 
     private final static Double MAX_TRADE_INCREMENT = 0.1
     private final static Double TRADE_INCREMENT = 0.1
@@ -265,6 +272,9 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
             /** Capture the results */
             Map<String, Map> finalResults = captureResults()
 
+            /** Email the results */
+            emailService.sendEmail('Flex trading simulation results are in', objectMapper.writeValueAsString(finalResults), 'baskuis1@gmail.com')
+
             /** Persist simulation results */
             persistSimulationResults(
                     finalResults,
@@ -276,6 +286,7 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
         } catch (Exception e) {
             Logger.log('[CRITICAL] Unable to complete simulation. Info:' + e.message)
             e.printStackTrace()
+            emailService.sendEmail('[CRITICAL] Unable to complete simulation. Info:' + e.message, e.stackTrace.join("\n"), 'baskuis1@gmail.com')
         } finally {
 
             /** Allow another simulation to be started */

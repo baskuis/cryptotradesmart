@@ -257,7 +257,7 @@ class LiveTradeSimulationService {
                 metadata.hostname = InetAddress.getLocalHost().getHostName()
                 return new SimulatedTradeEntry(
                         metadata: metadata,
-                        tradeType: TradeExecution.TradeType.BUY,
+                        tradeType: TradeExecution.TradeType.SELL,
                         amount: tradeExecution.amount,
                         price: tradeExecution.price,
                         balanceA: newBalanceA,
@@ -287,7 +287,7 @@ class LiveTradeSimulationService {
                 metadata.hostname = InetAddress.getLocalHost().getHostName()
                 return new SimulatedTradeEntry(
                         metadata: metadata,
-                        tradeType: TradeExecution.TradeType.SELL,
+                        tradeType: TradeExecution.TradeType.BUY,
                         amount: tradeExecution.amount,
                         price: tradeExecution.price,
                         balanceA: newBalanceA,
