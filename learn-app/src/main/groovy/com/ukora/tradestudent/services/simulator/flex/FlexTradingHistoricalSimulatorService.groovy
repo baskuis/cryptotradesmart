@@ -286,7 +286,7 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
         } catch (Exception e) {
             Logger.log('[CRITICAL] Unable to complete simulation. Info:' + e.message)
             e.printStackTrace()
-            emailService.sendEmail('[CRITICAL] Unable to complete simulation. Info:' + e.message, e.stackTrace.join("\n"), 'baskuis1@gmail.com')
+            emailService.sendEmail('[CRITICAL] Unable to complete flex simulation. Info:' + e.message, e.stackTrace.join("\n"), 'baskuis1@gmail.com')
         } finally {
 
             /** Allow another simulation to be started */

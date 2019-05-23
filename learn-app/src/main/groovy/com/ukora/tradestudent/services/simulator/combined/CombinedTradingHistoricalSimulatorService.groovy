@@ -1,11 +1,13 @@
 package com.ukora.tradestudent.services.simulator.combined
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ukora.domain.beans.trade.TradeExecution
 import com.ukora.domain.entities.CorrelationAssociation
 import com.ukora.domain.entities.ExtractedText
 import com.ukora.domain.entities.SimulationResult
 import com.ukora.domain.entities.TextCorrelationAssociation
 import com.ukora.tradestudent.services.BytesFetcherService
+import com.ukora.tradestudent.services.EmailService
 import com.ukora.tradestudent.services.ProbabilityCombinerService
 import com.ukora.tradestudent.services.SimulationResultService
 import com.ukora.tradestudent.services.simulator.AbstractTradingHistoricalSimulatorService
@@ -37,10 +39,15 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
     ProbabilityCombinerService probabilityCombinerService
 
     @Autowired
+    EmailService emailService
+
+    @Autowired
     ConcurrentTextAssociationProbabilityService concurrentTextAssociationProbabilityService
 
     @Autowired
     SimulationResultService simulationResultService
+
+    ObjectMapper objectMapper = new ObjectMapper()
 
     private final static Double MAX_TRADE_INCREMENT = 0.2
     private final static Double TRADE_INCREMENT = 0.1
@@ -269,6 +276,9 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
             /** Capture the results */
             Map<String, Map> finalResults = captureResults()
 
+            /** Email the results */
+            emailService.sendEmail('Flex trading simulation results are in', objectMapper.writeValueAsString(finalResults), 'baskuis1@gmail.com')
+
             /** Persist simulation results */
             persistSimulationResults(
                     finalResults,
@@ -280,6 +290,7 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
         } catch (Exception e) {
             Logger.log('[CRITICAL] Unable to complete simulation. Info:' + e.message)
             e.printStackTrace()
+            emailService.sendEmail('[CRITICAL] Unable to complete combined simulation. Info:' + e.message, e.stackTrace.join("\n"), 'baskuis1@gmail.com')
         } finally {
 
             /** Allow another simulation to be started */
