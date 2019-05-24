@@ -115,7 +115,6 @@ class SimulationResultService {
         SimulationRange simulationRange = new SimulationRange()
         bytesFetcherService.getSimulations()?.findAll({
             it.executionType == SimulationResult.ExecutionType.FLEX &&
-                    it.differential > MINIMUM_DIFFERENTIAL &&
                     textFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
@@ -129,7 +128,6 @@ class SimulationResultService {
         SimulationRange simulationRange = new SimulationRange()
         bytesFetcherService.getSimulations()?.findAll({
             it.executionType == SimulationResult.ExecutionType.FLEX &&
-                    it.differential > MINIMUM_DIFFERENTIAL &&
                     this.numericalFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
@@ -182,7 +180,6 @@ class SimulationResultService {
     SimulationResult getTopPerformingNumericalFlexSimulation() {
         def r = bytesFetcherService.getSimulations()?.findAll({
             it.executionType == SimulationResult.ExecutionType.FLEX &&
-                    it.differential > MINIMUM_DIFFERENTIAL &&
                     this.numericalCombinerStrategies?.contains(it.probabilityCombinerStrategy) &&
                     this.numericalFlexTradeStrategies?.contains(it.tradeExecutionStrategy)
         })?.sort({ SimulationResult a, SimulationResult b ->
@@ -218,7 +215,6 @@ class SimulationResultService {
     SimulationResult getTopPerformingTextFlexSimulation(TextSource textSource) {
         def r = bytesFetcherService.getSimulations()?.findAll({
             it.executionType == SimulationResult.ExecutionType.FLEX &&
-                    it.differential > MINIMUM_DIFFERENTIAL &&
                     this.textFlexTradeStrategies?.contains(it.tradeExecutionStrategy) &&
                     (!textSource || (
                             (textSource == TextSource.NEWS && this.newsFlexTradeStrategies?.contains(it.tradeExecutionStrategy)) ||
