@@ -52,7 +52,7 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
     private final static Double MAX_TRADE_INCREMENT = 0.2
     private final static Double TRADE_INCREMENT = 0.1
     private final static Double TRADE_TRANSACTION_COST = 0.0020
-    private final static Double LOWEST_THRESHOLD = 0.4950
+    private final static Double LOWEST_THRESHOLD = 0.4850
     private final static Double HIGHEST_THRESHOLD = 0.5300
     private final static Double THRESHOLD_INCREMENT = 0.0050
     private final static Double MAX_THRESHOLD_DELTA = 0.0200
