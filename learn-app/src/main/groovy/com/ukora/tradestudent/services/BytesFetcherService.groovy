@@ -12,8 +12,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 
-import java.util.concurrent.ConcurrentHashMap
-
 @Service
 class BytesFetcherService {
 
@@ -154,7 +152,7 @@ class BytesFetcherService {
     void resetBrainNodesCount(TagGroup tagGroup, int maxCount) {
         brainRepository.findAll().each {
             if (it.tag && tagGroup.tags().collect({ it.tagName }).contains(it.tag)) {
-                if(it.count > maxCount) {
+                if (it.count > maxCount) {
                     it.count = maxCount
                     brainRepository.save(it)
                 }
@@ -183,7 +181,6 @@ class BytesFetcherService {
      *
      * @return
      */
-    @Cacheable("simulations")
     List<SimulationResult> getSimulations() {
         return simulationResultRepository.findAll()
     }
