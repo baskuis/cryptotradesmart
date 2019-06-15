@@ -11,4 +11,14 @@ class SellTag extends AbstractCorrelationTag {
         'sell'
     }
 
+    @Override
+    boolean entry() {
+        return false
+    }
+
+    @Override
+    boolean exit() {
+        return true
+    }
+
 }

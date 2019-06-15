@@ -11,4 +11,14 @@ class UpReversalTag extends AbstractCorrelationTag {
         'upreversal'
     }
 
+    @Override
+    boolean entry() {
+        return true
+    }
+
+    @Override
+    boolean exit() {
+        return false
+    }
+
 }

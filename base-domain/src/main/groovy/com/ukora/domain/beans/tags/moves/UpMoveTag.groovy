@@ -11,5 +11,15 @@ class UpMoveTag extends AbstractCorrelationTag {
         'upmove'
     }
 
+    @Override
+    boolean entry() {
+        return true
+    }
+
+    @Override
+    boolean exit() {
+        return false
+    }
+
 }
 

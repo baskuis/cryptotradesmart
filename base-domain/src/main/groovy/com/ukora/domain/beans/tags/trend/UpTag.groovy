@@ -11,4 +11,14 @@ class UpTag extends AbstractCorrelationTag {
         return "up"
     }
 
+    @Override
+    boolean entry() {
+        return true
+    }
+
+    @Override
+    boolean exit() {
+        return false
+    }
+
 }

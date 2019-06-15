@@ -11,4 +11,14 @@ class DownMoveTag extends AbstractCorrelationTag {
         'downmove'
     }
 
+    @Override
+    boolean entry() {
+        return false
+    }
+
+    @Override
+    boolean exit() {
+        return true
+    }
+
 }

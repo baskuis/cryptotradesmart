@@ -11,4 +11,14 @@ class DownTag extends AbstractCorrelationTag {
         return "down"
     }
 
+    @Override
+    boolean entry() {
+        return false
+    }
+
+    @Override
+    boolean exit() {
+        return true
+    }
+
 }
