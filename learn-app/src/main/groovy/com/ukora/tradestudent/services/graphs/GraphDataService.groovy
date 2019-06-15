@@ -132,7 +132,7 @@ class GraphDataService {
                         )
                 )
 
-                Logger.log(String.format('price: %s, date: %s, numericalAggregate: %s, textTwitterAggregate: %s, textNewsAggregate: %s, totalAggregate: %s, totalNumericalWeights: %s, totalTwitterWeights: %s, totalNewsWeights: %s',
+                Logger.debug(String.format('price: %s, date: %s, numericalAggregate: %s, textTwitterAggregate: %s, textNewsAggregate: %s, totalAggregate: %s, totalNumericalWeights: %s, totalTwitterWeights: %s, totalNewsWeights: %s',
                         correlationAssociation.price,
                         correlationAssociation.date,
                         numericalAggregate,
