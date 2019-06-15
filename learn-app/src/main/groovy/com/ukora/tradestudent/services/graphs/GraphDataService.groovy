@@ -126,7 +126,14 @@ class GraphDataService {
                         )
                 )
 
-                Logger.log(String.format('numericalAggregate: %s, textTwitterAggregate: %s, textNewsAggregate: %s, totalAggregate: %s'))
+                Logger.log(String.format('price: %s, date: %s, numericalAggregate: %s, textTwitterAggregate: %s, textNewsAggregate: %s, totalAggregate: %s',
+                        correlationAssociation.price,
+                        correlationAssociation.date,
+                        numericalAggregate,
+                        textTwitterAggregate,
+                        textNewsAggregate,
+                        totalAggregate
+                ))
 
                 return new DataPoint(
                         price: correlationAssociation.price,
