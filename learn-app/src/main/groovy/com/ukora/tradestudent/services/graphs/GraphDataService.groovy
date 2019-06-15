@@ -20,7 +20,7 @@ class GraphDataService {
 
     static final int SET_BACK_SECONDS = 30 * 60
     static final int HISTORICAL_INTERVAL = 10 * 60
-    static final Double HALF  = 0.5
+    static final Double HALF = 0.5
 
     @Autowired
     TextCorrelationAssociationRepository textCorrelationAssociationRepository
@@ -75,9 +75,15 @@ class GraphDataService {
         )
 
         /** Get total tag weights for combined */
-        def totalNumericalWeights = combinedSimulation.numericalSimulation.tagGroupWeights.values().sum() as float
-        def totalTwitterWeights = combinedSimulation.textTwitterSimulation.tagGroupWeights.values().sum() as float
-        def totalNewsWeights = combinedSimulation.textTwitterSimulation.tagGroupWeights.values().sum() as float
+        def totalNumericalWeights = combinedSimulation.numericalSimulation.tagGroupWeights.values().collect({
+            return Math.abs(it)
+        }).sum() as float
+        def totalTwitterWeights = combinedSimulation.textTwitterSimulation.tagGroupWeights.values().collect({
+            return Math.abs(it)
+        }).sum() as float
+        def totalNewsWeights = combinedSimulation.textTwitterSimulation.tagGroupWeights.values().collect({
+            return Math.abs(it)
+        }).sum() as float
 
         /** Create the graphing data sets */
         DataPoints = textCorrelations.collect({
@@ -120,9 +126,9 @@ class GraphDataService {
                                         (combinedSimulation.textNewsWeight * textTwitterAggregate) +
                                         (combinedSimulation.textTwitterWeight * textNewsAggregate)
                         ) / (
-                                combinedSimulation.numericalWeight +
-                                        combinedSimulation.textNewsWeight +
-                                        combinedSimulation.textTwitterWeight
+                                Math.abs(combinedSimulation.numericalWeight) +
+                                        Math.abs(combinedSimulation.textNewsWeight) +
+                                        Math.abs(combinedSimulation.textTwitterWeight)
                         )
                 )
 
