@@ -96,27 +96,27 @@ class GraphDataService {
 
                 /** Get numerical aggregate */
                 def numericalAggregate = combinedSimulation.numericalSimulation.tagGroupWeights.collect({
-                    return (it.value * correlationAssociation.tagProbabilities[combinedSimulation.numericalSimulation.probabilityCombinerStrategy].get(
+                    return it.value * (correlationAssociation.tagProbabilities[combinedSimulation.numericalSimulation.probabilityCombinerStrategy].get(
                             tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
-                    ) as Double) - HALF
+                    ) - HALF)
                 }).sum() / totalNumericalWeights
 
                 /** Get text twitter aggregate */
                 def textTwitterAggregate = combinedSimulation.textTwitterSimulation.tagGroupWeights.collect({
-                    return (it.value * textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
+                    return it.value * (textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
                             ExtractedText.TextSource.TWITTER as String
                     ).get(
                             tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
-                    ) as Double) - HALF
+                    ) - HALF)
                 }).sum() / totalTwitterWeights
 
                 /** Get text news aggregate */
                 def textNewsAggregate = combinedSimulation.textTwitterSimulation.tagGroupWeights.collect({
-                    return (it.value * textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
+                    return it.value * (textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
                             ExtractedText.TextSource.NEWS as String
                     ).get(
                             tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
-                    ) as Double) - HALF
+                    ) - HALF)
                 }).sum() / totalNewsWeights
 
                 /** Get total aggregate */
