@@ -98,7 +98,7 @@ class GraphDataService {
                 /** Get text twitter aggregate */
                 def textTwitterAggregate = combinedSimulation.textTwitterSimulation.tagGroupWeights.collect({
                     return (it.value * textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
-                            ExtractedText.TextSource.TWITTER
+                            ExtractedText.TextSource.TWITTER as String
                     ).get(
                             tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
                     ) as Double) - HALF
@@ -107,7 +107,7 @@ class GraphDataService {
                 /** Get text news aggregate */
                 def textNewsAggregate = combinedSimulation.textTwitterSimulation.tagGroupWeights.collect({
                     return (it.value * textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
-                            ExtractedText.TextSource.NEWS
+                            ExtractedText.TextSource.NEWS as String
                     ).get(
                             tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
                     ) as Double) - HALF
