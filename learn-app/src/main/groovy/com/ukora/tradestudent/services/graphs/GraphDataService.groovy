@@ -45,6 +45,12 @@ class GraphDataService {
 
     static List<DataPoint> DataPoints = []
 
+    static boolean matchesDateApproximately(Date a, Date b) {
+        long al = a.time - 45000
+        long ah = a.time + 45000
+        return al < b.time && b.time < ah
+    }
+
     @Scheduled(cron = '0 * * * * *')
     def generate() {
 
@@ -79,7 +85,7 @@ class GraphDataService {
 
                 /** Assemble both correlation association and text correlation assocation */
                 CorrelationAssociation correlationAssociation = correlations.find({
-                    it.date == textCorrelationAssociation.date
+                    return matchesDateApproximately(it.date, textCorrelationAssociation.date)
                 }) as CorrelationAssociation
 
                 /** Get numerical aggregate */
