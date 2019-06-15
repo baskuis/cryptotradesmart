@@ -91,7 +91,7 @@ class GraphDataService {
                 /** Get numerical aggregate */
                 def numericalAggregate = combinedSimulation.numericalSimulation.tagGroupWeights.collect({
                     return (it.value * correlationAssociation.tagProbabilities[combinedSimulation.numericalSimulation.probabilityCombinerStrategy].get(
-                            tagService.getTagGroupMap().get(it.key).tags().find({ it.entry() }).tagName
+                            tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
                     ) as Double) - HALF
                 }).sum() / totalNumericalWeights
 
@@ -100,7 +100,7 @@ class GraphDataService {
                     return (it.value * textCorrelationAssociation.strategyProbabilities[combinedSimulation.textTwitterSimulation.probabilityCombinerStrategy].get(
                             ExtractedText.TextSource.TWITTER
                     ).get(
-                            tagService.getTagGroupMap().get(it.key).tags().find({ it.entry() }).tagName
+                            tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
                     ) as Double) - HALF
                 }).sum() / totalTwitterWeights
 
@@ -109,7 +109,7 @@ class GraphDataService {
                     return (it.value * textCorrelationAssociation.strategyProbabilities[combinedSimulation.textTwitterSimulation.probabilityCombinerStrategy].get(
                             ExtractedText.TextSource.NEWS
                     ).get(
-                            tagService.getTagGroupMap().get(it.key).tags().find({ it.entry() }).tagName
+                            tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
                     ) as Double) - HALF
                 }).sum() / totalNewsWeights
 

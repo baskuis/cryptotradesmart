@@ -38,6 +38,16 @@ class TagService {
     }
 
     /**
+     * Get tags by tag group name
+     *
+     * @param tagGroupName
+     * @return
+     */
+    List<AbstractCorrelationTag> getTagsByTagGroupName(String tagGroupName){
+        return tagGroupMap.find({ it.value.name == tagGroupName })?.value?.tags()
+    }
+
+    /**
      * Get tag group by tag
      *
      * @param tag
