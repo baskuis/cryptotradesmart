@@ -53,7 +53,7 @@ class GraphDataService {
         return al < b.time && b.time < ah
     }
 
-    @Scheduled(cron = '0 * * * * *')
+    @Scheduled(cron = '0 */3 * * * *')
     def generate() {
 
         /** Get top performing simulations */
