@@ -21,6 +21,8 @@ class GraphDataService {
     static final int SET_BACK_SECONDS = 30 * 60
     static final int HISTORICAL_INTERVAL = 10 * 60
     static final Double HALF = 0.5
+    static final int RETRIEVE_DATA_POINTS = 20000
+    static final String SORT_FIELD = 'date'
 
     @Autowired
     TextCorrelationAssociationRepository textCorrelationAssociationRepository
@@ -60,19 +62,38 @@ class GraphDataService {
         def textTwitterSimulation = simulationResultService.getTopPerformingTextFlexSimulation(ExtractedText.TextSource.TWITTER)
         def combinedSimulation = simulationResultService.getTopPerformingCombinedSimulation()
 
+        Page<TextCorrelationAssociation> textCorrelations = null
+        Page<CorrelationAssociation> correlations = null
+        List<Thread> collectors = []
+
         /** Get last 5000 text correlations */
-        Page<TextCorrelationAssociation> textCorrelations = textCorrelationAssociationRepository.findAll(
-                new PageRequest(0, 5000, new Sort(
-                        Sort.Direction.DESC, "date"
-                ))
-        )
+        collectors.push(Thread.start {
+            textCorrelations = textCorrelationAssociationRepository.findAll(
+                    new PageRequest(0, RETRIEVE_DATA_POINTS, new Sort(
+                            Sort.Direction.DESC, SORT_FIELD
+                    ))
+            )
+        })
 
         /** Get last 5000 correlations */
-        Page<CorrelationAssociation> correlations = correlationAssociationRepository.findAll(
-                new PageRequest(0, 5000, new Sort(
-                        Sort.Direction.DESC, "date"
-                ))
-        )
+        collectors.push(Thread.start {
+            correlations = correlationAssociationRepository.findAll(
+                    new PageRequest(0, RETRIEVE_DATA_POINTS, new Sort(
+                            Sort.Direction.DESC, SORT_FIELD
+                    ))
+            )
+        })
+
+        collectors*.join()
+
+        if(!textCorrelations || !textCorrelations.size) {
+            Logger.log('Unable to retrieve textCorrelations')
+            return
+        }
+        if(!correlations || !correlations.size) {
+            Logger.log('Unable to retrieve correlations')
+            return
+        }
 
         /** Get total tag weights for combined */
         def totalNumericalWeights = combinedSimulation.numericalSimulation.tagGroupWeights.values().collect({
@@ -132,9 +153,10 @@ class GraphDataService {
                         )
                 )
 
-                Logger.debug(String.format('price: %s, date: %s, numericalAggregate: %s, textTwitterAggregate: %s, textNewsAggregate: %s, totalAggregate: %s, totalNumericalWeights: %s, totalTwitterWeights: %s, totalNewsWeights: %s',
+                Logger.debug(String.format('price: %s, caDate: %s, taDate: %s, numericalAggregate: %s, textTwitterAggregate: %s, textNewsAggregate: %s, totalAggregate: %s, totalNumericalWeights: %s, totalTwitterWeights: %s, totalNewsWeights: %s',
                         correlationAssociation.price,
                         correlationAssociation.date,
+                        textCorrelationAssociation.date,
                         numericalAggregate,
                         textTwitterAggregate,
                         textNewsAggregate,
