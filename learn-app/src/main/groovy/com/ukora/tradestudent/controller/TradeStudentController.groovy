@@ -373,7 +373,7 @@ class TradeStudentController {
         return toolkitService.resetSimulationSettings()
     }
 
-    @RequestMapping(path = '/graphdatapints', method = RequestMethod.GET)
+    @RequestMapping(path = '/graphdatapoints', method = RequestMethod.GET)
     List<GraphDataService.DataPoint> showDataPoints() {
         return GraphDataService.DataPoints
     }
