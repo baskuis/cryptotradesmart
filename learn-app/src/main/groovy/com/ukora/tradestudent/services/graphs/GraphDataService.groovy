@@ -21,7 +21,7 @@ class GraphDataService {
     static final int SET_BACK_SECONDS = 30 * 60
     static final int HISTORICAL_INTERVAL = 10 * 60
     static final Double HALF = 0.5
-    static final int RETRIEVE_DATA_POINTS = 20000
+    static final int RETRIEVE_DATA_POINTS = 10000
     static final String SORT_FIELD = 'date'
 
     @Autowired
@@ -66,7 +66,7 @@ class GraphDataService {
         Page<CorrelationAssociation> correlations = null
         List<Thread> collectors = []
 
-        /** Get last 5000 text correlations */
+        /** Get last N text correlations */
         collectors.push(Thread.start {
             textCorrelations = textCorrelationAssociationRepository.findAll(
                     new PageRequest(0, RETRIEVE_DATA_POINTS, new Sort(
@@ -75,7 +75,7 @@ class GraphDataService {
             )
         })
 
-        /** Get last 5000 correlations */
+        /** Get last N correlations */
         collectors.push(Thread.start {
             correlations = correlationAssociationRepository.findAll(
                     new PageRequest(0, RETRIEVE_DATA_POINTS, new Sort(
@@ -110,7 +110,7 @@ class GraphDataService {
         DataPoints = textCorrelations.collect({
             TextCorrelationAssociation textCorrelationAssociation ->
 
-                /** Assemble both correlation association and text correlation assocation */
+                /** Assemble both correlation association and text correlation association */
                 CorrelationAssociation correlationAssociation = correlations.find({
                     return matchesDateApproximately(it.date, textCorrelationAssociation.date)
                 }) as CorrelationAssociation

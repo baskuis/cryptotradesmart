@@ -7,6 +7,7 @@ import com.ukora.tradestudent.services.*
 import com.ukora.tradestudent.services.associations.CaptureAssociationsService
 import com.ukora.tradestudent.services.associations.TechnicalAnalysisService
 import com.ukora.tradestudent.services.associations.text.CaptureTextAssociationsService
+import com.ukora.tradestudent.services.graphs.GraphDataService
 import com.ukora.tradestudent.services.learner.TraverseLessonsService
 import com.ukora.tradestudent.services.simulator.TradeSimulatorService
 import com.ukora.tradestudent.services.simulator.flex.FlexTradingHistoricalSimulatorService
@@ -370,6 +371,11 @@ class TradeStudentController {
     @RequestMapping(path = '/resetsimulator', method = RequestMethod.GET)
     Map resetSimulationSettings() {
         return toolkitService.resetSimulationSettings()
+    }
+
+    @RequestMapping(path = '/graphdatapints', method = RequestMethod.GET)
+    List<GraphDataService.DataPoint> showDataPoints() {
+        return GraphDataService.DataPoints
     }
 
     @RequestMapping(path = '/log', method = RequestMethod.GET)
