@@ -180,7 +180,7 @@ class GraphDataService {
                         combinedProbability: totalAggregate
                 )
 
-        })
+        }).reverse()
 
     }
 
