@@ -115,6 +115,11 @@ class GraphDataService {
                     return matchesDateApproximately(it.date, textCorrelationAssociation.date)
                 }) as CorrelationAssociation
 
+                if (!correlationAssociation) {
+                    Logger.log(String.format('Unable to find correlationAssociation for date: %s', textCorrelationAssociation.date))
+                    return null
+                }
+
                 /** Get numerical aggregate */
                 def numericalAggregate = combinedSimulation.numericalSimulation.tagGroupWeights.collect({
                     return it.value * (correlationAssociation.tagProbabilities[combinedSimulation.numericalSimulation.probabilityCombinerStrategy].get(
