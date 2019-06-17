@@ -9,11 +9,11 @@ import com.ukora.tradestudent.services.SimulationResultService
 import com.ukora.tradestudent.services.TagService
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+
+import java.time.Duration
+import java.time.Instant
 
 @Service
 class GraphDataService {
@@ -45,7 +45,13 @@ class GraphDataService {
         float combinedProbability
     }
 
+    static class DataCapture {
+        TextCorrelationAssociation textCorrelationAssociation
+        CorrelationAssociation correlationAssociation
+    }
+
     static List<DataPoint> DataPoints = []
+    static TreeMap<Date, DataCapture> DataCaptures = []
 
     static boolean matchesDateApproximately(Date a, Date b) {
         long al = a.time - 45000
@@ -53,47 +59,51 @@ class GraphDataService {
         return al < b.time && b.time < ah
     }
 
+    def collect() {
+        Calendar cal = Calendar.getInstance()
+        cal.setTime(new Date())
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        Instant end = Instant.now()
+        Duration gap = Duration.ofSeconds(60)
+        Instant current = cal.toInstant().minusSeconds(3l * 84600l)
+        while (current.isBefore(end)) {
+            end = Instant.now()
+            current = current + gap
+            List<TextCorrelationAssociation> textCorrelationAssociations = textCorrelationAssociationRepository.findByDateBetween(
+                    Date.from(current.minusSeconds(45)),
+                    Date.from(current.plusSeconds(45))
+            )
+            List<CorrelationAssociation> correlationAssociations = correlationAssociationRepository.findByDateBetween(
+                    Date.from(current.minusSeconds(45)),
+                    Date.from(current.plusSeconds(45))
+            )
+            if (!textCorrelationAssociations || !textCorrelationAssociations.size) {
+                Logger.log('Unable to retrieve textCorrelations')
+                return
+            }
+            if (!correlationAssociations || !correlationAssociations.size) {
+                Logger.log('Unable to retrieve correlations')
+                return
+            }
+            DataCaptures.put(Date.from(current), new DataCapture(
+                    correlationAssociation: correlationAssociations?.first(),
+                    textCorrelationAssociation: textCorrelationAssociations?.first()
+            ))
+        }
+    }
+
     @Scheduled(cron = '0 */3 * * * *')
     def generate() {
+
+        /** Collect captures */
+        collect()
 
         /** Get top performing simulations */
         def numericalSimulation = simulationResultService.getTopPerformingNumericalFlexSimulation()
         def textNewsSimulation = simulationResultService.getTopPerformingTextFlexSimulation(ExtractedText.TextSource.NEWS)
         def textTwitterSimulation = simulationResultService.getTopPerformingTextFlexSimulation(ExtractedText.TextSource.TWITTER)
         def combinedSimulation = simulationResultService.getTopPerformingCombinedSimulation()
-
-        Page<TextCorrelationAssociation> textCorrelations = null
-        Page<CorrelationAssociation> correlations = null
-        List<Thread> collectors = []
-
-        /** Get last N text correlations */
-        collectors.push(Thread.start {
-            textCorrelations = textCorrelationAssociationRepository.findAll(
-                    new PageRequest(0, RETRIEVE_DATA_POINTS, new Sort(
-                            Sort.Direction.DESC, SORT_FIELD
-                    ))
-            )
-        })
-
-        /** Get last N correlations */
-        collectors.push(Thread.start {
-            correlations = correlationAssociationRepository.findAll(
-                    new PageRequest(0, RETRIEVE_DATA_POINTS, new Sort(
-                            Sort.Direction.DESC, SORT_FIELD
-                    ))
-            )
-        })
-
-        collectors*.join()
-
-        if(!textCorrelations || !textCorrelations.size) {
-            Logger.log('Unable to retrieve textCorrelations')
-            return
-        }
-        if(!correlations || !correlations.size) {
-            Logger.log('Unable to retrieve correlations')
-            return
-        }
 
         /** Get total tag weights for combined */
         def totalNumericalWeights = combinedSimulation.numericalSimulation.tagGroupWeights.values().collect({
@@ -107,78 +117,68 @@ class GraphDataService {
         }).sum() as float
 
         /** Create the graphing data sets */
-        DataPoints = textCorrelations.collect({
-            TextCorrelationAssociation textCorrelationAssociation ->
+        DataPoints = DataCaptures.collect({
+            DataCapture dataCapture = it.value
 
-                /** Assemble both correlation association and text correlation association */
-                CorrelationAssociation correlationAssociation = correlations.find({
-                    return matchesDateApproximately(it.date, textCorrelationAssociation.date)
-                }) as CorrelationAssociation
+            /** Get numerical aggregate */
+            def numericalAggregate = combinedSimulation.numericalSimulation.tagGroupWeights.collect({
+                return it.value * (dataCapture.correlationAssociation.tagProbabilities[combinedSimulation.numericalSimulation.probabilityCombinerStrategy].get(
+                        tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
+                ) - HALF)
+            }).sum() / totalNumericalWeights
 
-                if (!correlationAssociation) {
-                    Logger.log(String.format('Unable to find correlationAssociation for date: %s', textCorrelationAssociation.date))
-                    return null
-                }
+            /** Get text twitter aggregate */
+            def textTwitterAggregate = combinedSimulation.textTwitterSimulation.tagGroupWeights.collect({
+                return it.value * (dataCapture.textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
+                        ExtractedText.TextSource.TWITTER as String
+                ).get(
+                        tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
+                ) - HALF)
+            }).sum() / totalTwitterWeights
 
-                /** Get numerical aggregate */
-                def numericalAggregate = combinedSimulation.numericalSimulation.tagGroupWeights.collect({
-                    return it.value * (correlationAssociation.tagProbabilities[combinedSimulation.numericalSimulation.probabilityCombinerStrategy].get(
-                            tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
-                    ) - HALF)
-                }).sum() / totalNumericalWeights
+            /** Get text news aggregate */
+            def textNewsAggregate = combinedSimulation.textTwitterSimulation.tagGroupWeights.collect({
+                return it.value * (dataCapture.textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
+                        ExtractedText.TextSource.NEWS as String
+                ).get(
+                        tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
+                ) - HALF)
+            }).sum() / totalNewsWeights
 
-                /** Get text twitter aggregate */
-                def textTwitterAggregate = combinedSimulation.textTwitterSimulation.tagGroupWeights.collect({
-                    return it.value * (textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
-                            ExtractedText.TextSource.TWITTER as String
-                    ).get(
-                            tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
-                    ) - HALF)
-                }).sum() / totalTwitterWeights
+            /** Get total aggregate */
+            def totalAggregate = HALF + (
+                    (
+                            (combinedSimulation.numericalWeight * numericalAggregate) +
+                                    (combinedSimulation.textNewsWeight * textTwitterAggregate) +
+                                    (combinedSimulation.textTwitterWeight * textNewsAggregate)
+                    ) / (
+                            Math.abs(combinedSimulation.numericalWeight) +
+                                    Math.abs(combinedSimulation.textNewsWeight) +
+                                    Math.abs(combinedSimulation.textTwitterWeight)
+                    )
+            )
 
-                /** Get text news aggregate */
-                def textNewsAggregate = combinedSimulation.textTwitterSimulation.tagGroupWeights.collect({
-                    return it.value * (textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
-                            ExtractedText.TextSource.NEWS as String
-                    ).get(
-                            tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
-                    ) - HALF)
-                }).sum() / totalNewsWeights
+            Logger.log(String.format('price: %s, caDate: %s, taDate: %s, numericalAggregate: %s, textTwitterAggregate: %s, textNewsAggregate: %s, totalAggregate: %s, totalNumericalWeights: %s, totalTwitterWeights: %s, totalNewsWeights: %s',
+                    dataCapture.correlationAssociation.price,
+                    dataCapture.correlationAssociation.date,
+                    dataCapture.textCorrelationAssociation.date,
+                    numericalAggregate,
+                    textTwitterAggregate,
+                    textNewsAggregate,
+                    totalAggregate,
+                    totalNumericalWeights,
+                    totalTwitterWeights,
+                    totalNewsWeights
+            ))
 
-                /** Get total aggregate */
-                def totalAggregate = HALF + (
-                        (
-                                (combinedSimulation.numericalWeight * numericalAggregate) +
-                                        (combinedSimulation.textNewsWeight * textTwitterAggregate) +
-                                        (combinedSimulation.textTwitterWeight * textNewsAggregate)
-                        ) / (
-                                Math.abs(combinedSimulation.numericalWeight) +
-                                        Math.abs(combinedSimulation.textNewsWeight) +
-                                        Math.abs(combinedSimulation.textTwitterWeight)
-                        )
-                )
-
-                Logger.debug(String.format('price: %s, caDate: %s, taDate: %s, numericalAggregate: %s, textTwitterAggregate: %s, textNewsAggregate: %s, totalAggregate: %s, totalNumericalWeights: %s, totalTwitterWeights: %s, totalNewsWeights: %s',
-                        correlationAssociation.price,
-                        correlationAssociation.date,
-                        textCorrelationAssociation.date,
-                        numericalAggregate,
-                        textTwitterAggregate,
-                        textNewsAggregate,
-                        totalAggregate,
-                        totalNumericalWeights,
-                        totalTwitterWeights,
-                        totalNewsWeights
-                ))
-
-                return new DataPoint(
-                        price: correlationAssociation.price,
-                        date: correlationAssociation.date,
-                        numericalProbability: numericalAggregate,
-                        textNewsProbability: textTwitterAggregate,
-                        textTwitterProbability: textNewsAggregate,
-                        combinedProbability: totalAggregate
-                )
+            return new DataPoint(
+                    price: dataCapture.correlationAssociation.price,
+                    date: dataCapture.correlationAssociation.date,
+                    numericalProbability: numericalAggregate,
+                    textNewsProbability: textTwitterAggregate,
+                    textTwitterProbability: textNewsAggregate,
+                    combinedProbability: totalAggregate
+            )
 
         }).reverse()
 
