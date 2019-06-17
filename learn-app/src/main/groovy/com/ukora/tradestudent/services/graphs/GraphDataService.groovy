@@ -80,11 +80,11 @@ class GraphDataService {
             )
             if (!textCorrelationAssociations || !textCorrelationAssociations.size) {
                 Logger.log('Unable to retrieve textCorrelations')
-                return
+                continue
             }
             if (!correlationAssociations || !correlationAssociations.size) {
                 Logger.log('Unable to retrieve correlations')
-                return
+                continue
             }
             DataCaptures.put(Date.from(current), new DataCapture(
                     correlationAssociation: correlationAssociations?.first(),
