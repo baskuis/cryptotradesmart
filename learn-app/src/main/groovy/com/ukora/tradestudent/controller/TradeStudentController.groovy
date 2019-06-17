@@ -374,8 +374,17 @@ class TradeStudentController {
     }
 
     @RequestMapping(path = '/graphdatapoints', method = RequestMethod.GET)
-    List<GraphDataService.DataPoint> showDataPoints() {
-        return GraphDataService.DataPoints
+    List<List> showDataPoints() {
+        return GraphDataService.DataPoints.collect({
+           return [
+                   it.date,
+                   it.price,
+                   it.numericalProbability,
+                   it.textTwitterProbability,
+                   it.textNewsProbability,
+                   it.combinedProbability
+           ]
+        })
     }
 
     @RequestMapping(path = '/log', method = RequestMethod.GET)
