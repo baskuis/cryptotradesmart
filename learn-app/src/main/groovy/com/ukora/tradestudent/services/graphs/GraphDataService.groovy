@@ -66,7 +66,7 @@ class GraphDataService {
         cal.set(Calendar.MILLISECOND, 0)
         Instant end = Instant.now()
         Duration gap = Duration.ofSeconds(60)
-        Instant current = cal.toInstant().minusSeconds(3l * 84600l)
+        Instant current = cal.toInstant().minusSeconds(10l * 84600l)
         while (current.isBefore(end)) {
             end = Instant.now()
             current = current + gap
