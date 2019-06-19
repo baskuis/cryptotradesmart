@@ -56,7 +56,7 @@ class GraphDataService {
         CorrelationAssociation correlationAssociation
     }
 
-    static List<DataPoint> DataPoints = []
+    public static List<DataPoint> DataPoints = []
     static TreeMap<Date, DataCapture> DataCaptures = []
 
     static boolean matchesDateApproximately(Date a, Date b) {
@@ -86,30 +86,21 @@ class GraphDataService {
                 Logger.log('Invalid range passed')
                 return []
         }
-        List filtered = DataPoints.reverse().findAll {
+        List filtered = DataPoints.findAll {
             it.date.time >= Date.newInstance().time - timeDiff
         }
         return IntStream.range(0, filtered.size())
                 .filter({ n -> n % numberOfMinutes == 0 })
                 .mapToObj({ filtered.get(it) })
                 .collect(Collectors.toList()).collect {
-            List<DataPoint> p ->
-                return new DataPoint(
-                        price: p.sum { it.price } / p.size(),
-                        date: p.min { it.date }.date,
-                        numericalProbability: p.sum { it.numericalProbability } / p.size(),
-                        textNewsProbability: p.sum { it.textNewsProbability } / p.size(),
-                        textTwitterProbability: p.sum { it.textTwitterProbability } / p.size(),
-                        combinedProbability: p.sum { it.combinedProbability } / p.size(),
-                )
-        }.collect {
+            DataPoint p ->
             [
-                    it.date,
-                    it.price,
-                    it.numericalProbability,
-                    it.textTwitterProbability,
-                    it.textNewsProbability,
-                    it.combinedProbability
+                    p.date,
+                    p.price,
+                    p.numericalProbability,
+                    p.textTwitterProbability,
+                    p.textNewsProbability,
+                    p.combinedProbability
             ]
         }
     }
