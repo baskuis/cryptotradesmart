@@ -19,7 +19,7 @@ class Logger {
 
     static String tailLog(){
         File file = new File(LOG_FILE_LOCATION)
-        int n_lines = 10
+        int n_lines = 20
         int counter = 0
         String out = String.format('Cannot read %s', LOG_FILE_LOCATION)
         if(file.exists()) {

@@ -71,6 +71,9 @@ class TradeStudentController {
     @Autowired
     ToolkitService toolkitService
 
+    @Autowired
+    GraphDataService graphDataService
+
     @RequestMapping(path = '/correlations', produces = 'application/json', method = RequestMethod.GET)
     CorrelationAssociation getCorrelationAssociations(@RequestParam(value = 'date') Date date) {
         probabilityCombinerService.getCorrelationAssociations(date)
@@ -385,6 +388,21 @@ class TradeStudentController {
                    it.combinedProbability
            ]
         })
+    }
+
+    @RequestMapping(path = '/graphdaily', method = RequestMethod.GET)
+    List<List> showDataPointsDaily() {
+        return graphDataService.getRange(GraphDataService.Range.DAILY)
+    }
+
+    @RequestMapping(path = '/graphweekly', method = RequestMethod.GET)
+    List<List> showDataPointsWeekly() {
+        return graphDataService.getRange(GraphDataService.Range.WEEKLY)
+    }
+
+    @RequestMapping(path = '/graphmonthly', method = RequestMethod.GET)
+    List<List> showDataPointsMonthly() {
+        return graphDataService.getRange(GraphDataService.Range.MONTHLY)
     }
 
     @RequestMapping(path = '/log', method = RequestMethod.GET)

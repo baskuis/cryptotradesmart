@@ -238,7 +238,7 @@ class SimulationResultService {
             it.endDate > Date.from(Instant.now().minusSeconds(MAX_AGE_IN_HOURS * SECONDS_IN_HOUR)) && it.differential > MINIMUM_DIFFERENTIAL
         })?.sort({ SimulationResult a, SimulationResult b ->
             b.endDate <=> a.endDate
-        })?.take(20)?.sort({ SimulationResult a, SimulationResult b ->
+        })?.take(80)?.sort({ SimulationResult a, SimulationResult b ->
             getScore(b) <=> getScore(a)
         })
     }

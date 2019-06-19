@@ -9,11 +9,15 @@ import com.ukora.tradestudent.services.SimulationResultService
 import com.ukora.tradestudent.services.TagService
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 import java.time.Duration
 import java.time.Instant
+import java.util.stream.Collectors
+import java.util.stream.IntStream
 
 @Service
 class GraphDataService {
@@ -23,6 +27,8 @@ class GraphDataService {
     static final Double HALF = 0.5
     static final int RETRIEVE_DATA_POINTS = 10000
     static final String SORT_FIELD = 'date'
+
+    static final enum Range { DAILY, WEEKLY, MONTHLY }
 
     @Autowired
     TextCorrelationAssociationRepository textCorrelationAssociationRepository
@@ -59,6 +65,55 @@ class GraphDataService {
         return al < b.time && b.time < ah
     }
 
+    @Cacheable(value = 'dataPointRange')
+    List<List> getRange(Range range) {
+        long timeDiff
+        int numberOfMinutes
+        switch (range) {
+            case Range.DAILY:
+                timeDiff = 86400000
+                numberOfMinutes = 10
+                break
+            case Range.WEEKLY:
+                timeDiff = 7 * 86400000
+                numberOfMinutes = 30
+                break
+            case Range.MONTHLY:
+                timeDiff = 30 * 86400000
+                numberOfMinutes = 120
+                break
+            default:
+                Logger.log('Invalid range passed')
+                return []
+        }
+        List filtered = DataPoints.reverse().findAll {
+            it.date.time >= Date.newInstance().time - timeDiff
+        }
+        return IntStream.range(0, filtered.size())
+                .filter({ n -> n % numberOfMinutes == 0 })
+                .mapToObj({ filtered.get(it) })
+                .collect(Collectors.toList()).collect {
+            List<DataPoint> p ->
+                return new DataPoint(
+                        price: p.sum { it.price } / p.size(),
+                        date: p.min { it.date }.date,
+                        numericalProbability: p.sum { it.numericalProbability } / p.size(),
+                        textNewsProbability: p.sum { it.textNewsProbability } / p.size(),
+                        textTwitterProbability: p.sum { it.textTwitterProbability } / p.size(),
+                        combinedProbability: p.sum { it.combinedProbability } / p.size(),
+                )
+        }.collect {
+            [
+                    it.date,
+                    it.price,
+                    it.numericalProbability,
+                    it.textTwitterProbability,
+                    it.textNewsProbability,
+                    it.combinedProbability
+            ]
+        }
+    }
+
     def collect() {
         Calendar cal = Calendar.getInstance()
         cal.setTime(new Date())
@@ -78,11 +133,11 @@ class GraphDataService {
                     Date.from(current.minusSeconds(45)),
                     Date.from(current.plusSeconds(45))
             )
-            if (!textCorrelationAssociations || !textCorrelationAssociations.size) {
+            if (!textCorrelationAssociations || textCorrelationAssociations.size() == 0) {
                 Logger.log('Unable to retrieve textCorrelations')
                 continue
             }
-            if (!correlationAssociations || !correlationAssociations.size) {
+            if (!correlationAssociations || correlationAssociations.size() == 0) {
                 Logger.log('Unable to retrieve correlations')
                 continue
             }
@@ -93,6 +148,7 @@ class GraphDataService {
         }
     }
 
+    @CacheEvict(value = 'dataPointRange')
     @Scheduled(cron = '0 */3 * * * *')
     def generate() {
 
