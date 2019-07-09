@@ -121,11 +121,11 @@ class GraphDataService {
                     Date.from(current.plusSeconds(45))
             )
             if (!textCorrelationAssociations || textCorrelationAssociations.size() == 0) {
-                Logger.log('Unable to retrieve textCorrelations')
+                Logger.log(String.format('Unable to retrieve textCorrelations for %s', current))
                 continue
             }
             if (!correlationAssociations || correlationAssociations.size() == 0) {
-                Logger.log('Unable to retrieve correlations')
+                Logger.log(String.format('Unable to retrieve correlations for %s', current))
                 continue
             }
             DataCaptures.put(Date.from(current), new DataCapture(
