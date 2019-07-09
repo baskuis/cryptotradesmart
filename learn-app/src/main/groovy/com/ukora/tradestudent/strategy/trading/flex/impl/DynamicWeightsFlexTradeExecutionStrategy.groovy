@@ -14,6 +14,7 @@ import com.ukora.domain.entities.ExtractedText
 import com.ukora.domain.entities.TextCorrelationAssociation
 import com.ukora.tradestudent.services.simulator.Simulation
 import com.ukora.tradestudent.strategy.trading.flex.FlexTradeExecutionStrategy
+import static com.ukora.tradestudent.strategy.trading.flex.FlexTradeExecutionStrategy.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
@@ -37,8 +38,8 @@ class DynamicWeightsFlexTradeExecutionStrategy implements FlexTradeExecutionStra
     private boolean enabled = true
 
     @Override
-    FlexTradeExecutionStrategy.Type getType() {
-        return FlexTradeExecutionStrategy.Type.NUMERIC
+    Type getType() {
+        return Type.NUMERIC
     }
 
     @Override

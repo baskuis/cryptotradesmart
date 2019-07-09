@@ -10,7 +10,7 @@ class GraphDataServiceSpec extends Specification {
 
         setup:
         GraphDataService.DataPoints = []
-        (1..1000).each {
+        (1..5000).each {
             GraphDataService.DataPoints.push(new GraphDataService.DataPoint(
                     date: new Date(),
                     price: 1000d,

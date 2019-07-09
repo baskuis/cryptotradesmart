@@ -16,19 +16,15 @@ import org.springframework.stereotype.Service
 
 import java.time.Duration
 import java.time.Instant
-import java.util.stream.Collectors
-import java.util.stream.IntStream
 
 @Service
 class GraphDataService {
 
-    static final int SET_BACK_SECONDS = 30 * 60
-    static final int HISTORICAL_INTERVAL = 10 * 60
     static final Double HALF = 0.5
-    static final int RETRIEVE_DATA_POINTS = 10000
-    static final String SORT_FIELD = 'date'
 
-    static final enum Range { DAILY, WEEKLY, MONTHLY }
+    static final enum Range {
+        DAILY, WEEKLY, MONTHLY
+    }
 
     @Autowired
     TextCorrelationAssociationRepository textCorrelationAssociationRepository
@@ -59,14 +55,8 @@ class GraphDataService {
     public static List<DataPoint> DataPoints = []
     static TreeMap<Date, DataCapture> DataCaptures = []
 
-    static boolean matchesDateApproximately(Date a, Date b) {
-        long al = a.time - 45000
-        long ah = a.time + 45000
-        return al < b.time && b.time < ah
-    }
-
     @Cacheable(value = 'dataPointRange')
-    List<List> getRange(Range range) {
+    static List<List> getRange(Range range) {
         long timeDiff
         int numberOfMinutes
         switch (range) {
@@ -89,20 +79,29 @@ class GraphDataService {
         List filtered = DataPoints.findAll {
             it.date.time >= Date.newInstance().time - timeDiff
         }
-        return IntStream.range(0, filtered.size())
-                .filter({ n -> n % numberOfMinutes == 0 })
-                .mapToObj({ filtered.get(it) })
-                .collect(Collectors.toList()).collect {
-            DataPoint p ->
-            [
-                    p.date,
-                    p.price,
-                    p.numericalProbability,
-                    p.textTwitterProbability,
-                    p.textNewsProbability,
-                    p.combinedProbability
+        def result = []
+        int cur = 0
+        while (cur < filtered.size()) {
+            def last = (cur + numberOfMinutes < filtered.size()) ? cur + numberOfMinutes : filtered.size() - 1
+            def chunk = filtered[cur..last]
+            def lowestPrice = chunk.min { DataPoint dataPoint -> dataPoint.price }.price
+            def highestPrice = chunk.max { DataPoint dataPoint -> dataPoint.price }.price
+            def middlePrice = (lowestPrice + highestPrice) / 2
+            def avgNumerical = chunk.sum { DataPoint dataPoint -> dataPoint.numericalProbability } / (last - cur)
+            def avgTwitter = chunk.sum { DataPoint dataPoint -> dataPoint.textTwitterProbability } / (last - cur)
+            def avgNews = chunk.sum { DataPoint dataPoint -> dataPoint.textNewsProbability } / (last - cur)
+            def avgCombined = chunk.sum { DataPoint dataPoint -> dataPoint.combinedProbability } / (last - cur)
+            result << [
+                    filtered[cur].date,
+                    middlePrice,
+                    avgNumerical,
+                    avgTwitter,
+                    avgNews,
+                    avgCombined
             ]
+            cur += numberOfMinutes
         }
+        return result
     }
 
     def collect() {
