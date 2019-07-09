@@ -9,8 +9,6 @@ import com.ukora.tradestudent.services.SimulationResultService
 import com.ukora.tradestudent.services.TagService
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.cache.annotation.CacheEvict
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
@@ -55,7 +53,6 @@ class GraphDataService {
     public static List<DataPoint> DataPoints = []
     static TreeMap<Date, DataCapture> DataCaptures = []
 
-    @Cacheable(value = 'dataPointRange')
     static List<List> getRange(Range range) {
         long timeDiff
         int numberOfMinutes
@@ -138,7 +135,6 @@ class GraphDataService {
         }
     }
 
-    @CacheEvict(value = 'dataPointRange')
     @Scheduled(cron = '0 */3 * * * *')
     def generate() {
 
