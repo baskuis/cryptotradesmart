@@ -86,7 +86,7 @@ class GraphDataService {
                 def chunk = filtered[cur..last].findAll { DataPoint dataPoint ->
                     (
                             dataPoint &&
-                                    dataPoint.price &&
+                                    dataPoint.price && dataPoint.price > 0 &&
                                     dataPoint.numericalProbability && dataPoint.numericalProbability != Float.NaN &&
                                     dataPoint.textTwitterProbability && dataPoint.textTwitterProbability != Float.NaN &&
                                     dataPoint.textNewsProbability && dataPoint.textNewsProbability != Float.NaN &&
