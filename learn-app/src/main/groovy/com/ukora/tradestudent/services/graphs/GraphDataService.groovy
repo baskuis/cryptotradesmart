@@ -58,15 +58,15 @@ class GraphDataService {
         int numberOfMinutes
         switch (range) {
             case Range.DAILY:
-                timeDiff = 86400000
+                timeDiff = 86400000l
                 numberOfMinutes = 10
                 break
             case Range.WEEKLY:
-                timeDiff = 7 * 86400000
+                timeDiff = 7l * 86400000l
                 numberOfMinutes = 30
                 break
             case Range.MONTHLY:
-                timeDiff = 30 * 86400000
+                timeDiff = 30l * 86400000l
                 numberOfMinutes = 120
                 break
             default:
