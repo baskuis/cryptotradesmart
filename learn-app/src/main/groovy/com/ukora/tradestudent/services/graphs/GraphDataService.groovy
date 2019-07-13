@@ -87,19 +87,19 @@ class GraphDataService {
                     (
                             dataPoint &&
                                     dataPoint.price &&
-                                    dataPoint.numericalProbability &&
-                                    dataPoint.textTwitterProbability &&
-                                    dataPoint.textNewsProbability &&
-                                    dataPoint.combinedProbability
+                                    dataPoint.numericalProbability && dataPoint.numericalProbability != Float.NaN &&
+                                    dataPoint.textTwitterProbability && dataPoint.textTwitterProbability != Float.NaN &&
+                                    dataPoint.textNewsProbability && dataPoint.textNewsProbability != Float.NaN &&
+                                    dataPoint.combinedProbability && dataPoint.combinedProbability != Float.NaN
                     )
                 }
                 def lowestPrice = chunk.min { DataPoint dataPoint -> dataPoint?.price }.price
                 def highestPrice = chunk.max { DataPoint dataPoint -> dataPoint?.price }.price
                 def middlePrice = (lowestPrice + highestPrice) / 2
-                def avgNumerical = chunk.sum { DataPoint dataPoint -> dataPoint?.numericalProbability?:0l } / chunk.size()
-                def avgTwitter = chunk.sum { DataPoint dataPoint -> dataPoint?.textTwitterProbability?:0l } / chunk.size()
-                def avgNews = chunk.sum { DataPoint dataPoint -> dataPoint?.textNewsProbability?:0l } / chunk.size()
-                def avgCombined = chunk.sum { DataPoint dataPoint -> dataPoint?.combinedProbability?:0l } / chunk.size()
+                def avgNumerical = chunk.sum { DataPoint dataPoint -> dataPoint?.numericalProbability } / chunk.size()
+                def avgTwitter = chunk.sum { DataPoint dataPoint -> dataPoint?.textTwitterProbability } / chunk.size()
+                def avgNews = chunk.sum { DataPoint dataPoint -> dataPoint?.textNewsProbability } / chunk.size()
+                def avgCombined = chunk.sum { DataPoint dataPoint -> dataPoint?.combinedProbability } / chunk.size()
                 result << [
                         filtered[cur].date,
                         middlePrice,
