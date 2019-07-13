@@ -75,6 +75,7 @@ class GraphDataService {
         }
         def result = []
         try {
+            Logger.log(String.format('Getting %s minute chunks from %s ms ago', numberOfMinutes, timeDiff))
             List filtered = DataPoints.findAll {
                 it?.date?.time >= Date.newInstance().time - timeDiff
             }
