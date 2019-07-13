@@ -74,11 +74,11 @@ class GraphDataService {
                 return []
         }
         def result = []
-
         try {
             List filtered = DataPoints.findAll {
                 it.date.time >= Date.newInstance().time - timeDiff
             }
+            Logger.log(String.format('Find filtered[%s]', filtered?.size()))
             int cur = 0
             while (cur < filtered.size()) {
                 def last = (cur + numberOfMinutes < filtered.size()) ? cur + numberOfMinutes : filtered.size() - 1
@@ -142,7 +142,7 @@ class GraphDataService {
         }
     }
 
-    @Scheduled(cron = '0 */3 * * * *')
+    @Scheduled(cron = '0 */2 * * * *')
     def generate() {
 
         /** Collect captures */
