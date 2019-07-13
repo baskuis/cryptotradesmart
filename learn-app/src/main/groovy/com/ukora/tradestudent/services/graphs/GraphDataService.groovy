@@ -76,7 +76,7 @@ class GraphDataService {
         def result = []
         try {
             List filtered = DataPoints.findAll {
-                it.date.time >= Date.newInstance().time - timeDiff
+                it?.date?.time >= Date.newInstance().time - timeDiff
             }
             Logger.log(String.format('Find filtered[%s]', filtered?.size()))
             int cur = 0
@@ -102,8 +102,8 @@ class GraphDataService {
             }
             return result
         } catch (Exception e) {
-            e.printStackTrace()
             Logger.log(e.message)
+            e.printStackTrace()
         }
         return null
     }
