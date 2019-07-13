@@ -83,14 +83,23 @@ class GraphDataService {
             int cur = 0
             while (cur < filtered.size()) {
                 def last = (cur + numberOfMinutes < filtered.size()) ? cur + numberOfMinutes : filtered.size() - 1
-                def chunk = filtered[cur..last]
+                def chunk = filtered[cur..last].findAll { DataPoint dataPoint ->
+                    (
+                            dataPoint &&
+                                    dataPoint.price &&
+                                    dataPoint.numericalProbability &&
+                                    dataPoint.textTwitterProbability &&
+                                    dataPoint.textNewsProbability &&
+                                    dataPoint.combinedProbability
+                    )
+                }
                 def lowestPrice = chunk.min { DataPoint dataPoint -> dataPoint?.price }.price
                 def highestPrice = chunk.max { DataPoint dataPoint -> dataPoint?.price }.price
                 def middlePrice = (lowestPrice + highestPrice) / 2
-                def avgNumerical = chunk.sum { DataPoint dataPoint -> dataPoint?.numericalProbability?:0l } / (last - cur)
-                def avgTwitter = chunk.sum { DataPoint dataPoint -> dataPoint?.textTwitterProbability?:0l } / (last - cur)
-                def avgNews = chunk.sum { DataPoint dataPoint -> dataPoint?.textNewsProbability?:0l } / (last - cur)
-                def avgCombined = chunk.sum { DataPoint dataPoint -> dataPoint?.combinedProbability?:0l } / (last - cur)
+                def avgNumerical = chunk.sum { DataPoint dataPoint -> dataPoint?.numericalProbability?:0l } / chunk.size()
+                def avgTwitter = chunk.sum { DataPoint dataPoint -> dataPoint?.textTwitterProbability?:0l } / chunk.size()
+                def avgNews = chunk.sum { DataPoint dataPoint -> dataPoint?.textNewsProbability?:0l } / chunk.size()
+                def avgCombined = chunk.sum { DataPoint dataPoint -> dataPoint?.combinedProbability?:0l } / chunk.size()
                 result << [
                         filtered[cur].date,
                         middlePrice,
