@@ -73,32 +73,39 @@ class GraphDataService {
                 Logger.log('Invalid range passed')
                 return []
         }
-        List filtered = DataPoints.findAll {
-            it.date.time >= Date.newInstance().time - timeDiff
-        }
         def result = []
-        int cur = 0
-        while (cur < filtered.size()) {
-            def last = (cur + numberOfMinutes < filtered.size()) ? cur + numberOfMinutes : filtered.size() - 1
-            def chunk = filtered[cur..last]
-            def lowestPrice = chunk.min { DataPoint dataPoint -> dataPoint.price }.price
-            def highestPrice = chunk.max { DataPoint dataPoint -> dataPoint.price }.price
-            def middlePrice = (lowestPrice + highestPrice) / 2
-            def avgNumerical = chunk.sum { DataPoint dataPoint -> dataPoint.numericalProbability } / (last - cur)
-            def avgTwitter = chunk.sum { DataPoint dataPoint -> dataPoint.textTwitterProbability } / (last - cur)
-            def avgNews = chunk.sum { DataPoint dataPoint -> dataPoint.textNewsProbability } / (last - cur)
-            def avgCombined = chunk.sum { DataPoint dataPoint -> dataPoint.combinedProbability } / (last - cur)
-            result << [
-                    filtered[cur].date,
-                    middlePrice,
-                    avgNumerical,
-                    avgTwitter,
-                    avgNews,
-                    avgCombined
-            ]
-            cur += numberOfMinutes
+
+        try {
+            List filtered = DataPoints.findAll {
+                it.date.time >= Date.newInstance().time - timeDiff
+            }
+            int cur = 0
+            while (cur < filtered.size()) {
+                def last = (cur + numberOfMinutes < filtered.size()) ? cur + numberOfMinutes : filtered.size() - 1
+                def chunk = filtered[cur..last]
+                def lowestPrice = chunk.min { DataPoint dataPoint -> dataPoint.price }.price
+                def highestPrice = chunk.max { DataPoint dataPoint -> dataPoint.price }.price
+                def middlePrice = (lowestPrice + highestPrice) / 2
+                def avgNumerical = chunk.sum { DataPoint dataPoint -> dataPoint.numericalProbability } / (last - cur)
+                def avgTwitter = chunk.sum { DataPoint dataPoint -> dataPoint.textTwitterProbability } / (last - cur)
+                def avgNews = chunk.sum { DataPoint dataPoint -> dataPoint.textNewsProbability } / (last - cur)
+                def avgCombined = chunk.sum { DataPoint dataPoint -> dataPoint.combinedProbability } / (last - cur)
+                result << [
+                        filtered[cur].date,
+                        middlePrice,
+                        avgNumerical,
+                        avgTwitter,
+                        avgNews,
+                        avgCombined
+                ]
+                cur += numberOfMinutes
+            }
+            return result
+        } catch (Exception e) {
+            e.printStackTrace()
+            Logger.log(e.message)
         }
-        return result
+        return null
     }
 
     def collect() {
