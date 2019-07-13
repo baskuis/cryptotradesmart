@@ -93,21 +93,28 @@ class GraphDataService {
                                     dataPoint.combinedProbability && dataPoint.combinedProbability != Float.NaN
                     )
                 }
-                def lowestPrice = chunk.min { DataPoint dataPoint -> dataPoint?.price }.price
-                def highestPrice = chunk.max { DataPoint dataPoint -> dataPoint?.price }.price
-                def middlePrice = (lowestPrice + highestPrice) / 2
-                def avgNumerical = chunk.sum { DataPoint dataPoint -> dataPoint?.numericalProbability } / chunk.size()
-                def avgTwitter = chunk.sum { DataPoint dataPoint -> dataPoint?.textTwitterProbability } / chunk.size()
-                def avgNews = chunk.sum { DataPoint dataPoint -> dataPoint?.textNewsProbability } / chunk.size()
-                def avgCombined = chunk.sum { DataPoint dataPoint -> dataPoint?.combinedProbability } / chunk.size()
-                result << [
-                        filtered[cur].date,
-                        middlePrice,
-                        avgNumerical,
-                        avgTwitter,
-                        avgNews,
-                        avgCombined
-                ]
+                def lowestPrice = chunk.min { DataPoint dataPoint -> dataPoint?.price }?.price
+                def highestPrice = chunk.max { DataPoint dataPoint -> dataPoint?.price }?.price
+                if (!lowestPrice || !highestPrice){
+                    Logger.log(String.format('No lowest or highest price found'))
+                    if (result.size() > 0) {
+                        result << result.last()
+                    }
+                } else {
+                    def middlePrice = (lowestPrice + highestPrice) / 2
+                    def avgNumerical = chunk.sum { DataPoint dataPoint -> dataPoint?.numericalProbability } / chunk.size()
+                    def avgTwitter = chunk.sum { DataPoint dataPoint -> dataPoint?.textTwitterProbability } / chunk.size()
+                    def avgNews = chunk.sum { DataPoint dataPoint -> dataPoint?.textNewsProbability } / chunk.size()
+                    def avgCombined = chunk.sum { DataPoint dataPoint -> dataPoint?.combinedProbability } / chunk.size()
+                    result << [
+                            filtered[cur].date,
+                            middlePrice,
+                            avgNumerical,
+                            avgTwitter,
+                            avgNews,
+                            avgCombined
+                    ]
+                }
                 cur += numberOfMinutes
             }
             return result
