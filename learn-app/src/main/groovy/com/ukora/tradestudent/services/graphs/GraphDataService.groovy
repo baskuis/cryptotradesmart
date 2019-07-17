@@ -20,8 +20,10 @@ class GraphDataService {
 
     static final Double HALF = 0.5
 
+    static final long GET_NUMBER_OF_DAYS = 40l
+
     static final enum Range {
-        DAILY, WEEKLY, MONTHLY
+        DAILY, WEEKLY, MONTHLY, MAX
     }
 
     @Autowired
@@ -43,6 +45,9 @@ class GraphDataService {
         float textNewsProbability
         float textTwitterProbability
         float combinedProbability
+        float singleNumericalProbability
+        float singleTextNewsProbability
+        float singleTextTwitterProbability
     }
 
     static class DataCapture {
@@ -54,20 +59,28 @@ class GraphDataService {
     static TreeMap<Date, DataCapture> DataCaptures = []
 
     static List<List> getRange(Range range) {
+        while (LOCKED) {
+            Logger.log('getRange locked, waiting')
+            sleep(100)
+        }
         long timeDiff
         int numberOfMinutes
         switch (range) {
             case Range.DAILY:
                 timeDiff = 86400000l
-                numberOfMinutes = 10
+                numberOfMinutes = 5
                 break
             case Range.WEEKLY:
                 timeDiff = 7l * 86400000l
-                numberOfMinutes = 30
+                numberOfMinutes = 10
                 break
             case Range.MONTHLY:
                 timeDiff = 30l * 86400000l
-                numberOfMinutes = 120
+                numberOfMinutes = 30
+                break
+            case Range.MAX:
+                timeDiff = 45l * 86400000l
+                numberOfMinutes = 60
                 break
             default:
                 Logger.log('Invalid range passed')
@@ -102,17 +115,27 @@ class GraphDataService {
                     }
                 } else {
                     def middlePrice = (lowestPrice + highestPrice) / 2
+
                     def avgNumerical = chunk.sum { DataPoint dataPoint -> dataPoint?.numericalProbability } / chunk.size()
                     def avgTwitter = chunk.sum { DataPoint dataPoint -> dataPoint?.textTwitterProbability } / chunk.size()
                     def avgNews = chunk.sum { DataPoint dataPoint -> dataPoint?.textNewsProbability } / chunk.size()
+
                     def avgCombined = chunk.sum { DataPoint dataPoint -> dataPoint?.combinedProbability } / chunk.size()
+
+                    def avgSingleNumerical = chunk.sum { DataPoint dataPoint -> dataPoint?.singleNumericalProbability } / chunk.size()
+                    def avgSingleTwitter = chunk.sum { DataPoint dataPoint -> dataPoint?.singleTextTwitterProbability } / chunk.size()
+                    def avgSingleNews = chunk.sum { DataPoint dataPoint -> dataPoint?.singleTextNewsProbability } / chunk.size()
+
                     result << [
                             filtered[cur].date,
                             middlePrice,
                             avgNumerical,
                             avgTwitter,
                             avgNews,
-                            avgCombined
+                            avgCombined,
+                            avgSingleNumerical,
+                            avgSingleTwitter,
+                            avgSingleNews
                     ]
                 }
                 cur += numberOfMinutes
@@ -132,7 +155,7 @@ class GraphDataService {
         cal.set(Calendar.MILLISECOND, 0)
         Instant end = Instant.now()
         Duration gap = Duration.ofSeconds(60)
-        Instant current = cal.toInstant().minusSeconds(10l * 84600l)
+        Instant current = cal.toInstant().minusSeconds(GET_NUMBER_OF_DAYS * 84600l)
         while (current.isBefore(end)) {
             end = Instant.now()
             current = current + gap
@@ -159,17 +182,98 @@ class GraphDataService {
         }
     }
 
-    @Scheduled(cron = '0 */2 * * * *')
-    def generate() {
+    /**
+     *
+     * 1.) Build initial reference (updated when simulations run)
+     * 2.) Add new entries to reference (updated on live trading)
+     * 3.)
+     *
+     *
+     */
+    static synchronized boolean LOCKED = false
 
-        /** Collect captures */
-        collect()
+    @Scheduled(initialDelay = 5000l, fixedRate = 300000l)
+    void addAll() {
+        try {
+            LOCKED = true
+            collect()
+            generate()
+        } catch (Exception e) {
+            Logger.log('Unable to run addAll. Message: ' + e.message)
+            e.printStackTrace()
+        } finally {
+            LOCKED = false
+        }
+    }
+
+    @Scheduled(cron = '0 * * * * *')
+    void addOnly() {
+        try {
+            LOCKED = true
+            collectNew()
+            generate()
+        } catch (Exception e) {
+            Logger.log('Unable to run addOnly. Message:' + e.message)
+            e.printStackTrace()
+        } finally {
+            LOCKED = false
+        }
+    }
+
+    def collectNew() {
+        Calendar cal = Calendar.getInstance()
+        cal.setTime(new Date())
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        Instant end = Instant.now()
+        Duration gap = Duration.ofSeconds(60)
+        Instant current = cal.toInstant().minusSeconds(3600)
+        while (current.isBefore(end)) {
+            end = Instant.now()
+            current = current + gap
+            List<TextCorrelationAssociation> textCorrelationAssociations = textCorrelationAssociationRepository.findByDateBetween(
+                    Date.from(current.minusSeconds(45)),
+                    Date.from(current.plusSeconds(45))
+            )
+            List<CorrelationAssociation> correlationAssociations = correlationAssociationRepository.findByDateBetween(
+                    Date.from(current.minusSeconds(45)),
+                    Date.from(current.plusSeconds(45))
+            )
+            if (!textCorrelationAssociations || textCorrelationAssociations.size() == 0) {
+                Logger.log(String.format('Unable to retrieve textCorrelations for %s', current))
+                continue
+            }
+            if (!correlationAssociations || correlationAssociations.size() == 0) {
+                Logger.log(String.format('Unable to retrieve correlations for %s', current))
+                continue
+            }
+            DataCaptures.put(Date.from(current), new DataCapture(
+                    correlationAssociation: correlationAssociations?.first(),
+                    textCorrelationAssociation: textCorrelationAssociations?.first()
+            ))
+        }
+    }
+
+    def generate() {
 
         /** Get top performing simulations */
         def numericalSimulation = simulationResultService.getTopPerformingNumericalFlexSimulation()
         def textNewsSimulation = simulationResultService.getTopPerformingTextFlexSimulation(ExtractedText.TextSource.NEWS)
         def textTwitterSimulation = simulationResultService.getTopPerformingTextFlexSimulation(ExtractedText.TextSource.TWITTER)
         def combinedSimulation = simulationResultService.getTopPerformingCombinedSimulation()
+
+        /** Get numeric simulation weights */
+        def singleTotalNumericalWeights = numericalSimulation.tagGroupWeights.values().collect({
+            return Math.abs(it)
+        }).sum() as float
+        /** Get text twitter weights */
+        def singleTotalTwitterWeights = textNewsSimulation.tagGroupWeights.values().collect({
+            return Math.abs(it)
+        }).sum() as float
+        /** Get text news weights */
+        def singleTotalNewsWeights = textTwitterSimulation.tagGroupWeights.values().collect({
+            return Math.abs(it)
+        }).sum() as float
 
         /** Get total tag weights for combined */
         def totalNumericalWeights = combinedSimulation.numericalSimulation.tagGroupWeights.values().collect({
@@ -185,6 +289,31 @@ class GraphDataService {
         /** Create the graphing data sets */
         DataPoints = DataCaptures.collect({
             DataCapture dataCapture = it.value
+
+            /** Get single numerical aggregate */
+            def singleNumericalAggregate = numericalSimulation.tagGroupWeights.collect({
+                return it.value * (dataCapture.correlationAssociation.tagProbabilities[combinedSimulation.numericalSimulation.probabilityCombinerStrategy].get(
+                        tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
+                ) - HALF)
+            }).sum() / singleTotalNumericalWeights
+
+            /** Get single text twitter aggregate */
+            def singleTextTwitterAggregate = textTwitterSimulation.tagGroupWeights.collect({
+                return it.value * (dataCapture.textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
+                        ExtractedText.TextSource.TWITTER as String
+                ).get(
+                        tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
+                ) - HALF)
+            }).sum() / singleTotalTwitterWeights
+
+            /** Get single text news aggregate */
+            def singleTextNewsAggregate = textTwitterSimulation.tagGroupWeights.collect({
+                return it.value * (dataCapture.textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
+                        ExtractedText.TextSource.NEWS as String
+                ).get(
+                        tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
+                ) - HALF)
+            }).sum() / singleTotalNewsWeights
 
             /** Get numerical aggregate */
             def numericalAggregate = combinedSimulation.numericalSimulation.tagGroupWeights.collect({
@@ -224,13 +353,16 @@ class GraphDataService {
                     )
             )
 
-            Logger.log(String.format('price: %s, caDate: %s, taDate: %s, numericalAggregate: %s, textTwitterAggregate: %s, textNewsAggregate: %s, totalAggregate: %s, totalNumericalWeights: %s, totalTwitterWeights: %s, totalNewsWeights: %s',
+            Logger.log(String.format('price: %s, caDate: %s, taDate: %s, numericalAggregate: %s, textTwitterAggregate: %s, textNewsAggregate: %s, singleNumericalAggregate: %s, singleTextTwitterAggregate: %s, singleTextNewsAggregate: %s, totalAggregate: %s, totalNumericalWeights: %s, totalTwitterWeights: %s, totalNewsWeights: %s',
                     dataCapture.correlationAssociation.price,
                     dataCapture.correlationAssociation.date,
                     dataCapture.textCorrelationAssociation.date,
                     numericalAggregate,
                     textTwitterAggregate,
                     textNewsAggregate,
+                    singleNumericalAggregate,
+                    singleTextTwitterAggregate,
+                    singleTextNewsAggregate,
                     totalAggregate,
                     totalNumericalWeights,
                     totalTwitterWeights,
@@ -243,7 +375,10 @@ class GraphDataService {
                     numericalProbability: numericalAggregate,
                     textNewsProbability: textTwitterAggregate,
                     textTwitterProbability: textNewsAggregate,
-                    combinedProbability: totalAggregate
+                    combinedProbability: totalAggregate,
+                    singleNumericalProbability: singleNumericalAggregate,
+                    singleTextTwitterProbability: singleTextTwitterAggregate,
+                    singleTextNewsProbability: singleTextNewsAggregate
             )
 
         })
