@@ -388,6 +388,8 @@ class GraphDataService {
 
         })
 
+        Logger.log('Done generating data points')
+
     }
 
 }
