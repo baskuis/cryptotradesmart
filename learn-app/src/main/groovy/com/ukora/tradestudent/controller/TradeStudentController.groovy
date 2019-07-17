@@ -385,7 +385,10 @@ class TradeStudentController {
                    it.numericalProbability,
                    it.textTwitterProbability,
                    it.textNewsProbability,
-                   it.combinedProbability
+                   it.combinedProbability,
+                   it.singleNumericalProbability,
+                   it.singleTextNewsProbability,
+                   it.singleTextTwitterProbability,
            ]
         })
     }

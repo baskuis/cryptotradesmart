@@ -134,9 +134,10 @@ class GraphDataService {
                             avgNews,
                             avgCombined,
                             avgSingleNumerical,
+                            avgSingleNews,
                             avgSingleTwitter,
-                            avgSingleNews
                     ]
+                    
                 }
                 cur += numberOfMinutes
             }
