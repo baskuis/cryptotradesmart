@@ -137,7 +137,7 @@ class GraphDataService {
                             avgSingleNews,
                             avgSingleTwitter,
                     ]
-                    
+
                 }
                 cur += numberOfMinutes
             }
@@ -257,6 +257,8 @@ class GraphDataService {
 
     def generate() {
 
+        Logger.log('Running generate data points')
+
         /** Get top performing simulations */
         def numericalSimulation = simulationResultService.getTopPerformingNumericalFlexSimulation()
         def textNewsSimulation = simulationResultService.getTopPerformingTextFlexSimulation(ExtractedText.TextSource.NEWS)
@@ -354,7 +356,7 @@ class GraphDataService {
                     )
             )
 
-            Logger.log(String.format('price: %s, caDate: %s, taDate: %s, numericalAggregate: %s, textTwitterAggregate: %s, textNewsAggregate: %s, singleNumericalAggregate: %s, singleTextTwitterAggregate: %s, singleTextNewsAggregate: %s, totalAggregate: %s, totalNumericalWeights: %s, totalTwitterWeights: %s, totalNewsWeights: %s',
+            Logger.debug(String.format('price: %s, caDate: %s, taDate: %s, numericalAggregate: %s, textTwitterAggregate: %s, textNewsAggregate: %s, singleNumericalAggregate: %s, singleTextTwitterAggregate: %s, singleTextNewsAggregate: %s, totalAggregate: %s, totalNumericalWeights: %s, totalTwitterWeights: %s, totalNewsWeights: %s',
                     dataCapture.correlationAssociation.price,
                     dataCapture.correlationAssociation.date,
                     dataCapture.textCorrelationAssociation.date,
