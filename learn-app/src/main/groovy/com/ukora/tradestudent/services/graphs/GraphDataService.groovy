@@ -187,7 +187,7 @@ class GraphDataService {
      *
      * 1.) Build initial reference (updated when simulations run)
      * 2.) Add new entries to reference (updated on live trading)
-     * 3.)
+     * 3.) Stuff..
      *
      *
      */
@@ -232,26 +232,28 @@ class GraphDataService {
         while (current.isBefore(end)) {
             end = Instant.now()
             current = current + gap
-            List<TextCorrelationAssociation> textCorrelationAssociations = textCorrelationAssociationRepository.findByDateBetween(
-                    Date.from(current.minusSeconds(45)),
-                    Date.from(current.plusSeconds(45))
-            )
-            List<CorrelationAssociation> correlationAssociations = correlationAssociationRepository.findByDateBetween(
-                    Date.from(current.minusSeconds(45)),
-                    Date.from(current.plusSeconds(45))
-            )
-            if (!textCorrelationAssociations || textCorrelationAssociations.size() == 0) {
-                Logger.log(String.format('Unable to retrieve textCorrelations for %s', current))
-                continue
+            if(!DataCaptures.get(Date.from(current))) {
+                List<TextCorrelationAssociation> textCorrelationAssociations = textCorrelationAssociationRepository.findByDateBetween(
+                        Date.from(current.minusSeconds(45)),
+                        Date.from(current.plusSeconds(45))
+                )
+                List<CorrelationAssociation> correlationAssociations = correlationAssociationRepository.findByDateBetween(
+                        Date.from(current.minusSeconds(45)),
+                        Date.from(current.plusSeconds(45))
+                )
+                if (!textCorrelationAssociations || textCorrelationAssociations.size() == 0) {
+                    Logger.log(String.format('Unable to retrieve textCorrelations for %s', current))
+                    continue
+                }
+                if (!correlationAssociations || correlationAssociations.size() == 0) {
+                    Logger.log(String.format('Unable to retrieve correlations for %s', current))
+                    continue
+                }
+                DataCaptures.put(Date.from(current), new DataCapture(
+                        correlationAssociation: correlationAssociations?.first(),
+                        textCorrelationAssociation: textCorrelationAssociations?.first()
+                ))
             }
-            if (!correlationAssociations || correlationAssociations.size() == 0) {
-                Logger.log(String.format('Unable to retrieve correlations for %s', current))
-                continue
-            }
-            DataCaptures.put(Date.from(current), new DataCapture(
-                    correlationAssociation: correlationAssociations?.first(),
-                    textCorrelationAssociation: textCorrelationAssociations?.first()
-            ))
         }
     }
 
