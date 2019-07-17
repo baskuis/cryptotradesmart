@@ -79,7 +79,7 @@ class LiveTradeSimulationService {
     @Async
     void simulateTrade() {
         try {
-            Date now = Date.from(new Date().toInstant().atZone(ZoneId.systemDefault()).toInstant())
+            Date now = Date.from(new Date().toInstant().minusSeconds(60).atZone(ZoneId.systemDefault()).toInstant())
             List<TradeExecution> tradeExecutions = []
             SimulationResult simulationResult = simulationResultService.getTopPerformingSimulation()
             CorrelationAssociation correlationAssociation = probabilityCombinerService.getCorrelationAssociations(now)
