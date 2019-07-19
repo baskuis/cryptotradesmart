@@ -2,11 +2,13 @@ package com.ukora.tradestudent.services.graphs
 
 import com.ukora.domain.entities.CorrelationAssociation
 import com.ukora.domain.entities.ExtractedText
+import com.ukora.domain.entities.SimulationResult
 import com.ukora.domain.entities.TextCorrelationAssociation
 import com.ukora.domain.repositories.CorrelationAssociationRepository
 import com.ukora.domain.repositories.TextCorrelationAssociationRepository
 import com.ukora.tradestudent.services.SimulationResultService
 import com.ukora.tradestudent.services.TagService
+import com.ukora.tradestudent.services.simulator.CombinedSimulation
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
@@ -25,6 +27,18 @@ class GraphDataService {
     static final enum Range {
         DAILY, WEEKLY, MONTHLY, MAX
     }
+
+    SimulationResult numericalSimulation
+    SimulationResult textNewsSimulation
+    SimulationResult textTwitterSimulation
+    SimulationResult combinedSimulation
+
+    float singleTotalNumericalWeights
+    float singleTotalTwitterWeights
+    float singleTotalNewsWeights
+    float totalNumericalWeights
+    float totalTwitterWeights
+    float totalNewsWeights
 
     @Autowired
     TextCorrelationAssociationRepository textCorrelationAssociationRepository
@@ -193,12 +207,12 @@ class GraphDataService {
      */
     static synchronized boolean LOCKED = false
 
-    @Scheduled(initialDelay = 5000l, fixedRate = 300000l)
+    @Scheduled(initialDelay = 5000l, fixedRate = 3600000l)
     void addAll() {
         try {
             LOCKED = true
             collect()
-            generate()
+            generate(false)
         } catch (Exception e) {
             Logger.log('Unable to run addAll. Message: ' + e.message)
             e.printStackTrace()
@@ -212,7 +226,7 @@ class GraphDataService {
         try {
             LOCKED = true
             collectNew()
-            generate()
+            generate(true)
         } catch (Exception e) {
             Logger.log('Unable to run addOnly. Message:' + e.message)
             e.printStackTrace()
@@ -255,141 +269,186 @@ class GraphDataService {
                 ))
             }
         }
+
+
     }
 
-    def generate() {
+    @Scheduled(initialDelay = 3000l, fixedRate = 600000l)
+    def setSimulations() {
 
-        Logger.log('Running generate data points')
+        Logger.log('Setting simulations')
 
         /** Get top performing simulations */
-        def numericalSimulation = simulationResultService.getTopPerformingNumericalFlexSimulation()
-        def textNewsSimulation = simulationResultService.getTopPerformingTextFlexSimulation(ExtractedText.TextSource.NEWS)
-        def textTwitterSimulation = simulationResultService.getTopPerformingTextFlexSimulation(ExtractedText.TextSource.TWITTER)
-        def combinedSimulation = simulationResultService.getTopPerformingCombinedSimulation()
+        numericalSimulation = simulationResultService.getTopPerformingNumericalFlexSimulation()
+        textNewsSimulation = simulationResultService.getTopPerformingTextFlexSimulation(ExtractedText.TextSource.NEWS)
+        textTwitterSimulation = simulationResultService.getTopPerformingTextFlexSimulation(ExtractedText.TextSource.TWITTER)
+        combinedSimulation = simulationResultService.getTopPerformingCombinedSimulation()
 
         /** Get numeric simulation weights */
-        def singleTotalNumericalWeights = numericalSimulation.tagGroupWeights.values().collect({
+        singleTotalNumericalWeights = numericalSimulation.tagGroupWeights.values().collect({
             return Math.abs(it)
         }).sum() as float
         /** Get text twitter weights */
-        def singleTotalTwitterWeights = textNewsSimulation.tagGroupWeights.values().collect({
+        singleTotalTwitterWeights = textNewsSimulation.tagGroupWeights.values().collect({
             return Math.abs(it)
         }).sum() as float
         /** Get text news weights */
-        def singleTotalNewsWeights = textTwitterSimulation.tagGroupWeights.values().collect({
+        singleTotalNewsWeights = textTwitterSimulation.tagGroupWeights.values().collect({
             return Math.abs(it)
         }).sum() as float
 
         /** Get total tag weights for combined */
-        def totalNumericalWeights = combinedSimulation.numericalSimulation.tagGroupWeights.values().collect({
+        totalNumericalWeights = combinedSimulation.numericalSimulation.tagGroupWeights.values().collect({
             return Math.abs(it)
         }).sum() as float
-        def totalTwitterWeights = combinedSimulation.textTwitterSimulation.tagGroupWeights.values().collect({
+        totalTwitterWeights = combinedSimulation.textTwitterSimulation.tagGroupWeights.values().collect({
             return Math.abs(it)
         }).sum() as float
-        def totalNewsWeights = combinedSimulation.textTwitterSimulation.tagGroupWeights.values().collect({
+        totalNewsWeights = combinedSimulation.textTwitterSimulation.tagGroupWeights.values().collect({
             return Math.abs(it)
         }).sum() as float
 
-        /** Create the graphing data sets */
-        DataPoints = DataCaptures.collect({
-            DataCapture dataCapture = it.value
+    }
 
-            /** Get single numerical aggregate */
-            def singleNumericalAggregate = numericalSimulation.tagGroupWeights.collect({
-                return it.value * (dataCapture.correlationAssociation.tagProbabilities[combinedSimulation.numericalSimulation.probabilityCombinerStrategy].get(
-                        tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
-                ) - HALF)
-            }).sum() / singleTotalNumericalWeights
+    def assureSimulations() {
+        if (!numericalSimulation || !textNewsSimulation || !textTwitterSimulation || !combinedSimulation) {
+           setSimulations()
+        }
+    }
 
-            /** Get single text twitter aggregate */
-            def singleTextTwitterAggregate = textTwitterSimulation.tagGroupWeights.collect({
-                return it.value * (dataCapture.textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
-                        ExtractedText.TextSource.TWITTER as String
-                ).get(
-                        tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
-                ) - HALF)
-            }).sum() / singleTotalTwitterWeights
+    def generate(boolean append) {
 
-            /** Get single text news aggregate */
-            def singleTextNewsAggregate = textTwitterSimulation.tagGroupWeights.collect({
-                return it.value * (dataCapture.textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
-                        ExtractedText.TextSource.NEWS as String
-                ).get(
-                        tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
-                ) - HALF)
-            }).sum() / singleTotalNewsWeights
+        Logger.log('Running generate data points')
 
-            /** Get numerical aggregate */
-            def numericalAggregate = combinedSimulation.numericalSimulation.tagGroupWeights.collect({
-                return it.value * (dataCapture.correlationAssociation.tagProbabilities[combinedSimulation.numericalSimulation.probabilityCombinerStrategy].get(
-                        tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
-                ) - HALF)
-            }).sum() / totalNumericalWeights
+        /** Assure simulation are set */
+        assureSimulations()
 
-            /** Get text twitter aggregate */
-            def textTwitterAggregate = combinedSimulation.textTwitterSimulation.tagGroupWeights.collect({
-                return it.value * (dataCapture.textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
-                        ExtractedText.TextSource.TWITTER as String
-                ).get(
-                        tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
-                ) - HALF)
-            }).sum() / totalTwitterWeights
+        /** Create the graphing data sets - rebuild it */
+        if (!append) {
 
-            /** Get text news aggregate */
-            def textNewsAggregate = combinedSimulation.textTwitterSimulation.tagGroupWeights.collect({
-                return it.value * (dataCapture.textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
-                        ExtractedText.TextSource.NEWS as String
-                ).get(
-                        tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
-                ) - HALF)
-            }).sum() / totalNewsWeights
+            Logger.log('Building new list of data points')
+            DataPoints = DataCaptures.collect({
+                DataCapture dataCapture = it.value
+                return buildDataPoint(
+                        dataCapture
+                )
+            })
 
-            /** Get total aggregate */
-            def totalAggregate = HALF + (
-                    (
-                            (combinedSimulation.numericalWeight * numericalAggregate) +
-                                    (combinedSimulation.textNewsWeight * textTwitterAggregate) +
-                                    (combinedSimulation.textTwitterWeight * textNewsAggregate)
-                    ) / (
-                            Math.abs(combinedSimulation.numericalWeight) +
-                                    Math.abs(combinedSimulation.textNewsWeight) +
-                                    Math.abs(combinedSimulation.textTwitterWeight)
+        /** Or only add new ones */
+        } else {
+
+            Logger.log('Appending to list of data points')
+            DataCaptures.each {
+                Date date = it.key
+                DataCapture dataCapture = it.value
+                if (!DataPoints.find {
+                    it.date == date
+                }) {
+                    DataPoints.push(
+                            buildDataPoint(
+                                    dataCapture
+                            )
                     )
-            )
-
-            Logger.debug(String.format('price: %s, caDate: %s, taDate: %s, numericalAggregate: %s, textTwitterAggregate: %s, textNewsAggregate: %s, singleNumericalAggregate: %s, singleTextTwitterAggregate: %s, singleTextNewsAggregate: %s, totalAggregate: %s, totalNumericalWeights: %s, totalTwitterWeights: %s, totalNewsWeights: %s',
-                    dataCapture.correlationAssociation.price,
-                    dataCapture.correlationAssociation.date,
-                    dataCapture.textCorrelationAssociation.date,
-                    numericalAggregate,
-                    textTwitterAggregate,
-                    textNewsAggregate,
-                    singleNumericalAggregate,
-                    singleTextTwitterAggregate,
-                    singleTextNewsAggregate,
-                    totalAggregate,
-                    totalNumericalWeights,
-                    totalTwitterWeights,
-                    totalNewsWeights
-            ))
-
-            return new DataPoint(
-                    price: dataCapture.correlationAssociation.price,
-                    date: dataCapture.correlationAssociation.date,
-                    numericalProbability: numericalAggregate,
-                    textNewsProbability: textTwitterAggregate,
-                    textTwitterProbability: textNewsAggregate,
-                    combinedProbability: totalAggregate,
-                    singleNumericalProbability: singleNumericalAggregate,
-                    singleTextTwitterProbability: singleTextTwitterAggregate,
-                    singleTextNewsProbability: singleTextNewsAggregate
-            )
-
-        })
+                }
+            }
+        }
 
         Logger.log('Done generating data points')
 
+    }
+
+    DataPoint buildDataPoint(DataCapture dataCapture){
+
+        /** Get single numerical aggregate */
+        def singleNumericalAggregate = numericalSimulation.tagGroupWeights.collect({
+            return it.value * (dataCapture.correlationAssociation.tagProbabilities[combinedSimulation.numericalSimulation.probabilityCombinerStrategy].get(
+                    tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
+            ) - HALF)
+        }).sum() / singleTotalNumericalWeights
+
+        /** Get single text twitter aggregate */
+        def singleTextTwitterAggregate = textTwitterSimulation.tagGroupWeights.collect({
+            return it.value * (dataCapture.textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
+                    ExtractedText.TextSource.TWITTER as String
+            ).get(
+                    tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
+            ) - HALF)
+        }).sum() / singleTotalTwitterWeights
+
+        /** Get single text news aggregate */
+        def singleTextNewsAggregate = textNewsSimulation.tagGroupWeights.collect({
+            return it.value * (dataCapture.textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
+                    ExtractedText.TextSource.NEWS as String
+            ).get(
+                    tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
+            ) - HALF)
+        }).sum() / singleTotalNewsWeights
+
+        /** Get numerical aggregate */
+        def numericalAggregate = combinedSimulation.numericalSimulation.tagGroupWeights.collect({
+            return it.value * (dataCapture.correlationAssociation.tagProbabilities[combinedSimulation.numericalSimulation.probabilityCombinerStrategy].get(
+                    tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
+            ) - HALF)
+        }).sum() / totalNumericalWeights
+
+        /** Get text twitter aggregate */
+        def textTwitterAggregate = combinedSimulation.textTwitterSimulation.tagGroupWeights.collect({
+            return it.value * (dataCapture.textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
+                    ExtractedText.TextSource.TWITTER as String
+            ).get(
+                    tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
+            ) - HALF)
+        }).sum() / totalTwitterWeights
+
+        /** Get text news aggregate */
+        def textNewsAggregate = combinedSimulation.textTwitterSimulation.tagGroupWeights.collect({
+            return it.value * (dataCapture.textCorrelationAssociation.strategyProbabilities['weightedTextProbabilityCombinerStrategy'].get(
+                    ExtractedText.TextSource.NEWS as String
+            ).get(
+                    tagService.getTagsByTagGroupName(it.key).find({ it.entry() }).tagName
+            ) - HALF)
+        }).sum() / totalNewsWeights
+
+        /** Get total aggregate */
+        def totalAggregate = HALF + (
+                (
+                        (combinedSimulation.numericalWeight * numericalAggregate) +
+                                (combinedSimulation.textNewsWeight * textTwitterAggregate) +
+                                (combinedSimulation.textTwitterWeight * textNewsAggregate)
+                ) / (
+                        Math.abs(combinedSimulation.numericalWeight) +
+                                Math.abs(combinedSimulation.textNewsWeight) +
+                                Math.abs(combinedSimulation.textTwitterWeight)
+                )
+        )
+
+        Logger.debug(String.format('price: %s, caDate: %s, taDate: %s, numericalAggregate: %s, textTwitterAggregate: %s, textNewsAggregate: %s, singleNumericalAggregate: %s, singleTextTwitterAggregate: %s, singleTextNewsAggregate: %s, totalAggregate: %s, totalNumericalWeights: %s, totalTwitterWeights: %s, totalNewsWeights: %s',
+                dataCapture.correlationAssociation.price,
+                dataCapture.correlationAssociation.date,
+                dataCapture.textCorrelationAssociation.date,
+                numericalAggregate,
+                textTwitterAggregate,
+                textNewsAggregate,
+                singleNumericalAggregate,
+                singleTextTwitterAggregate,
+                singleTextNewsAggregate,
+                totalAggregate,
+                totalNumericalWeights,
+                totalTwitterWeights,
+                totalNewsWeights
+        ))
+
+        return new DataPoint(
+                price: dataCapture.correlationAssociation.price,
+                date: dataCapture.correlationAssociation.date,
+                numericalProbability: numericalAggregate,
+                textNewsProbability: textTwitterAggregate,
+                textTwitterProbability: textNewsAggregate,
+                combinedProbability: totalAggregate,
+                singleNumericalProbability: singleNumericalAggregate,
+                singleTextTwitterProbability: singleTextTwitterAggregate,
+                singleTextNewsProbability: singleTextNewsAggregate
+        )
     }
 
 }
