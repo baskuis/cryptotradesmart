@@ -70,7 +70,7 @@ class GraphDataService {
     }
 
     public static List<DataPoint> DataPoints = []
-    static TreeMap<Date, DataCapture> DataCaptures = []
+    static TreeMap<Date, DataCapture> DataCaptures = [:]
 
     static List<List> getRange(Range range) {
         while (LOCKED) {
@@ -333,28 +333,41 @@ class GraphDataService {
                         dataCapture
                 )
             })
+            Logger.log('Done')
 
         /** Or only add new ones */
         } else {
 
             Logger.log('Appending to list of data points')
+            List add = []
             DataCaptures.each {
                 Date date = it.key
                 DataCapture dataCapture = it.value
-                if (!DataPoints.find {
-                    it.date == date
-                }) {
-                    DataPoints.push(
-                            buildDataPoint(
-                                    dataCapture
-                            )
-                    )
+                if (date.after(yesterday())) {
+                    if (!DataPoints.find {
+                        it.date == date
+                    }) {
+                        add.push(
+                                buildDataPoint(
+                                        dataCapture
+                                )
+                        )
+                    }
                 }
             }
+            DataPoints.addAll(add)
+            Logger.log('Done')
+
         }
 
         Logger.log('Done generating data points')
 
+    }
+
+    static Date yesterday() {
+        final Calendar cal = Calendar.getInstance()
+        cal.add(Calendar.DATE, -1)
+        return cal.getTime()
     }
 
     DataPoint buildDataPoint(DataCapture dataCapture){
