@@ -329,7 +329,8 @@ class GraphDataService {
             DataPoints = DataCaptures.collect({
                 DataCapture dataCapture = it.value
                 return buildDataPoint(
-                        dataCapture
+                        dataCapture,
+                        new Date(it.key)
                 )
             })
             Logger.log('Done')
@@ -341,15 +342,16 @@ class GraphDataService {
             List add = []
             long yesterday = yesterday()
             DataCaptures.each {
-                long date = it.key
+                long timestamp = it.key
                 DataCapture dataCapture = it.value
-                if (date > yesterday) {
+                if (timestamp > yesterday) {
                     if (!DataPoints.find {
-                        it.date.time == date
+                        it.date.time == timestamp
                     }) {
                         add.push(
                                 buildDataPoint(
-                                        dataCapture
+                                        dataCapture,
+                                        new Date(timestamp)
                                 )
                         )
                     }
@@ -370,7 +372,7 @@ class GraphDataService {
         return cal.getTime().time
     }
 
-    DataPoint buildDataPoint(DataCapture dataCapture) {
+    DataPoint buildDataPoint(DataCapture dataCapture, Date date) {
 
         /** Get single numerical aggregate */
         def singleNumericalAggregate = numericalSimulation.tagGroupWeights.collect({
@@ -453,7 +455,7 @@ class GraphDataService {
 
         return new DataPoint(
                 price: dataCapture.correlationAssociation.price,
-                date: dataCapture.correlationAssociation.date,
+                date: date,
                 numericalProbability: numericalAggregate,
                 textNewsProbability: textTwitterAggregate,
                 textTwitterProbability: textNewsAggregate,
