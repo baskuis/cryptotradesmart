@@ -224,7 +224,7 @@ class GraphDataService {
         }
     }
 
-    @Scheduled(cron = '0 * * * * *')
+    @Scheduled(cron = '10 */2 * * * *')
     void addOnly() {
         if(LOCKED) {
             Logger.log('Locked not running addOnly')

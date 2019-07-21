@@ -17,6 +17,8 @@ import com.ukora.tradestudent.strategy.trading.flex.FlexTradeExecutionStrategy
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
+import static com.ukora.tradestudent.strategy.trading.flex.FlexTradeExecutionStrategy.*
+
 @Component
 class DynamicTwitterWeightsFlexTradeExecutionStrategy implements FlexTradeExecutionStrategy {
 
@@ -43,8 +45,8 @@ class DynamicTwitterWeightsFlexTradeExecutionStrategy implements FlexTradeExecut
     private boolean enabled = true
 
     @Override
-    FlexTradeExecutionStrategy.Type getType() {
-        return FlexTradeExecutionStrategy.Type.TEXT
+    Type getType() {
+        return Type.TEXT
     }
 
     @Override
