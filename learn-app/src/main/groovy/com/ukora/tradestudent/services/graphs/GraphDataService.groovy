@@ -208,6 +208,10 @@ class GraphDataService {
 
     @Scheduled(initialDelay = 5000l, fixedRate = 3600000l)
     void addAll() {
+        if(LOCKED) {
+            Logger.log('Locked not running addAll')
+            return
+        }
         try {
             LOCKED = true
             collect()
@@ -222,6 +226,10 @@ class GraphDataService {
 
     @Scheduled(cron = '0 * * * * *')
     void addOnly() {
+        if(LOCKED) {
+            Logger.log('Locked not running addOnly')
+            return
+        }
         try {
             LOCKED = true
             collectNew()
