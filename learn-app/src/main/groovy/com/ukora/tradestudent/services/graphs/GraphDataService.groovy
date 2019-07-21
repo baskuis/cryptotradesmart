@@ -70,7 +70,7 @@ class GraphDataService {
     }
 
     public static List<DataPoint> DataPoints = []
-    static TreeMap<Date, DataCapture> DataCaptures = [:]
+    static SortedMap<Date, DataCapture> DataCaptures = Collections.synchronizedSortedMap(new TreeMap<Date, DataCapture>())
 
     static List<List> getRange(Range range) {
         while (LOCKED) {
@@ -274,7 +274,7 @@ class GraphDataService {
     }
 
     @Scheduled(initialDelay = 3000l, fixedRate = 600000l)
-    def setSimulations() {
+    synchronized setSimulations() {
 
         Logger.log('Setting simulations')
 
