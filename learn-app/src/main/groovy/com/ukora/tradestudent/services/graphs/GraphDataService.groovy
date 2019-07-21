@@ -8,7 +8,6 @@ import com.ukora.domain.repositories.CorrelationAssociationRepository
 import com.ukora.domain.repositories.TextCorrelationAssociationRepository
 import com.ukora.tradestudent.services.SimulationResultService
 import com.ukora.tradestudent.services.TagService
-import com.ukora.tradestudent.services.simulator.CombinedSimulation
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
@@ -70,7 +69,7 @@ class GraphDataService {
     }
 
     public static List<DataPoint> DataPoints = []
-    static SortedMap<Date, DataCapture> DataCaptures = Collections.synchronizedSortedMap(new TreeMap<Date, DataCapture>())
+    static SortedMap<Long, DataCapture> DataCaptures = Collections.synchronizedSortedMap(new TreeMap<Long, DataCapture>())
 
     static List<List> getRange(Range range) {
         while (LOCKED) {
@@ -122,7 +121,7 @@ class GraphDataService {
                 }
                 def lowestPrice = chunk.min { DataPoint dataPoint -> dataPoint?.price }?.price
                 def highestPrice = chunk.max { DataPoint dataPoint -> dataPoint?.price }?.price
-                if (!lowestPrice || !highestPrice){
+                if (!lowestPrice || !highestPrice) {
                     Logger.log(String.format('No lowest or highest price found'))
                     if (result.size() > 0) {
                         result << result.last()
@@ -190,7 +189,7 @@ class GraphDataService {
                 Logger.log(String.format('Unable to retrieve correlations for %s', current))
                 continue
             }
-            DataCaptures.put(Date.from(current), new DataCapture(
+            DataCaptures.put(Date.from(current).time, new DataCapture(
                     correlationAssociation: correlationAssociations?.first(),
                     textCorrelationAssociation: textCorrelationAssociations?.first()
             ))
@@ -246,7 +245,7 @@ class GraphDataService {
         while (current.isBefore(end)) {
             end = Instant.now()
             current = current + gap
-            if(!DataCaptures.get(Date.from(current))) {
+            if (!DataCaptures.get(Date.from(current))) {
                 List<TextCorrelationAssociation> textCorrelationAssociations = textCorrelationAssociationRepository.findByDateBetween(
                         Date.from(current.minusSeconds(45)),
                         Date.from(current.plusSeconds(45))
@@ -263,7 +262,7 @@ class GraphDataService {
                     Logger.log(String.format('Unable to retrieve correlations for %s', current))
                     continue
                 }
-                DataCaptures.put(Date.from(current), new DataCapture(
+                DataCaptures.put(Date.from(current).time, new DataCapture(
                         correlationAssociation: correlationAssociations?.first(),
                         textCorrelationAssociation: textCorrelationAssociations?.first()
                 ))
@@ -312,7 +311,7 @@ class GraphDataService {
 
     def assureSimulations() {
         if (!numericalSimulation || !textNewsSimulation || !textTwitterSimulation || !combinedSimulation) {
-           setSimulations()
+            setSimulations()
         }
     }
 
@@ -335,17 +334,18 @@ class GraphDataService {
             })
             Logger.log('Done')
 
-        /** Or only add new ones */
+            /** Or only add new ones */
         } else {
 
             Logger.log('Appending to list of data points')
             List add = []
+            long yesterday = yesterday()
             DataCaptures.each {
-                Date date = it.key
+                long date = it.key
                 DataCapture dataCapture = it.value
-                if (date.after(yesterday())) {
+                if (date > yesterday) {
                     if (!DataPoints.find {
-                        it.date == date
+                        it.date.time == date
                     }) {
                         add.push(
                                 buildDataPoint(
@@ -364,13 +364,13 @@ class GraphDataService {
 
     }
 
-    static Date yesterday() {
+    static long yesterday() {
         final Calendar cal = Calendar.getInstance()
         cal.add(Calendar.DATE, -1)
-        return cal.getTime()
+        return cal.getTime().time
     }
 
-    DataPoint buildDataPoint(DataCapture dataCapture){
+    DataPoint buildDataPoint(DataCapture dataCapture) {
 
         /** Get single numerical aggregate */
         def singleNumericalAggregate = numericalSimulation.tagGroupWeights.collect({
