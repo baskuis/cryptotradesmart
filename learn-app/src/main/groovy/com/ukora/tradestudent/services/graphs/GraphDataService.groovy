@@ -245,7 +245,7 @@ class GraphDataService {
         while (current.isBefore(end)) {
             end = Instant.now()
             current = current + gap
-            if (!DataCaptures.get(Date.from(current))) {
+            if (!DataCaptures.get(Date.from(current).time)) {
                 List<TextCorrelationAssociation> textCorrelationAssociations = textCorrelationAssociationRepository.findByDateBetween(
                         Date.from(current.minusSeconds(45)),
                         Date.from(current.plusSeconds(45))
