@@ -206,7 +206,7 @@ class GraphDataService {
      */
     static synchronized boolean LOCKED = false
 
-    @Scheduled(initialDelay = 5000l, fixedRate = 3600000l)
+    //@Scheduled(initialDelay = 5000l, fixedRate = 3600000l)
     void addAll() {
         if(LOCKED) {
             Logger.log('Locked not running addAll')
@@ -224,7 +224,7 @@ class GraphDataService {
         }
     }
 
-    @Scheduled(cron = '10 */2 * * * *')
+    //@Scheduled(cron = '10 */2 * * * *')
     void addOnly() {
         if(LOCKED) {
             Logger.log('Locked not running addOnly')
