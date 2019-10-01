@@ -10,6 +10,7 @@ import com.ukora.tradestudent.services.SimulationResultService
 import com.ukora.tradestudent.services.TagService
 import com.ukora.tradestudent.utils.Logger
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
@@ -206,7 +207,8 @@ class GraphDataService {
      */
     static synchronized boolean LOCKED = false
 
-    //@Scheduled(initialDelay = 5000l, fixedRate = 3600000l)
+    @Scheduled(initialDelay = 5000l, fixedRate = 3600000l)
+    @Async
     void addAll() {
         if(LOCKED) {
             Logger.log('Locked not running addAll')
@@ -214,6 +216,9 @@ class GraphDataService {
         }
         try {
             LOCKED = true
+            println '========= addAll =========='
+            println String.format('DataCaptures.size() = %s', DataCaptures.size())
+            println String.format('DataPoints.size() = %s', DataPoints.size())
             collect()
             generate(false)
         } catch (Exception e) {
@@ -221,10 +226,15 @@ class GraphDataService {
             e.printStackTrace()
         } finally {
             LOCKED = false
+            println '========= done =========='
+            println String.format('DataCaptures.size() = %s', DataCaptures.size())
+            println String.format('DataPoints.size() = %s', DataPoints.size())
+            println '========= done =========='
         }
     }
 
-    //@Scheduled(cron = '10 */2 * * * *')
+    @Scheduled(cron = '10 */2 * * * *')
+    @Async
     void addOnly() {
         if(LOCKED) {
             Logger.log('Locked not running addOnly')
@@ -232,6 +242,9 @@ class GraphDataService {
         }
         try {
             LOCKED = true
+            println '========= addOnly =========='
+            println String.format('DataCaptures.size() = %s', DataCaptures.size())
+            println String.format('DataPoints.size() = %s', DataPoints.size())
             collectNew()
             generate(true)
         } catch (Exception e) {
@@ -239,6 +252,10 @@ class GraphDataService {
             e.printStackTrace()
         } finally {
             LOCKED = false
+            println '========= done =========='
+            println String.format('DataCaptures.size() = %s', DataCaptures.size())
+            println String.format('DataPoints.size() = %s', DataPoints.size())
+            println '========= done =========='
         }
     }
 
