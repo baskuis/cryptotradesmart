@@ -351,9 +351,9 @@ class GraphDataService {
         if (!append) {
 
             Logger.log('Building new list of data points')
-            DataPoints = DataCaptures.find({
+            DataPoints = DataCaptures.findAll {
                 return (it.value.correlationAssociation?.price)
-            }).collect({
+            }.collect({
                 DataCapture dataCapture = it.value
                 return buildDataPoint(
                         dataCapture,
