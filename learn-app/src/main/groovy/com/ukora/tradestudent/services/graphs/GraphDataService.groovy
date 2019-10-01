@@ -351,7 +351,9 @@ class GraphDataService {
         if (!append) {
 
             Logger.log('Building new list of data points')
-            DataPoints = DataCaptures.collect({
+            DataPoints = DataCaptures.find({
+                return (it.value.correlationAssociation?.price)
+            }).collect({
                 DataCapture dataCapture = it.value
                 return buildDataPoint(
                         dataCapture,
@@ -462,7 +464,7 @@ class GraphDataService {
                 )
         )
 
-        Logger.log(String.format('price: %s, caDate: %s, taDate: %s, numericalAggregate: %s, textTwitterAggregate: %s, textNewsAggregate: %s, singleNumericalAggregate: %s, singleTextTwitterAggregate: %s, singleTextNewsAggregate: %s, totalAggregate: %s, totalNumericalWeights: %s, totalTwitterWeights: %s, totalNewsWeights: %s',
+        Logger.debug(String.format('price: %s, caDate: %s, taDate: %s, numericalAggregate: %s, textTwitterAggregate: %s, textNewsAggregate: %s, singleNumericalAggregate: %s, singleTextTwitterAggregate: %s, singleTextNewsAggregate: %s, totalAggregate: %s, totalNumericalWeights: %s, totalTwitterWeights: %s, totalNewsWeights: %s',
                 dataCapture.correlationAssociation.price,
                 dataCapture.correlationAssociation.date,
                 dataCapture.textCorrelationAssociation.date,
