@@ -60,8 +60,12 @@ class BuySellTradingHistoricalSimulatorService extends AbstractTradingHistorical
 
     SimulationSettings simulationSettings = new SimulationSettings()
 
-    @PostConstruct
     void init() {
+
+        /**
+         * Reset simulations
+         */
+        simulations = []
 
         /**
          * Get probability combiner strategies
@@ -122,6 +126,7 @@ class BuySellTradingHistoricalSimulatorService extends AbstractTradingHistorical
                 Logger.log("There is already a simulation running. Not starting simulation.")
                 return
             }
+            init()
             def partitioned = multiThreadingEnabled ? (0..<numCores).collect {
                 simulations[(it..<simulations.size()).step(numCores)]
             } : [simulations]

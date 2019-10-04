@@ -83,9 +83,11 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
     /** List of possible configuration variations */
     List<CombinedSimulation> combinedSimulations = []
 
-    @PostConstruct
     void init() {
 
+        /**
+         * Reset simulations
+         */
         combinedSimulations = []
 
         /**
@@ -192,6 +194,7 @@ class CombinedTradingHistoricalSimulatorService extends AbstractTradingHistorica
                 Logger.log("There is already a simulation running. Not starting flex simulation.")
                 return
             }
+            init()
             def partitioned = multiThreadingEnabled ? (0..<numCores).collect {
                 combinedSimulations[(it..<combinedSimulations.size()).step(numCores)]
             } : [combinedSimulations]

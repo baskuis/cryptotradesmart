@@ -85,8 +85,12 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
 
     Map<String, FlexTradeExecutionStrategy> flexTradeExecutionStrategyMap
 
-    @PostConstruct
     void init() {
+
+        /**
+         * Reset simulations
+         */
+        simulations = []
 
         /**
          * Get probability combiner strategies
@@ -166,6 +170,7 @@ class FlexTradingHistoricalSimulatorService extends AbstractTradingHistoricalSim
                 Logger.log("There is already a simulation running. Not starting flex simulation.")
                 return
             }
+            init()
             def partitioned = multiThreadingEnabled ? (0..<numCores).collect {
                 simulations[(it..<simulations.size()).step(numCores)]
             } : [simulations]

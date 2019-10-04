@@ -210,7 +210,7 @@ class GraphDataService {
     @Scheduled(initialDelay = 5000l, fixedRate = 3600000l)
     @Async
     void addAll() {
-        if(LOCKED) {
+        if (LOCKED) {
             Logger.log('Locked not running addAll')
             return
         }
@@ -236,7 +236,7 @@ class GraphDataService {
     @Scheduled(cron = '10 */2 * * * *')
     @Async
     void addOnly() {
-        if(LOCKED) {
+        if (LOCKED) {
             Logger.log('Locked not running addOnly')
             return
         }
@@ -367,11 +367,11 @@ class GraphDataService {
 
             Logger.log('Appending to list of data points')
             List add = []
-            long yesterday = yesterday()
+            long hoursAgo = hoursAgo()
             DataCaptures.each {
                 long timestamp = it.key
                 DataCapture dataCapture = it.value
-                if (timestamp > yesterday) {
+                if (timestamp > hoursAgo) {
                     if (!DataPoints.find {
                         it.date.time == timestamp
                     }) {
@@ -396,6 +396,12 @@ class GraphDataService {
     static long yesterday() {
         final Calendar cal = Calendar.getInstance()
         cal.add(Calendar.DATE, -1)
+        return cal.getTime().time
+    }
+
+    static long hoursAgo() {
+        final Calendar cal = Calendar.getInstance()
+        cal.add(Calendar.HOUR, -2)
         return cal.getTime().time
     }
 
