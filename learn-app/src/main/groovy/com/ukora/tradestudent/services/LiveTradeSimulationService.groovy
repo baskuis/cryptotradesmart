@@ -81,7 +81,7 @@ class LiveTradeSimulationService {
         try {
             Date now = Date.from(new Date().toInstant().minusSeconds(60).atZone(ZoneId.systemDefault()).toInstant())
             List<TradeExecution> tradeExecutions = []
-            SimulationResult simulationResult = simulationResultService.getTopPerformingSimulation()
+            SimulationResult simulationResult = simulationResultService.getTopPerformingCombinedSimulation()
             CorrelationAssociation correlationAssociation = probabilityCombinerService.getCorrelationAssociations(now)
             TextCorrelationAssociation textCorrelationAssociation = concurrentTextAssociationProbabilityService.getCorrelationAssociations(now)
             if (simulationResult) {
@@ -168,6 +168,13 @@ class LiveTradeSimulationService {
                         Logger.log(String.format("Not simulating trades for %s", now))
                     }
                     return
+                } else {
+                    if (!correlationAssociation) {
+                        Logger.log('No correlationAssociation, not performing live trade')
+                    }
+                    if (!textCorrelationAssociation) {
+                        Logger.log('No textCorrelationAssociation, not performing live trade')
+                    }
                 }
             } else {
                 simulateTrades([new TradeExecution(
